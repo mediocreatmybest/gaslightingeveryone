@@ -9,6 +9,7 @@ COPY requirements.txt /requirements.txt
 RUN python3.8 -m pip install --upgrade pip && \	
 	python3.8 -m pip install --no-cache-dir -r /requirements.txt
 
+RUN apt clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /	
 RUN git clone https://github.com/ryepdx/pyethrecover recover-wallet
 WORKDIR /recover-wallet
