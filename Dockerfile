@@ -1,6 +1,6 @@
 #FROM nvidia/cuda:11.3.0-cudnn8-runtime-ubi7
-FROM nvidia/cuda:11.4.2-devel-ubuntu20.04
-
+#FROM nvidia/cuda:11.4.2-devel-ubuntu20.04
+FROM nvidia/cuda:11.4.1-base-ubuntu18.04
 # Setup the basics first
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -53,7 +53,8 @@ RUN git clone https://github.com/braindotai/Watermark-Removal-Pytorch watermark-
 #    && bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu.sh /
 
 
-ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
 ENV NVIDIA_DRIVER_CAPABILITIES all
 ENV DEBIAN_FRONTEND teletype
 
