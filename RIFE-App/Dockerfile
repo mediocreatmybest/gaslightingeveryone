@@ -34,7 +34,6 @@ RUN chmod +x /usr/local/bin/inference_video
 RUN gdown https://drive.google.com/uc?id=1APIzVeI-4ZZCEuIRE1m6WYfSCaOsi_7_ && \
     unzip RIFE_trained_model_v3.6.zip
 
-WORKDIR /host
 ENTRYPOINT ["/bin/bash"]
 
 ENV NVIDIA_DRIVER_CAPABILITIES all
