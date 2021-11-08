@@ -2,8 +2,7 @@ FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
 
 # Setup the basics first
 ENV DEBIAN_FRONTEND=noninteractive
-ENV PATH="/root/miniconda3/bin:${PATH}"
-ARG PATH="/root/miniconda3/bin:${PATH}"
+
 RUN apt-get update \
     && apt-get install -y apt-utils \
     && apt-get install -y bash ffmpeg \
@@ -14,20 +13,29 @@ RUN apt-get update \
 
 # Add Additional Software and Cleanup
 RUN apt update && \
-    apt install --no-install-recommends -y software-properties-common
-    apt clean && rm -rf /var/lib/apt/lists/*
+    apt install --no-install-recommends -y software-properties-common \
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
-RUN wget \
-    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && mkdir /root/.conda \
-    && bash Miniconda3-latest-Linux-x86_64.sh -b \
-    && rm -f Miniconda3-latest-Linux-x86_64.sh 
-RUN conda --version
-RUN conda install -c anaconda python=3.7 -y
-RUN conda install pytorch=1.4 torchvision cudatoolkit=10.0 -c pytorch -y
+# Install miniconda
+	RUN wget && \
+	MINICONDA="Miniconda3-latest-Linux-x86_64.sh" && \
+	wget --quiet https://repo.anaconda.com/miniconda/$MINICONDA && \
+	bash $MINICONDA -b -p /miniconda && \
+	rm -f $MINICONDA
+	ENV PATH /miniconda/bin:$PATH
 
+
+# Install Python and Py/Additionals
+
+
+    RUN conda --version
+    RUN conda install -c anaconda python=3.7 -y
+    RUN conda install pytorch=1.4 torchvision cudatoolkit=10.0 -c pytorch -y
+
+# Set / as Working DIR
 WORKDIR /
 
+# GIT Clone Required Programs / Files
 RUN git clone https://github.com/mcahny/Deep-Video-Inpainting deep_video_inpainting
 
 
@@ -35,8 +43,7 @@ RUN git clone https://github.com/mcahny/Deep-Video-Inpainting deep_video_inpaint
 WORKDIR /deep_video_inpainting/results/vinet_agg_rec/
 
 
-
-# add pre-trained models
+# Project Requirements / add pre-trained models / Install Scripts
 RUN python3.7 -m pip install --upgrade pip && \	
 	python3.7 -m pip install --no-cache-dir gdown
 RUN gdown https://drive.google.com/uc?id=1KAi9oQVBaJU9ytr7dYr2WwEcO5NLiJvo 
