@@ -17,8 +17,7 @@ RUN apt update && \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install miniconda
-	RUN wget && \
-	MINICONDA="Miniconda3-latest-Linux-x86_64.sh" && \
+	RUN MINICONDA="Miniconda3-latest-Linux-x86_64.sh" && \
 	wget --quiet https://repo.anaconda.com/miniconda/$MINICONDA && \
 	bash $MINICONDA -b -p /miniconda && \
 	rm -f $MINICONDA
@@ -30,8 +29,10 @@ RUN apt update && \
 
     RUN conda --version
     RUN conda install -c anaconda python=3.8 -y
-    RUN conda install conda install pytorch=1.6.0 torchvision=0.7.0 cudatoolkit=10.1 -c pytorch -y
-    RUN conda install matplotlib scipy opencv-python opencv-contrib-python imageio scikit-image
+    RUN conda install pytorch=1.6.0 torchvision=0.7.0 cudatoolkit=10.1 -c pytorch -y
+    RUN conda install matplotlib scipy imageio scikit-image
+    RUN pip install --upgrade pip 
+    RUN pip install opencv-python opencv-contrib-python
 
 # Set / as Working DIR
 WORKDIR /
@@ -40,7 +41,6 @@ WORKDIR /
 RUN git clone https://github.com/vt-vl-lab/FGVC FGVC
 
 # Project Requirements / add pre-trained models / Install Scripts
-RUN python3.8 -m pip install --upgrade pip
 
 WORKDIR /FGVC/
 
