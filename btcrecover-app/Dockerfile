@@ -2,7 +2,8 @@ FROM python:2.7-slim
 	
 # install deps
 RUN apt-get update && apt-get -y install \
-git-core build-essential software-properties-common gcc libssl-dev hashcat wget curl
+    git-core build-essential software-properties-common gcc libssl-dev hashcat wget curl
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*	
 COPY requirements.txt /requirements.txt
 

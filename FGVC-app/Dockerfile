@@ -13,8 +13,8 @@ RUN apt-get update \
 
 # Add Additional Software and Cleanup
 RUN apt update && \
-    apt install --no-install-recommends -y software-properties-common \
-    && apt clean && rm -rf /var/lib/apt/lists/*
+    apt install --no-install-recommends -y software-properties-common && \
+    apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install miniconda
 	RUN MINICONDA="Miniconda3-latest-Linux-x86_64.sh" && \

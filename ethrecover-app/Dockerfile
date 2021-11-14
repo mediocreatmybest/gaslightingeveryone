@@ -2,7 +2,7 @@ FROM python:3.8-slim
 	
 # install deps
 RUN apt-get update && apt-get -y install \
-git-core build-essential software-properties-common gcc libssl-dev hashcat
+    git-core build-essential software-properties-common gcc libssl-dev hashcat
 	
 COPY requirements.txt /requirements.txt
 
