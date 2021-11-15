@@ -33,7 +33,9 @@ RUN git clone https://github.com/TencentARC/GFPGAN GFPGAN
 WORKDIR /GFPGAN
 RUN wget https://github.com/TencentARC/GFPGAN/releases/download/v0.2.0/GFPGANCleanv1-NoCE-C2.pth -P experiments/pretrained_models
 RUN python setup.py develop
-RUN python inference_gfpgan.py --upscale 2 --test_path inputs/whole_imgs/ --save_root result
+RUN wget --show-progress https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth -O /miniconda/lib/python3.9/site-packages/realesrgan/weights/RealESRGAN_x2plus.pth
+RUN wget --show-progress https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth -O /miniconda/lib/python3.9/site-packages/facexlib/weights/detection_Resnet50_Final.pth
+WORKDIR /GFPGAN
 
 ENV NVIDIA_DRIVER_CAPABILITIES all
 ENV DEBIAN_FRONTEND teletype
