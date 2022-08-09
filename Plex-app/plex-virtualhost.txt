@@ -1,0 +1,51 @@
+upstream plex-upstream {
+  server x.x.x.x:32400;
+}
+server {
+  listen       8443 ssl;
+  server_name  host.example.com;
+  ssl_certificate /etc/letsencrypt/live/x.x.x/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/x.x.x/privkey.pem;
+
+  location / {
+    set $test "";
+
+    # If a request to / comes in, 301 redirect to the main plex page,
+    # but only if it doesn't contain the X-Plex-Device-Name header or query argument.
+    # This fixes a bug where you get permission issues when accessing the web dashboard.
+    # (This doesn't seem to work as advertised. Argh!)
+
+    if ($http_x_plex_device_name = '') {
+      set $test A;
+    }
+    if ($arg_X-Plex-Device-Name = '') {
+      set $test "${test}B";
+    }
+    if ($test = AB) {
+      rewrite ^/$ http://$http_host/web/index.html;
+    }
+
+    proxy_set_header    Host            $http_host;
+    proxy_set_header    X-Real-IP       $remote_addr;
+    proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    proxy_pass          http://plex-upstream;
+
+    # Plex proxy settings.
+    proxy_redirect      off;
+    proxy_buffering     off;
+
+    ## Required for Websockets
+    proxy_http_version      1.1;
+    proxy_set_header        Upgrade         $http_upgrade;
+    proxy_set_header        Connection      "upgrade";
+    proxy_read_timeout      36000s;         ## Timeout after 10 hours
+  }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/x.x.x/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/x.x.x/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}

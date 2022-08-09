@@ -1,0 +1,2 @@
+Remote Access - Disabled
+Network Advertisement - https://host.example.com:8443
