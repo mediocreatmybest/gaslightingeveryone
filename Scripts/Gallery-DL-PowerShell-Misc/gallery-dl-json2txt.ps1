@@ -13,14 +13,19 @@ Get-ChildItem -Path $caption_dir -File  | foreach-object {
     $simplename = $_.BaseName|Out-String -Stream
     #Remove square brackets as they cause issues with powershell
     $path = $_.FullName -replace "(\[|\])","*"
-    $jsonfile = (cat $path |ConvertFrom-Json |Select-Object title, description | ConvertTo-Csv -NoTypeInformation | select -skip 1)
+    $jsonfile = (Get-Content -Raw -Path $path |ConvertFrom-Json |Select-Object title, description | ConvertTo-Csv -NoTypeInformation | select -skip 1)
     $results = $jsonfile|Out-String
-   
+    $tags = (Get-Content -Raw -Path $path |ConvertFrom-Json |Select -expand tags)
+    $tagresults = $tags
+
+    
+    #Regular text filtering
+
     # Remove new lines
     $results = $results -replace "`t|`n|`r",""
     $results = $results -replace " ;|; ",";"
    
-    # Remove " double quote marks
+     # Remove " double quote marks
     $results = $results -replace '"',''
 
     # Catch any new double spaces - Not working. 
@@ -54,10 +59,19 @@ Get-ChildItem -Path $caption_dir -File  | foreach-object {
     $len = $len - 1
     #$results = $results.Remove($len,1)
     
-    Write-Output $simplename", "$results |Out-File -FilePath $caption_dir$simplename".txt"
-    Write-Output $simplename", "$results |Out-File -Append -FilePath $caption_dir"captions.txt"
+    #TAGs text filtering
+
+    #$tagresults = $tagresults -replace "`t|`n|`r"
+    #$tagresults = $tagresults -replace " ;|; "
+    #Can't seem to put commas after each tag. Broken. 
+    #$tagresults = $tagresults -replace '/s',', '
+    
+    #Final Output     
+    Write-Output $simplename", "$results", "$tagresults |Out-File -FilePath $caption_dir$simplename".txt"
+    Write-Output $simplename", "$results", "$tagresults |Out-File -Append -FilePath $caption_dir"captions.txt"
+    
     #write to screen, Uncomment it out if you want to see output. 
-    Write-Host $simplename", "$results
+    #Write-Host $simplename", "$results", "$tagresults
 
      }
        
