@@ -1,6 +1,6 @@
 ﻿#Tested on flickr extractor, seems to be ok. 
 #No doubt a better way exists on how to clean this up.
-#Only pulls title, description, cleans up symbols, and forces single line, tags currently not being converted. 
+#Only pulls title, description, cleans up symbols, and forces single line, tags currently not being appended commas. 
 #$imgextension = @('.png','.jpg','.jpeg')
 $textextension = @('.json')
 $caption_dir = "C:\example-images\"
