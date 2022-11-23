@@ -1,0 +1,39 @@
+{
+    "category": "flickr",
+    "date": "01",
+    "dateupload": "01",
+    "description": "Test Description",
+    "extension": "jpg",
+    "farm": 1,
+    "filename": "1",
+    "height": 499,
+    "id": 1,
+    "isfamily": 0,
+    "isfriend": 0,
+    "ispublic": 1,
+    "label": "Medium",
+    "media": "photo",
+    "media_status": "ready",
+    "owner": {
+        "nsid": "111",
+        "path_alias": "1",
+        "username": "1"
+    },
+    "search": {
+        "text": "Test"
+    },
+    "secret": "1",
+    "server": "1",
+    "subcategory": "search",
+    "tags": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "other"
+    ],
+    "title": "The Title!!",
+    "url": "https://URL.EXAMPLE.COM",
+    "views": 1,
+    "width": 396
+}
