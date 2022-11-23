@@ -5,12 +5,12 @@ import os
 import re
 
 # Opening JSON file
-jsonfile = open(r"c:\test\file1.jpg.json", "r")
+with open(r"c:\test\file1.jpg.json", "r") as jsonfile:
  
   
 # returns JSON object as 
 # a dictionary
-data = json.load(jsonfile)
+    data = json.load(jsonfile)
   
 # Iterating through the json
 # list
