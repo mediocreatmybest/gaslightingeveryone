@@ -13,9 +13,9 @@ Get-ChildItem -Path $caption_dir -File  | foreach-object {
     $simplename = $_.BaseName|Out-String -Stream
     #Remove square brackets as they cause issues with powershell
     $path = $_.FullName -replace "(\[|\])","*"
-    $jsonfile = (Get-Content -Raw -Path $path |ConvertFrom-Json |Select-Object title, description | ConvertTo-Csv -NoTypeInformation | select -skip 1)
+    $jsonfile = (Get-Content -Raw -Path $path |ConvertFrom-Json |Select-Object title, description | ConvertTo-Csv -NoTypeInformation | Select-Object -skip 1)
     $results = $jsonfile|Out-String
-    $tags = (Get-Content -Raw -Path $path |ConvertFrom-Json |Select -expand tags)
+    $tags = (Get-Content -Raw -Path $path |ConvertFrom-Json |Select-Object -expand tags)
     $tagresults = $tags
 
     
