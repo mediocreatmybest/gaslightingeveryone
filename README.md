@@ -1,4 +1,2 @@
-# gaslightingMLContainers
-Gaslighting machine learning, #AUSPOL can wait.
-
-Some docker creation files for machine learning containers and some crypto wallet recovery containers. 
+# gaslightingeveryone
+Gaslighting everyone, machine learning, poorly written scripts, containers, etc. #AUSPOL can wait.
