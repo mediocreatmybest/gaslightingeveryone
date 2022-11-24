@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 #image and json directory
-image_captions_path = Path(r"c:\test")
+image_captions_path = Path(r"c:\images")
 image_captions_appended_file = "appended_captions.txt" 
 
 for root, dirs, files in os.walk(image_captions_path):
@@ -20,10 +20,16 @@ for root, dirs, files in os.walk(image_captions_path):
             # returns JSON object as list or dictionary
                 data = json.load(json_read)
 
-            #fields from json file we are intrested in. 
+            #fields from json file we are intrested in, with some basic error checks
             title = (data['title'])
-            desc = (data['description'])
-            tags = (data['tags'])
+            if "description" in data:
+                desc = (data['description'])
+            else:
+                desc = ""
+            if "tags" in data:
+                tags = (data['tags'])
+            else: 
+                tags = ""
 
             # Simple filtering
             # Remove text, html href links, and new lines 
@@ -40,8 +46,8 @@ for root, dirs, files in os.walk(image_captions_path):
             desc = re.sub(r'\.\.', ' ', desc)
             title = re.sub(r'\.\.', ' ', title)
             #remove some additional symbols
-            desc = re.sub(r'[!~?\=\(\)*.:-]', '', desc)
-            title = re.sub(r'[!~?\=\(\)*.:-]', '', title)
+            desc = re.sub(r'[!~?\=\(\)*.:-#]', '', desc)
+            title = re.sub(r'[!~?\=\(\)*.:-#]', '', title)
             #If we leave behind any double spaces, change them to single space.
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
@@ -76,14 +82,12 @@ for root, dirs, files in os.walk(image_captions_path):
 
             #Folder and File locations
             single_files = image_captions_single_file_base_dir + "\\" + image_captions_single_file + ".txt"
-            #print (image_captions_single_file, seperator, single_files)
             appended_file = str(image_captions_path) + "\\" + image_captions_appended_file
-            #print(appended_file)
             #Appended file contents 
             appended_contents = image_captions_single_file_base_dir + "\\" + image_captions_single_file + seperator + final_result + "\n"
-            #print (appended_contents)
+            
+            
             #Create new file and overwrite if exists
-
             with open(single_files, 'w') as f:
                 f.write(final_result)
                 f.close
@@ -91,8 +95,3 @@ for root, dirs, files in os.walk(image_captions_path):
             with open(appended_file, 'a') as fa:
                 fa.write(appended_contents)
                 fa.close
-             
-
-
-             
-             
