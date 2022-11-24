@@ -5,7 +5,8 @@ from pathlib import Path
 
 #image and json directory
 image_captions_path = Path(r"c:\images")
-image_captions_appended_file = "appended_captions.txt" 
+image_captions_appended_file = "appended_captions.txt"
+seperator = ", " 
 
 for root, dirs, files in os.walk(image_captions_path):
     for file in files:
@@ -21,12 +22,14 @@ for root, dirs, files in os.walk(image_captions_path):
                 data = json.load(json_read)
 
             #fields from json file we are intrested in, with some basic error checks
-            #exif is nested, we are only looking for specific single fields
+            #exif is nested, we are only looking for specific single fields, how many extractors have exif? 
             if "exif" in data:
-                exif_aperture = (data['exif']['aperture'])
-                exif_focal = (data['exif']['focal_length']) 
-                exif_iso = (data['exif']['iso'])
-                exif_model = (data['exif']['model'])
+                exif_aperture = str(data['exif']['aperture'])
+                exif_focal = str(data['exif']['focal_length']) 
+                exif_iso = str(data['exif']['iso'])
+                exif_model = str(data['exif']['model'])
+                exif_collected = "Image created with " + "an aperture of " + exif_aperture + seperator + "focal length of " + exif_focal + seperator + "with an ISO of " + exif_iso + seperator + "Model is " + exif_model
+                print(exif_collected)
             else:
                 exif = ""
             if "title" in data:
