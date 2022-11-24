@@ -46,8 +46,8 @@ for root, dirs, files in os.walk(image_captions_path):
             desc = re.sub(r'\.\.', ' ', desc)
             title = re.sub(r'\.\.', ' ', title)
             #remove some additional symbols
-            desc = re.sub(r'[!~?\=\(\)*.:-#]', '', desc)
-            title = re.sub(r'[!~?\=\(\)*.:-#]', '', title)
+            desc = re.sub(r'[\#!~?\=\(\)*.:-]', '', desc)
+            title = re.sub(r'[\#!~?\=\(\)*.:-]', '', title)
             #If we leave behind any double spaces, change them to single space.
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
