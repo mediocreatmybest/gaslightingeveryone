@@ -29,9 +29,13 @@ for root, dirs, files in os.walk(image_captions_path):
                 exif_iso = str(data['exif']['iso'])
                 exif_model = str(data['exif']['model'])
                 exif_collected = "Image created with " + "an aperture of " + exif_aperture + seperator + "focal length of " + exif_focal + seperator + "with an ISO of " + exif_iso + seperator + "Model is " + exif_model
-                print(exif_collected)
             else:
                 exif = ""
+                exif_aperture = ""
+                exif_focal = ""
+                exif_iso = ""
+                exif_model = ""
+                exif_collected = ""
             if "title" in data:
                 title = (data['title'])
             else:
@@ -76,10 +80,34 @@ for root, dirs, files in os.walk(image_captions_path):
                 seperator = ", "
                 #return string 
                 return (seperator.join(tags))
-       
+                   
+            #Function to extract nested json, 
+            #https://hackersandslackers.com/extract-data-from-complex-json-python/
+            def json_extract(obj, key):
+                #Recursively fetch values from nested JSON.
+                arr = []
+
+                def extract(obj, arr, key):
+                    #Recursively search for values of key in JSON tree.
+                    if isinstance(obj, dict):
+                        for k, v in obj.items():
+                            if isinstance(v, (dict, list)):
+                                extract(v, arr, key)
+                            elif k == key:
+                                arr.append(v)
+                    elif isinstance(obj, list):
+                        for item in obj:
+                            extract(item, arr, key)
+                    return arr
+
+                values = extract(obj, arr, key)
+                return values
+     
+            #iso = json_extract(data, 'iso')
+            #print(iso)
+            
             #move string into new variable to get tags into output
             final_tags_string = (listToString(tags))
-
             #Moving strings into final output string and strip blank space at start and end, (title,desc,tags)
             final_result = title.strip() + ", " + desc.strip() + ", " + final_tags_string.strip()
 
@@ -88,10 +116,11 @@ for root, dirs, files in os.walk(image_captions_path):
             #print(title)
             #print(desc)
             #print(final_tags_string)
+            #print(exif_collected)
 
+            
             #Seperator for output
             seperator = ", "
-
             #Folder and File locations
             single_files = image_captions_single_file_base_dir + "\\" + image_captions_single_file + ".txt"
             appended_file = str(image_captions_path) + "\\" + image_captions_appended_file
