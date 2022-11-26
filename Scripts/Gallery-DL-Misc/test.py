@@ -109,10 +109,11 @@ for root, dirs, files in os.walk(image_captions_path):
             else: 
                 tags = ""
             if "subreddit_name_prefixed" in data:
-                subreddit = (data['subreddit_name_prefixed'])
+                subreddit = str(data['subreddit_name_prefixed'])
             else: subreddit = ""
             if "location" in data:
-                location = (data['location'])
+                location = ""
+                #location = str(data['location'])
             else:
                 location = ""
 
@@ -185,6 +186,9 @@ for root, dirs, files in os.walk(image_captions_path):
             if desc != "":
                 appended_output.append(desc.strip())
 
+            if location != "":
+                appended_output.append(location.strip())
+
             if final_cludge_camera_data != "":
                 appended_output.append(final_cludge_camera_data.strip())
 
@@ -194,7 +198,7 @@ for root, dirs, files in os.walk(image_captions_path):
             if tags != "":
                 appended_output.append(final_tags_string.strip())
                 
-            print(appended_output)
+            #print(appended_output)
     
             #Function to convert list to string with seperator
             def listToString(appended_output):
