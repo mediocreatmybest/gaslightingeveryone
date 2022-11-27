@@ -98,6 +98,14 @@ for root, dirs, files in os.walk(image_captions_path):
                 #location = str(data['location']) #why aren't these fields standardised? Am I so out of touch? No it's the children that are wrong... 
             else:
                 location = ""
+            if "username" in data:
+                username = (data['username'])
+            else: 
+                username = ""
+            if "da_category" in data:
+                da_category = (data['da_category'])
+            else: 
+                da_category = ""
 
             # Simple filtering
             # Remove text, html href links, and new lines 
@@ -163,6 +171,12 @@ for root, dirs, files in os.walk(image_captions_path):
 
             if subreddit != "":
                 appended_output.append(subreddit.strip())
+
+            if da_category != "":
+                appended_output.append(da_category.strip())
+
+            if username != "":
+                appended_output.append(username.strip())
 
             if tags != "":
                 appended_output.append(final_tags_string.strip())
