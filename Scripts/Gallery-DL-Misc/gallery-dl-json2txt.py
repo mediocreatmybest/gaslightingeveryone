@@ -78,6 +78,12 @@ for root, dirs, files in os.walk(image_captions_path):
                     cludge_camera_data.append(cludge_shutter)
 
             # Some basic checks if data exists in json data that we don't want to search for via nested search            
+            # Assign json category to variable, hopefully this makes it easier to select known json data structures.
+            if "category" in data:
+                json_category = (data['category'])
+            else:
+                json_category = ""
+            #Global fields
             if "title" in data:
                 title = (data['title'])
             else:
@@ -90,26 +96,36 @@ for root, dirs, files in os.walk(image_captions_path):
                 tags = (data['tags'])
             else: 
                 tags = ""
-            if "subreddit_name_prefixed" in data:
-                subreddit = str(data['subreddit_name_prefixed'])
-            else: subreddit = ""
             if "location" in data:
                 location = ""
-                #location = str(data['location']) #why aren't these fields standardised? Am I so out of touch? No it's the children that are wrong... 
+                #location = str(data['location']) #why aren't these fields standardised? Am I so out of touch?... No it's the children that are wrong... 
             else:
                 location = ""
             if "username" in data:
                 username = (data['username'])
             else: 
                 username = ""
+            #Reddit
+            if "subreddit_name_prefixed" in data:
+                subreddit = str(data['subreddit_name_prefixed'])
+            else: 
+                subreddit = ""
+            #Deviantart 
             if "da_category" in data:
                 da_category = (data['da_category'])
             else: 
                 da_category = ""
+            #Artstation
+            if json_category == "artstation":
+                as_data = json_extract(data, 'name')
+                as_username = json_extract(data, 'username')
+            else: 
+                as_data = ""
+                as_username = ""
 
             # Simple filtering
             # Remove text, html href links, and new lines 
-            exclusionList = ['PROCESS INFO','SOURCE INFO','IMAGE INFO','<a.*</a>','\n']
+            exclusionList = ['www.','.com','.org','.net','http://','https://','<b>','</b>','PROCESS INFO','SOURCE INFO','IMAGE INFO','<a.*</a>','\n']
             exclusions = '|'.join(exclusionList)
             title = re.sub(exclusions, '', title)
             desc = re.sub(exclusions, '', desc)
@@ -154,6 +170,16 @@ for root, dirs, files in os.walk(image_captions_path):
             #move string into new variable to get tags into output
             final_tags_string = (listToString(tags))
 
+                        #Function to convert tags to string
+            def listToString(as_data):
+                #initialize a seperator string
+                seperator = ", "
+                #return string 
+                return (seperator.join(as_data))
+            
+            #move string into new variable to get tags into output
+            final_as_data = (listToString(as_data))
+
             #Make it easier on final output, append only existing results to a list
             appended_output = []
             
@@ -173,10 +199,16 @@ for root, dirs, files in os.walk(image_captions_path):
                 appended_output.append(subreddit.strip())
 
             if da_category != "":
-                appended_output.append(da_category.strip())
+                appended_output.append(da_category)
 
             if username != "":
-                appended_output.append(username.strip())
+                appended_output.append(username)
+
+            if as_data != "":
+                appended_output.append(final_as_data)
+            
+            if as_username != "":
+                appended_output.append(as_username[0])
 
             if tags != "":
                 appended_output.append(final_tags_string.strip())
