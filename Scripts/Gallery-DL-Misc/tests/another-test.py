@@ -16,15 +16,8 @@ file_mode = True
 #configure download path 
 image_captions_path = Path(r"c:\images")
 #Set txt source, can be plain text file or URL
-txt_src = 'https://bob.com/example'
-
-#Get contents from file
-txt_file = Path(r'c:\images\txt.txt')
-#Set URL to download list from
-txt_url = 'https://example.com'
-
-
-
+txt_src = 'http://10.254.14.136/example.txt'
+#txt_src = 'c:\images'
 #URL filters for supported websites (reddit, etc.)
 reddit_top = ['/top/?t=all','/top/?t=month']
 
@@ -44,17 +37,19 @@ def is_valid_hostname(hostname):
 
 #print(is_valid_hostname('google.com'))
 
-
 #Doesn't really need to be a function but might as well see if this works. 
 def is_url_data_type():
-    #do something amazing
-    print('Checking if text source is URL')
+    #print('Checking if text source is URL')
     function_url = urllib.parse.urlparse(txt_src)
     if function_url != '':
-        print(function_url.netloc)
         return True
     else:
         return False
+
+#Functions everywhere!
+def superfunction():
+    #do something
+    print('Super duper function')
     
 
 #Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
@@ -65,16 +60,36 @@ def is_url_data_type():
 if csv_mode == False:
     if is_url_data_type() is True:
         txt_url = txt_src     
-        with urllib.request.urlopen (txt_url) as txt_read:
-            print('URL TXT MODE!')
-            for line in txt_read: 
-                url1 = urllib.parse.urlparse(line)
-                if url1.netloc == 'url.com':
+        with urllib.request.urlopen(txt_url) as txt_read:
+            #print('URL MODE!')
+            rawoutput = txt_read.read().decode('utf-8').split()
+            #Loop through each line
+            for eachdomain in rawoutput:
+                #Do a check against each domain as they may have different options            
+                if urllib.parse.urlparse(eachdomain).netloc == 'example.com':
                     #Do something here
-                    print('this is URL')
-                if url1.netloc == 'nexturl.com':
+                    print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
+                    print(f'Run command \'test\' --test {eachdomain}/top/?t=month')
+                                                 
+                if urllib.parse.urlparse(eachdomain).netloc == 'www.test.example.com':
                     #Do something else
-                    print ('THIS IS NEXT URL')
+                    print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
+                    print(f'Run command \'test\' --test {eachdomain}/top/?t=month')
+                    
+                if urllib.parse.urlparse(eachdomain).netloc == 'www.domain.example.com':
+                    #Do something else
+                    print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
+                    print(f'Run command \'test\' --test {eachdomain}/top/?t=month')
+    
+    
+    if is_url_data_type() is False:
+        txt_file = Path(rf'{txt_src}')  #Broken
+        print ('TXT MODE!')
+        print ('The test path is')
+        print(txt_file)
+        
+        
+        
 
 
 if csv_mode == True:
@@ -102,3 +117,8 @@ if csv_mode == True:
 
 #subprocess.run(['gallery-dl', '--download-archive archivedata.txt', '--write-metadata','--sleep 2-4','--range 1-300','r:https:url.com/raw/text',])
 #subprocess.run(['gallery-dl', '--download-archive archivedata.txt', '--write-metadata','--sleep 2-4','r:https:url.com/raw/text',])
+#subprocess_args = ['--download-archive archivedata.txt --write-metadata --sleep 2-4 --range 1-300']
+#command = ['gallery-dl']
+#command.extend(subprocess_args)
+
+subprocess.run(['gallery-dl', '--download-archive archivedata.txt --write-metadata --sleep 2-4 --range 1-300'])
