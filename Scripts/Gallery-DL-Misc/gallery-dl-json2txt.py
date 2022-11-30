@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import sys
+#import codecs #Will we need this later...
 from pathlib import Path
 
 #image and json directory
@@ -18,7 +20,7 @@ for root, dirs, files in os.walk(image_captions_path):
             image_captions_single_file = image_captions_single_file_base_name 
             
             #load json file from os.walk search 
-            with open(jsonfile, "r") as json_read:
+            with open(jsonfile, "r", encoding='UTF-8' ) as json_read:
             # returns JSON object as list or dictionary
                 data = json.load(json_read)
 
@@ -149,7 +151,9 @@ for root, dirs, files in os.walk(image_captions_path):
             #If we leave behind any double spaces, change them to single space.
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
-         
+            #Final removal of all non-standard characters that break strings being selected, uncomment if needed.
+            #desc = re.sub(r"[^-/().&' \w]|_", '', desc)
+            #title = re.sub(r"[^-/().&' \w]|_", '', title)
             #Function to convert cludged camera data to string
             def listToString(cludge_camera_data):
                 #initialize a seperator string
@@ -231,10 +235,10 @@ for root, dirs, files in os.walk(image_captions_path):
             appended_contents = image_captions_single_file_base_dir + "\\" + image_captions_single_file + seperator + return_appended_output + "\n"
 
             #Create new file and overwrite if exists
-            with open(single_files, 'w') as f:
+            with open(single_files, 'w', encoding='UTF-8') as f:
                 f.write(return_appended_output)
                 f.close
     
-            with open(appended_file, 'a') as fa:
+            with open(appended_file, 'a', encoding='UTF-8') as fa:
                 fa.write(appended_contents)
                 fa.close
