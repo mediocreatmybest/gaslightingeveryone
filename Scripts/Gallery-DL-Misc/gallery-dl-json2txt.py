@@ -7,7 +7,7 @@ from pathlib import Path
 
 #image and json directory
 # To do: not delete old caption data and back it up.
-image_captions_path = Path(r"c:\images")
+image_captions_path = Path(r"C:\images")
 image_captions_appended_file = "appended_captions.txt"
 seperator = ", " 
 
@@ -125,6 +125,12 @@ for root, dirs, files in os.walk(image_captions_path):
                 as_data = ""
                 as_username = ""
 
+            #Catch null or nothing values before it gets passed to regex
+            if desc is None:
+                desc = ""
+            if title is None:
+                title = ""
+
             # Simple filtering
             # Remove text, html href links, and new lines 
             exclusionList = ['www.','.com','.org','.net','http://','https://','<b>','</b>','PROCESS INFO','SOURCE INFO','IMAGE INFO','<a.*</a>','\n']
@@ -146,8 +152,8 @@ for root, dirs, files in os.walk(image_captions_path):
             desc = re.sub(r' - ', ' ', desc)
             title = re.sub(r' - ', ' ', title)
             #remove some additional symbols
-            desc = re.sub(r'[\#!~?\=\(\)*.:-]', '', desc)
-            title = re.sub(r'[\#!~?\=\(\)*.:-]', '', title)
+            desc = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', desc)
+            title = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', title)
             #If we leave behind any double spaces, change them to single space.
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
@@ -242,3 +248,7 @@ for root, dirs, files in os.walk(image_captions_path):
             with open(appended_file, 'a', encoding='UTF-8') as fa:
                 fa.write(appended_contents)
                 fa.close
+
+           # with open(appended_file, 'a', encoding='UTF-8') as falog:
+           #     falog.write(image_captions_single_file)
+           #     falog.close
