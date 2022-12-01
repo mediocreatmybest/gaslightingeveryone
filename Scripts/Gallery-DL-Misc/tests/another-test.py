@@ -1,30 +1,35 @@
-import os
 import subprocess
 import re
 import csv
 import urllib
 import urllib.request
-#import validators #install validators
 from pathlib import Path
 
+#This script is intended to be used with plain text only
+#Text should be a list of URLs for gallery-dl to download
 
-#Set to True if data is csv such as https://example.com/image.png, Description
+#Set to True if source list data is csv such as https://example.com/image.png, Description
 #To Do 
 csv_mode = False
 #Set to False if you are reading a URL or True if you are reading a txt file
-file_mode = True
+#file_mode = True
 #configure download path 
-image_captions_path = Path(r"c:\images")
+
 #Set txt source, can be plain text file or URL
-txt_src = 'http://10.254.14.136/example.txt'
+txt_src = 'http://x.x.x.x/example.txt'
 #txt_src = 'c:\images'
-#URL filters for supported websites (reddit, etc.)
+
+#URL filters for supported websites (reddit, etc.) This will allow us to loop through each prefered top search
+#To Do: Check other websites
 reddit_top = ['/top/?t=all','/top/?t=month']
 
+#Gallery-DL defaults
+gallery_cmd ='gallery-dl'
+gallery_arg = '--write-metadata --download-archive archivedata.txt --sleep 2-4'
+gallery_extract_path = '--directory c:\images'
 
-#with urllib.request.urlopen(txt_url) as open_txt_url:
-#    data_txt_url = open_txt_url.read()
-#    print(data_txt_url)
+#Organise defaults into single string
+gallery_full_cmdarg = gallery_cmd.split() + gallery_extract_path.split() + gallery_arg.split()
 
 # Check if this is a hostname not
 def is_valid_hostname(hostname):
@@ -52,46 +57,45 @@ def superfunction():
     print('Super duper function')
     
 
+
 #Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
 #https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
 
-
-
+#Using plain text data as input data
 if csv_mode == False:
+    #Check if we are using a websites data
     if is_url_data_type() is True:
         txt_url = txt_src     
         with urllib.request.urlopen(txt_url) as txt_read:
-            #print('URL MODE!')
+            #Read, decode and then split the final data from the webserver to allow reading each line
             rawoutput = txt_read.read().decode('utf-8').split()
             #Loop through each line
             for eachdomain in rawoutput:
                 #Do a check against each domain as they may have different options            
                 if urllib.parse.urlparse(eachdomain).netloc == 'example.com':
-                    #Do something here
-                    print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
-                    print(f'Run command \'test\' --test {eachdomain}/top/?t=month')
-                                                 
+                    for topsearch in reddit_top:
+                        eachdomain_top = eachdomain + topsearch
+                        #print(eachdomain_top)
+                        gallery_full_cmdarg.append(eachdomain_top)
+                        result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
+                                        
                 if urllib.parse.urlparse(eachdomain).netloc == 'www.test.example.com':
-                    #Do something else
-                    print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
-                    print(f'Run command \'test\' --test {eachdomain}/top/?t=month')
-                    
+                    gallery_full_cmdarg.append(eachdomain)
+                    result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
+                                        
                 if urllib.parse.urlparse(eachdomain).netloc == 'www.domain.example.com':
-                    #Do something else
-                    print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
-                    print(f'Run command \'test\' --test {eachdomain}/top/?t=month')
-    
-    
+                    gallery_full_cmdarg.append(eachdomain)
+                    result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
+                        
+    #Check if we are using a text file for data #Also this is broken.
     if is_url_data_type() is False:
         txt_file = Path(rf'{txt_src}')  #Broken
         print ('TXT MODE!')
         print ('The test path is')
         print(txt_file)
         
-        
-        
-
-
+   
+#Using CSV seperated data instead of plain text. 
 if csv_mode == True:
     with open(txt_file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -104,16 +108,36 @@ if csv_mode == True:
             print('CSV MODE!')
 
 
+
+#print("\n")
+#print(result.stderr)
+
+#Give single message, or two.
+
+if result.stdout:
+    print('\n')
+    print('###############################')
+    print('Progress was made! Check logs.')
+    print('###############################')
+    print('\n')
     
-    
+if result.stderr:
+    print('\n')
+    print('###############################')
+    print('Errors found, please check logs')
+    print('###############################')
+    print('\n') 
+
+#print("\n")
+#print (result.stdout)
         
-        
-        
+
+#print("\n")
+#[print(i) for i in result.stdout]
 
 
-
-
-
+#Do something else
+#print(f'Run command \'xyz\' --test {eachdomain}/top/?t=all')
 
 #subprocess.run(['gallery-dl', '--download-archive archivedata.txt', '--write-metadata','--sleep 2-4','--range 1-300','r:https:url.com/raw/text',])
 #subprocess.run(['gallery-dl', '--download-archive archivedata.txt', '--write-metadata','--sleep 2-4','r:https:url.com/raw/text',])
@@ -121,4 +145,32 @@ if csv_mode == True:
 #command = ['gallery-dl']
 #command.extend(subprocess_args)
 
-subprocess.run(['gallery-dl', '--download-archive archivedata.txt --write-metadata --sleep 2-4 --range 1-300'])
+#subprocess.run(['gallery-dl', '--download-archive archivedata.txt --write-metadata --sleep 2-4 --range 1-300'])
+
+#sub_gall_arg = ('--download-archive archivedata.txt --sleep 2-4 ')
+#sub_url = 'http://x.x.x.x/example.txt'
+
+
+
+
+####gallery_grab = gallery_cmd.split() + gallery_arg.split() + gallery_geturl.split()
+
+####print('gallery grab')
+####print (gallery_grab)
+
+####result = subprocess.run(gallery_grab, capture_output=True, text=True)
+####result.stdout
+####result.stderr
+
+
+####gallery = 'gallery-dl --download-archive archivedata.txt --sleep 2-4 http://x.x.x.x/example.txt'
+
+####gallery.split()
+
+#print(gallery)
+
+####result = subprocess.run(gallery, capture_output=True, text=True)
+####print("stdout:", result.stdout)
+####print("stderr:", result.stderr)
+
+
