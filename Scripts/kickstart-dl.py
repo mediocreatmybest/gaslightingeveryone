@@ -6,7 +6,7 @@ import urllib.request
 from pathlib import Path
 
 #This script is intended to be used with plain text only
-#Text should be a list of URLs for gallery-dl to download
+#Text should be a list of URLs for the downloaders to try download
 
 #Set to True if source list data is in csv format such as https://example.com/image.png, Description
 #To Do 
@@ -16,11 +16,12 @@ csv_mode = False
 #configure download path 
 
 #Set txt source, can be plain text file or URL
-txt_src = 'http://x.x.x.x/example.txt'
+#The source should contain only urls for the downloaders to use
+txt_src = 'https://raw.githubusercontent.com/mediocreatmybest/gaslightingeveryone/dev/example-list.txt'
 #txt_src = 'c:\images'
 
 #List of supported sites. #to do.
-supported_sites = []
+supported_filter_urls = ['www.reddit.com','www.unsplash.com']
 #URL filters for supported websites (reddit, etc.) This will allow us to loop through each prefered top search
 #To Do: Check other websites
 reddit_top = ['/top/?t=all','/top/?t=month']
@@ -29,8 +30,13 @@ artstation_search_filter = ['?sort_by=rank']
 
 #Gallery-DL defaults
 gallery_cmd ='gallery-dl'
-gallery_arg = '--write-metadata --download-archive archivedata.txt --sleep 2-4'
+gallery_arg = '--write-metadata --sleep 2-4 --range 1-1'
 gallery_extract_path = '--directory c:\images'
+
+#YT-DLP Defaults ######## To do ######
+ytdlp_cmd = 'yt-dlp'
+ytdlp_arg = '--write-info-json'
+ytdlp_dl_path = '--output c:\videos'
 
 #Organise defaults into single string
 gallery_full_cmdarg = gallery_cmd.split() + gallery_extract_path.split() + gallery_arg.split()
@@ -59,31 +65,35 @@ if csv_mode == False:
             #Loop through each line
             for eachdomain in rawoutput:
                 
-                #Do a check against each domain as they may have different options            
-                if urllib.parse.urlparse(eachdomain).netloc == 'example.com':
+                #Do a check against each domain as they may have different options
+                #Create URL Check Variable, not sure if this will work...
+                urlcheck = urllib.parse.urlparse(eachdomain).netloc    
+                if urlcheck == 'www.reddit.com':
                     for topsearch in reddit_top:
                         eachdomain_top = eachdomain + topsearch
-                        #print(eachdomain_top)
                         gallery_full_cmdarg.append(eachdomain_top)
-                        result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
+                        result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True, encoding='UTF-8')
                                         
-                if urllib.parse.urlparse(eachdomain).netloc == 'www.test.example.com':
+                if urlcheck == 'www.unsplash.com':
                     gallery_full_cmdarg.append(eachdomain)
                     result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
                                         
-                if urllib.parse.urlparse(eachdomain).netloc == 'www.domain.example.com':
+                if urlcheck == 'www.artstation.com':
                     gallery_full_cmdarg.append(eachdomain)
                     result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
                     
-                if (urllib.parse.urlparse(eachdomain).netloc != 'www.domain.example.com'):
-                    test = test 
-                    #for urllib.parse.urlparse(eachdomain).netloc in supported_sites: print(supported_sites) 
+                #if (web1 != query and web2 != query and web3 != query):
+                #   print('This should only be triggered if Web1 and Web2 and Web3 are not found')
+                
+                #Catch any websites that don't exist in the supported filter and do standard download
+                if (urlcheck != supported_filter_urls):
+                    gallery_full_cmdarg.append(eachdomain)
+                    result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
                      
                 
                 
                                         
-#if (web1 != query and web2 != query and web3 != query):
- #   print('This should only be triggered if Web1 and Web2 and Web3 are not found')
+
                         
     #Check if we are using a text file for data #Also this is broken.
     if is_url_data_type() is False:
@@ -111,26 +121,24 @@ if csv_mode == True:
 
 #Give single message, or two.
 
-if result.stdout:
-    print('\n')
-    print('###############################')
-    print('Progress was made! Check logs.')
-    print('###############################')
-    print('\n')
+#if result.stdout:
+#    print('\n')
+#    print('###############################')
+#    print('Progress was made! Check logs.')
+#    print('###############################')
+#    print('\n')
     
-if result.stderr:
-    print('\n')
-    print('###############################')
-    print('Errors found, please check logs')
-    print('###############################')
-    print('\n') 
-
-#print('###############################')
-#print("\n")
-#print (result.stderr)
-#print("\n")
-#print('###############################')
-#print("\n")
-#print (result.stdout)
-#print("\n")
-#print('###############################')
+#if result.stderr:
+#    print('\n')
+#    print('###############################')
+#    print('Errors found, please check logs')
+#    print('###############################')
+#    print('\n') 
+#
+print('###############################')
+print('errors:')
+print (result.stderr)
+print('###############################')
+print('Results:')
+print (result.stdout)
+print('###############################')
