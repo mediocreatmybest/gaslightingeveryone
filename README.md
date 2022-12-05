@@ -23,6 +23,10 @@ This script is partially broken and unfinished, it should help kick start the do
 *TODO:*
 Add additional download, fix std.err output, create log files. 
 
+## Folders
+### Containers: Mostly Dockerfiles to build containers with some machine learning tools (hasn't been updated in a while)
+### Scripts: Scripts I've put together to hopefully teach myself some Python, PowerShell, etc. 
+### xvasynth_models: Playing around with xvasynth voice models, currently someone who isn't a monster is the only model. Hopefully more to come. 
 
 
 
