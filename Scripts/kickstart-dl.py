@@ -1,29 +1,15 @@
 import subprocess
-import re
 import csv
 import urllib
 import urllib.request
+import argparse
 from pathlib import Path
 
 #This script is intended to be used with plain text only
-#Text should be a list of URLs for the downloaders to try download
 
-#Set to True if source list data is in csv format such as https://example.com/image.png, Description
-#To Do 
-csv_mode = False
-#Set to False if you are reading a URL or True if you are reading a txt file
-#file_mode = True
-#configure download path 
-
-#Set txt source, can be plain text file or URL
-#The source should contain only urls for the downloaders to use
-txt_src = 'https://raw.githubusercontent.com/mediocreatmybest/gaslightingeveryone/dev/example-list.txt'
-#txt_src = 'c:\images'
-
-#List of supported sites. #to do.
+#List of supported sites.
 supported_filter_urls = ['www.reddit.com','www.unsplash.com']
-#URL filters for supported websites (reddit, etc.) This will allow us to loop through each prefered top search
-#To Do: Check other websites
+#URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
 reddit_top = ['/top/?t=all','/top/?t=month']
 unsplash_search_filter = ['/cats?orientation=squarish']
 artstation_search_filter = ['?sort_by=rank']
@@ -31,12 +17,59 @@ artstation_search_filter = ['?sort_by=rank']
 #Gallery-DL defaults
 gallery_cmd ='gallery-dl'
 gallery_arg = '--write-metadata --sleep 2-4 --range 1-1'
-gallery_extract_path = '--directory c:\images'
+
 
 #YT-DLP Defaults ######## To do ######
 ytdlp_cmd = 'yt-dlp'
 ytdlp_arg = '--write-info-json'
-ytdlp_dl_path = '--output c:\videos'
+
+
+# Create the parser
+parser = argparse.ArgumentParser()
+# Add an argument
+parser.add_argument('--downloader', type=str, choices=['gallery-dl', 'yt-dlp'], required=False)
+parser.add_argument('--type', type=str, choices=['url', 'file'], required=False)
+parser.add_argument('--txtmode', type=str, choices=['csv', 'plain'], required=False)
+parser.add_argument('--sourcelist', type=str, required=True)
+parser.add_argument('--directory', type=str, required=True)
+
+
+# Parse the argument
+cmd_args = parser.parse_args()
+
+#Set Defaults if non selected
+if cmd_args.downloader == None: 
+    cmd_args.downloader = 'gallery-dl'
+if cmd_args.type == None: 
+    cmd_args.type = 'url'
+if cmd_args.txtmode == None: 
+    cmd_args.txtmode = 'plain'
+  
+print('program selected is:', cmd_args.downloader)
+print('program type is:', cmd_args.type)
+print('program mode is:', cmd_args.txtmode)
+print('program source list is:', cmd_args.sourcelist)
+
+
+#Set this based on command line arguments or defaults
+if cmd_args.txtmode == 'plain': 
+    csv_mode = False
+else:
+    csv_mode = True
+
+#Set this based on command line arguments or defaults
+if cmd_args.type == 'url':
+    file_mode = False
+else:
+    file_mode = True
+
+#Set this based on command line arguments
+#Currently file source is broken, only a url with raw text will work
+txt_src = cmd_args.sourcelist
+
+#Set directory location based off command line arguments
+gallery_extract_path = f'--directory {cmd_args.directory}'
+ytdlp_dl_path = f'--output {cmd_args.directory}'
 
 #Organise defaults into single string
 gallery_full_cmdarg = gallery_cmd.split() + gallery_extract_path.split() + gallery_arg.split()
