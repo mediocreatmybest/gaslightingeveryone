@@ -2,7 +2,8 @@
 This repository contains strong traces gaslighting, along with a few files for; machine learning, containers, and ultimatly some poorly written scripts.
 
 ## Caption creation tools
-### json2txt.py:
+
+### *json2txt.py:*
 This script may help with collecting captions from known websites that give useful; titles, descrptions, exif, tags, for the media. 
 The script currently takes information from a useful but randomly organised json file and creates a text file next to it based on the same name as well as an appended file.
 
@@ -17,16 +18,18 @@ Edit the script to set your options, such as image location and download prefere
 *TODO:* 
 Commandline arguments, add additional websites.
 
-### kickstart-dl.py:
+### *kickstart-dl.py:*
 This script is partially broken and unfinished, it should help kick start the download process for gallery-dl, ultimatly it is just a wrapper script to hopefully house a few downloaders along with some filters for some websites into a single clunky script.
 
 *TODO:*
 Add additional download, fix std.err output, create log files. 
 
-## Folders
-### Containers: Mostly Dockerfiles to build containers with some machine learning tools (hasn't been updated in a while)
-### Scripts: Scripts I've put together to hopefully teach myself some Python, PowerShell, etc. 
-### xvasynth_models: Playing around with xvasynth voice models, currently someone who isn't a monster is the only model. Hopefully more to come. 
+### Folders
+**Containers:** Mostly Dockerfiles to build containers with some machine learning tools (hasn't been updated in a while)
+
+**Scripts:** Scripts I've put together to hopefully teach myself some Python, PowerShell, etc. 
+
+**xvasynth_models:** Playing around with xvasynth voice models, currently someone who isn't a monster is the only model. Hopefully more to come. 
 
 
 
