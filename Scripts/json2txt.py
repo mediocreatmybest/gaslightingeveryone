@@ -1,13 +1,28 @@
 import json
 import os
 import re
-import sys
-#import codecs #Will we need this later...
+import argparse
 from pathlib import Path
 
-#image and json directory
+# Create the parser
+parser = argparse.ArgumentParser()
+# Add an argument
+parser.add_argument('--imagedir', type=str, help='Image directory to caption', metavar='c:\images', required=True)
+# Add arguments to disable unwanted data
+parser.add_argument('--disable-title', type=str,choices=['Yes', 'No'], help='Set to Yes to disable Title', required=False)
+parser.add_argument('--disable-desc', type=str,choices=['Yes', 'No'], help='Set to Yes to disable Desc', required=False)
+parser.add_argument('--disable-tags', type=str,choices=['Yes', 'No'], help='Set to Yes to disable Tags', required=False)
+parser.add_argument('--disable-exif', type=str,choices=['Yes', 'No'], help='Set to Yes to disable exif data', required=False)
+
+
+# Parse the argument
+cmd_args = parser.parse_args()
+
+
+#Sets the Image and json directory from arguemnts
 # To do: not delete old caption data and back it up.
-image_captions_path = Path(r"C:\images")
+
+image_captions_path = Path(rf"{cmd_args.imagedir}")
 image_captions_appended_file = "appended_captions.txt"
 seperator = ", " 
 
@@ -124,12 +139,21 @@ for root, dirs, files in os.walk(image_captions_path):
             else: 
                 as_data = ""
                 as_username = ""
-
             #Catch null or nothing values before it gets passed to regex
             if desc is None:
                 desc = ""
             if title is None:
                 title = ""
+            
+            #Clear data if command line data if flagged as disabled
+            if cmd_args.disable_exif == 'Yes':
+                cludge_camera_data = []
+            if cmd_args.disable_title == 'Yes': 
+                    title = ""
+            if cmd_args.disable_desc == 'Yes': 
+                    desc = ""    
+            if cmd_args.disable_tags == 'Yes': 
+                    tags = ""
 
             # Simple filtering
             # Remove text, html href links, and new lines 
@@ -180,7 +204,7 @@ for root, dirs, files in os.walk(image_captions_path):
             #move string into new variable to get tags into output
             final_tags_string = (listToString(tags))
 
-                        #Function to convert tags to string
+            #Function to convert Artstation data to string
             def listToString(as_data):
                 #initialize a seperator string
                 seperator = ", "
