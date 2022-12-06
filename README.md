@@ -13,10 +13,15 @@ For example: *The Fat Cat Barnaby, Barnaby is always very sleepy and looks drunk
 
 If the json doesn't contain a title, description, EXIF, or tags, it won't get included in the file.
 
-Edit the script to set your options, such as image location and download preferences.
+Commandline arguments that can disable some meta data, see 'json2txt.py --help'
+
+Set folder location of json/images with --imagedir
+
+For example: 
+'json2txt.py --imagedir c:\images' 
 
 *TODO:* 
-Commandline arguments, add additional websites.
+add additional websites.
 
 ### *kickstart-dl.py:*
 This script is partially broken and unfinished, it should help kick start the download process for gallery-dl, ultimatly it is just a wrapper script to hopefully house a few downloaders along with some filters for some websites into a single clunky script.
