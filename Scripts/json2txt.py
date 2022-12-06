@@ -9,10 +9,10 @@ parser = argparse.ArgumentParser()
 # Add an argument
 parser.add_argument('--imagedir', type=str, help='Image directory to caption', metavar='c:\images', required=True)
 # Add arguments to disable unwanted data
-parser.add_argument('--disable-title', type=str,choices=['Yes', 'No'], help='Set to Yes to disable Title', required=False)
-parser.add_argument('--disable-desc', type=str,choices=['Yes', 'No'], help='Set to Yes to disable Desc', required=False)
-parser.add_argument('--disable-tags', type=str,choices=['Yes', 'No'], help='Set to Yes to disable Tags', required=False)
-parser.add_argument('--disable-exif', type=str,choices=['Yes', 'No'], help='Set to Yes to disable exif data', required=False)
+parser.add_argument('--disable-title', action='store_true', help='Set this option to disable Title', required=False)
+parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
+parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
+parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
 
 
 # Parse the argument
@@ -146,13 +146,13 @@ for root, dirs, files in os.walk(image_captions_path):
                 title = ""
             
             #Clear data if command line data if flagged as disabled
-            if cmd_args.disable_exif == 'Yes':
+            if cmd_args.disable_exif is True:
                 cludge_camera_data = []
-            if cmd_args.disable_title == 'Yes': 
+            if cmd_args.disable_title is True: 
                     title = ""
-            if cmd_args.disable_desc == 'Yes': 
+            if cmd_args.disable_desc is True: 
                     desc = ""    
-            if cmd_args.disable_tags == 'Yes': 
+            if cmd_args.disable_tags is True: 
                     tags = ""
 
             # Simple filtering
@@ -272,7 +272,3 @@ for root, dirs, files in os.walk(image_captions_path):
             with open(appended_file, 'a', encoding='UTF-8') as fa:
                 fa.write(appended_contents)
                 fa.close
-
-           # with open(appended_file, 'a', encoding='UTF-8') as falog:
-           #     falog.write(image_captions_single_file)
-           #     falog.close

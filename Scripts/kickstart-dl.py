@@ -8,7 +8,8 @@ from pathlib import Path
 #This script is intended to be used with plain text only
 
 #List of supported sites.
-supported_filter_urls = ['www.reddit.com','www.unsplash.com']
+#supported_filter_urls = ['www.reddit.com','www.unsplash.com','www.artstation.com']
+supported_filter_urls = []
 #URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
 reddit_top = ['/top/?t=all','/top/?t=month']
 unsplash_search_filter = ['/cats?orientation=squarish']
@@ -106,7 +107,7 @@ if csv_mode == False:
                         eachdomain_top = eachdomain + topsearch
                         gallery_full_cmdarg.append(eachdomain_top)
                         result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True, encoding='UTF-8')
-                                        
+                        
                 if urlcheck == 'www.unsplash.com':
                     gallery_full_cmdarg.append(eachdomain)
                     result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
