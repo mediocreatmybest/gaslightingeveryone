@@ -8,9 +8,9 @@ from pathlib import Path
 # This script is intended to be used with plain text only
 
 # List of supported sites.
-supported_filter_urls = ['www.reddit.com','www.unsplash.com']
+supported_filter_urls = ['www.reddit.com', 'www.unsplash.com', 'www.artstation.com']
 # URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
-reddit_top = ['/top/?t=all','/top/?t=month']
+reddit_top = ['/top/?t=all', '/top/?t=month']
 unsplash_search_filter = ['/cats?orientation=squarish']
 artstation_search_filter = ['?sort_by=rank']
 
@@ -38,11 +38,11 @@ parser.add_argument('--directory', type=str, required=True)
 cmd_args = parser.parse_args()
 
 # Set Defaults if non selected
-if cmd_args.downloader == None:
+if cmd_args.downloader is None:
     cmd_args.downloader = 'gallery-dl'
-if cmd_args.type == None:
+if cmd_args.type is None:
     cmd_args.type = 'url'
-if cmd_args.txtmode == None:
+if cmd_args.txtmode is None:
     cmd_args.txtmode = 'plain'
 
 print('program selected is:', cmd_args.downloader)
@@ -118,8 +118,8 @@ if csv_mode == False:
                 #if (web1 != query and web2 != query and web3 != query):
                 #   print('This should only be triggered if Web1 and Web2 and Web3 are not found')
 
-                #Catch any websites that don't exist in the supported filter and do standard download
-                if (urlcheck != supported_filter_urls):
+                #Catch any websites that don't exist in supported filter
+                if urlcheck != supported_filter_urls:
                     gallery_full_cmdarg.append(eachdomain)
                     result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
 
@@ -130,9 +130,9 @@ if csv_mode == False:
 
     # Check if we are using a text file for data #Also this is broken.
     if is_url_data_type() is False:
-        txt_file = Path(rf'{txt_src}')  #Broken
-        print ('TXT MODE!')
-        print ('The test path is')
+        txt_file = Path(rf'{txt_src}')  # Broken
+        print('TXT MODE!')
+        print('The test path is')
         print(txt_file)
 
 
@@ -170,8 +170,8 @@ if csv_mode == True:
 #
 print('###############################')
 print('errors:')
-print (result.stderr)
+print(result.stderr)
 print('###############################')
 print('Results:')
-print (result.stdout)
+print(result.stdout)
 print('###############################')
