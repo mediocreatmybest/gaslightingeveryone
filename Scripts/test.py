@@ -15,13 +15,13 @@ config_parser = ConfigParser()
 
 # Get working directory
 workingdir = pathlib.Path.cwd()
-configfile = 'json2txt.conf'
+configfile = ['json2txt.conf','json2txt.ini']
 workingconfig = pathlib.Path(workingdir, configfile)
 read_files = config_parser.read(workingconfig)
 
 config_parser.read(workingconfig)
 
-print(config_parser.get('json2txt', 'filters'))
+print(config_parser.get('filter', 'web_config_reddit'))
 
 
 
