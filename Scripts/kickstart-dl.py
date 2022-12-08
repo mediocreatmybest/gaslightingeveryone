@@ -24,7 +24,7 @@ config_parser = ConfigParser()
 
 # Get the scripts parent directory so we can locate the config file
 
-workingdir = Path( __file__ ).parent
+workingdir = Path(__file__).parent
 # print('This is the script dir:', workingdir)
 
 # Name of working config file
