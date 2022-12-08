@@ -34,13 +34,13 @@ for root, dirs, files in os.walk(image_captions_path):
             image_captions_single_file_base_name = (os.path.splitext(file)[0])
             image_captions_single_file = image_captions_single_file_base_name
 
-            # load json file from os.walk search
+            #load json file from os.walk search
             with open(jsonfile, "r", encoding='UTF-8' ) as json_read:
             # returns JSON object as list or dictionary
                 data = json.load(json_read)
 
-            # Function to extract nested json data,
-            # https://hackersandslackers.com/extract-data-from-complex-json-python/
+            #Function to extract nested json data,
+            #https://hackersandslackers.com/extract-data-from-complex-json-python/
             def json_extract(obj, key):
                 # Recursively fetch values from nested JSON.
                 arr = []
@@ -61,8 +61,8 @@ for root, dirs, files in os.walk(image_captions_path):
                 values = extract(obj, arr, key)
                 return values
 
-            # Extract nested json via function
-            # print(json_extract(data, 'iso'))
+            #Extract nested json via function
+            #print(json_extract(data, 'iso'))
 
             iso = json_extract(data, 'iso')
             focal_length = json_extract(data, 'focal_length')
@@ -115,7 +115,7 @@ for root, dirs, files in os.walk(image_captions_path):
                 tags = ""
             if "location" in data:
                 location = ""
-                # location = str(data['location']) #why aren't these fields standardised? Am I so out of touch?... No it's the children that are wrong...
+                #location = str(data['location']) #why aren't these fields standardised? Am I so out of touch?... No it's the children that are wrong...
             else:
                 location = ""
             if "username" in data:
@@ -127,7 +127,7 @@ for root, dirs, files in os.walk(image_captions_path):
                 subreddit = str(data['subreddit_name_prefixed'])
             else:
                 subreddit = ""
-            # Deviantart
+            #Deviantart
             if "da_category" in data:
                 da_category = (data['da_category'])
             else:
@@ -188,10 +188,10 @@ for root, dirs, files in os.walk(image_captions_path):
             def listToString(cludge_camera_data):
                 # initialize a seperator string
                 seperator = ", "
-                # return string
+                #return string
                 return (seperator.join(cludge_camera_data))
 
-            # Move string into new variable to get camera cludge into output
+            #move string into new variable to get camera cludge into output
             final_cludge_camera_data = (listToString(cludge_camera_data))
 
             # Function to convert tags to string
@@ -201,17 +201,17 @@ for root, dirs, files in os.walk(image_captions_path):
                 #return string
                 return (seperator.join(tags))
 
-            # move string into new variable to get tags into output
+            #move string into new variable to get tags into output
             final_tags_string = (listToString(tags))
 
             # Function to convert Artstation data to string
             def listToString(as_data):
                 # initialize a seperator string
                 seperator = ", "
-                # return string
+                #return string
                 return (seperator.join(as_data))
 
-            # move string into new variable to get tags into output
+            #move string into new variable to get tags into output
             final_as_data = (listToString(as_data))
 
             # Make it easier on final output, append only existing results to a list
@@ -247,11 +247,11 @@ for root, dirs, files in os.walk(image_captions_path):
             if tags != "":
                 appended_output.append(final_tags_string.strip())
 
-            # Function to convert list to string with seperator
+            #Function to convert list to string with seperator
             def listToString(appended_output):
                 # initialize a seperator string
                 seperator = ", "
-                # return string
+                #return string
                 return (seperator.join(appended_output))
 
             return_appended_output = (listToString(appended_output))
@@ -261,7 +261,7 @@ for root, dirs, files in os.walk(image_captions_path):
             # Folder and File locations
             single_files = image_captions_single_file_base_dir + "\\" + image_captions_single_file + ".txt"
             appended_file = str(image_captions_path) + "\\" + image_captions_appended_file
-            # Appended file contents
+            #Appended file contents
             appended_contents = image_captions_single_file_base_dir + "\\" + image_captions_single_file + seperator + return_appended_output + "\n"
 
             # Create new file and overwrite if exists

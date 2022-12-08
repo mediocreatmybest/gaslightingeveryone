@@ -1,34 +1,41 @@
-import argparse
+
+import glob
+import pathlib
+import os
+from configparser import ConfigParser
+from pathlib import Path
 
 
-#https://towardsdatascience.com/a-simple-guide-to-command-line-arguments-with-argparse-6824c30ab1c3
-#https://docs.python.org/3/library/argparse.html
 
 
 
-# Create the parser
-parser = argparse.ArgumentParser()
-# Add an argument
-parser.add_argument('--downloader', type=str, choices=['gallery-dl', 'yt-dlp'], required=False)
-parser.add_argument('--type', type=str, choices=['url', 'file'], required=False)
-parser.add_argument('--txtmode', type=str, choices=['csv', 'plain'], required=False)
-parser.add_argument('--sourcelist', type=str, required=True)
-parser.add_argument('--directory', type=str, required=True)
+curr_file = pathlib.Path(__file__)
+#print(curr_file)
 
-# Parse the argument
-cmd_args = parser.parse_args()
-# Print "Hello" + the user input argument
 
-if cmd_args.downloader == None: 
-    print('Program type not selected, defaulting to gallery-dl')
-    cmd_args.downloader = 'gallery-dl'
-print('program selected is:', cmd_args.downloader)
-print('program type is:', cmd_args.type)
-print('program mode is:', cmd_args.txtmode)
-print('program sourcelist is:', cmd_args.sourcelist)
+#print('script dir',script_dir)
 
-gallery_extract_path = f'--directory {cmd_args.directory}'
-ytdlp_dl_path = f'--output {cmd_args.directory}'
 
-print(gallery_extract_path)
-print(ytdlp_dl_path)
+# http://pymotw.com/2/ConfigParser/
+# https://linuxhint.com/python-configparser-example/
+# https://zetcode.com/python/configparser/
+# https://csatlas.com/python-script-path/
+
+config_parser = ConfigParser()
+
+# Get working directory
+#workingdir = pathlib.Path.cwd()
+workingdir = Path( __file__ ).parent.absolute()
+print('This is the script dir:', workingdir)
+configfile = 'conf.ini'
+workingconfig = pathlib.Path.joinpath(workingdir, configfile)
+read_files = config_parser.read(workingconfig)
+
+print('location of config:', workingconfig)
+config_parser.read(workingconfig)
+print(config_parser.get('web_config_reddit', 'filter'))
+print(config_parser.get('global', 'mode'))
+
+
+
+

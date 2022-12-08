@@ -2,47 +2,54 @@ import subprocess
 import csv
 import urllib
 import urllib.request
+from configparser import ConfigParser
 import argparse
+import pathlib
 from pathlib import Path
 
-# This script is intended to be used with plain text only
+#This script is intended to be used with plain text only
 
-# List of supported sites.
-supported_filter_urls = ['www.reddit.com', 'www.unsplash.com', 'www.artstation.com']
-# URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
-reddit_top = ['/top/?t=all', '/top/?t=month']
+#List of supported sites.
+supported_filter_urls = ['www.reddit.com','www.unsplash.com']
+#URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
+reddit_top = ['/top/?t=all','/top/?t=month']
 unsplash_search_filter = ['/cats?orientation=squarish']
 artstation_search_filter = ['?sort_by=rank']
 
-# Gallery-DL defaults
+#Gallery-DL defaults
 gallery_cmd ='gallery-dl'
 gallery_arg = '--write-metadata --sleep 2-4 --range 1-1'
 
+# Name of working config file
+# *Todo: * Switch this to a list, just because
+configfile = 'config.ini'
 
-# YT-DLP Defaults ######## To do ######
+#YT-DLP Defaults ######## To do ######
 ytdlp_cmd = 'yt-dlp'
 ytdlp_arg = '--write-info-json'
 
+# Set how to read the contents of the config
+read_files = config_parser.read(workingconfig)
 
 # Create the parser
 parser = argparse.ArgumentParser()
-# Add an argument
+# Command line arguments will overrule the config file (ideally)
 parser.add_argument('--downloader', type=str, choices=['gallery-dl', 'yt-dlp'], required=False)
 parser.add_argument('--type', type=str, choices=['url', 'file'], required=False)
-parser.add_argument('--txtmode', type=str, choices=['csv', 'plain'], required=False)
-parser.add_argument('--sourcelist', type=str, required=True)
-parser.add_argument('--directory', type=str, required=True)
+parser.add_argument('--mode', type=str, choices=['csv', 'txt'], required=False)
+parser.add_argument('--sourcelist', type=str, required=False)
+parser.add_argument('--directory', type=str, required=False)
 
 
 # Parse the argument
-cmd_args = parser.parse_args()
+CMD_ARGS = parser.parse_args()
 
-# Set Defaults if non selected
-if cmd_args.downloader is None:
+#Set Defaults if non selected
+if cmd_args.downloader == None:
     cmd_args.downloader = 'gallery-dl'
-if cmd_args.type is None:
+if cmd_args.type == None:
     cmd_args.type = 'url'
-if cmd_args.txtmode is None:
+if cmd_args.txtmode == None:
     cmd_args.txtmode = 'plain'
 
 print('program selected is:', cmd_args.downloader)
@@ -51,43 +58,63 @@ print('program mode is:', cmd_args.txtmode)
 print('program source list is:', cmd_args.sourcelist)
 
 
-# Set this based on command line arguments or defaults
+#Set this based on command line arguments or defaults
 if cmd_args.txtmode == 'plain':
     csv_mode = False
 else:
-    csv_mode = True
+    TXT_SRC = CMD_ARGS.sourcelist
 
-# Set this based on command line arguments or defaults
+#Set this based on command line arguments or defaults
 if cmd_args.type == 'url':
     file_mode = False
 else:
-    file_mode = True
+    GALLERY_EXTRACT_PATH = f'--directory {CMD_ARGS.directory}'
+    YTDLP_DL_PATH = f'--output {CMD_ARGS.directory}'
 
-# Set this based on command line arguments
-# Currently file source is broken, only a url with raw text will work
+print('program selected is:', CMD_ARGS.downloader)
+print('source list type is:', SRC_LIST_TYPE)
+print('The global mode is:', GLOBAL_MODE)
+print('program source list is:', TXT_SRC)
+
+#Set this based on command line arguments
+#Currently file source is broken, only a url with raw text will work
 txt_src = cmd_args.sourcelist
 
-# Set directory location based off command line arguments
+#Set directory location based off command line arguments
 gallery_extract_path = f'--directory {cmd_args.directory}'
 ytdlp_dl_path = f'--output {cmd_args.directory}'
 
-# Organise defaults into single string
+#Organise defaults into single string
 gallery_full_cmdarg = gallery_cmd.split() + gallery_extract_path.split() + gallery_arg.split()
 
-# Doesn't really need to be a function but might as well see if this works.
-# Function to check if the data is parsed as a url, might not be the best way to do it.
+#Doesn't really need to be a function but might as well see if this works.
+#Function to check if the data is parsed as a url, might not be the best way to do it.
 def is_url_data_type():
-    #print('Checking if text source is URL')
-    function_url = urllib.parse.urlparse(txt_src)
-    if function_url != '':
-        return True
-    else:
-        return False
+        print('Checking if text source is URL')
+        function_url = urllib.parse.urlparse(TXT_SRC)
+        # print(function_url.path)
+        # print(function_url)
+        if function_url.netloc == '':
+            print('netloc is empty')
+            print('path is:', function_url.path)
+            print('this does not pass the url sniff test')
+            return False
+        else:
+            print('netloc has data')
+            print('netloc is:', function_url.netloc)
+            return True
+
 
 # Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
 # https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
 
-# Using plain text data as input data
+print('global is now:',  GLOBAL_MODE)
+print('SRC_LIST is now:',  SRC_LIST_TYPE)
+
+#Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
+#https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
+
+#Using plain text data as input data
 if csv_mode == False:
     #Check if we are using a websites data
     if is_url_data_type() is True:
@@ -118,8 +145,8 @@ if csv_mode == False:
                 #if (web1 != query and web2 != query and web3 != query):
                 #   print('This should only be triggered if Web1 and Web2 and Web3 are not found')
 
-                #Catch any websites that don't exist in supported filter
-                if urlcheck != supported_filter_urls:
+                #Catch any websites that don't exist in the supported filter and do standard download
+                if (urlcheck != supported_filter_urls):
                     gallery_full_cmdarg.append(eachdomain)
                     result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
 
@@ -128,15 +155,15 @@ if csv_mode == False:
 
 
 
-    # Check if we are using a text file for data #Also this is broken.
+    #Check if we are using a text file for data #Also this is broken.
     if is_url_data_type() is False:
-        txt_file = Path(rf'{txt_src}')  # Broken
-        print('TXT MODE!')
-        print('The test path is')
+        txt_file = Path(rf'{txt_src}')  #Broken
+        print ('TXT MODE!')
+        print ('The test path is')
         print(txt_file)
 
 
-# Using CSV seperated data instead of plain text.
+#Using CSV seperated data instead of plain text.
 if csv_mode == True:
     with open(txt_file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -161,7 +188,7 @@ if csv_mode == True:
 #    print('###############################')
 #    print('\n')
 
-# if result.stderr:
+#if result.stderr:
 #    print('\n')
 #    print('###############################')
 #    print('Errors found, please check logs')
@@ -170,8 +197,8 @@ if csv_mode == True:
 #
 print('###############################')
 print('errors:')
-print(result.stderr)
+print (result.stderr)
 print('###############################')
 print('Results:')
-print(result.stdout)
+print (result.stdout)
 print('###############################')
