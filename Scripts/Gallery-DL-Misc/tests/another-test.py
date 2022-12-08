@@ -22,8 +22,6 @@ txt_src = 'http://x.x.x.x/example.txt'
 #URL filters for supported websites (reddit, etc.) This will allow us to loop through each prefered top search
 #To Do: Check other websites
 reddit_top = ['/top/?t=all','/top/?t=month']
-unsplash_search_filter = ['/cats?orientation=squarish']
-artstation_search_filter = ['?sort_by=rank']
 
 #Gallery-DL defaults
 gallery_cmd ='gallery-dl'

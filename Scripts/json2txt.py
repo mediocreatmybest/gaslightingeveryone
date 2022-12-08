@@ -1,28 +1,13 @@
 import json
 import os
 import re
-import argparse
+import sys
+#import codecs #Will we need this later...
 from pathlib import Path
 
-# Create the parser
-parser = argparse.ArgumentParser()
-# Add an argument
-parser.add_argument('--imagedir', type=str, help='Image directory to caption', metavar='c:\images', required=True)
-# Add arguments to disable unwanted data
-parser.add_argument('--disable-title', action='store_true', help='Set this option to disable Title', required=False)
-parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
-parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
-parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
-
-
-# Parse the argument
-cmd_args = parser.parse_args()
-
-
-# Sets the Image and json directory from arguemnts
+#image and json directory
 # To do: not delete old caption data and back it up.
-
-image_captions_path = Path(rf"{cmd_args.imagedir}")
+image_captions_path = Path(r"C:\images")
 image_captions_appended_file = "appended_captions.txt"
 seperator = ", "
 
@@ -39,10 +24,10 @@ for root, dirs, files in os.walk(image_captions_path):
             # returns JSON object as list or dictionary
                 data = json.load(json_read)
 
-            #Function to extract nested json data,
-            #https://hackersandslackers.com/extract-data-from-complex-json-python/
+            # Function to extract nested json data
+            # https://hackersandslackers.com/extract-data-from-complex-json-python
             def json_extract(obj, key):
-                # Recursively fetch values from nested JSON.
+                #Recursively fetch values from nested JSON.
                 arr = []
 
                 def extract(obj, arr, key):
@@ -70,8 +55,8 @@ for root, dirs, files in os.walk(image_captions_path):
             aperture = json_extract(data, 'aperture')
             shutter_speed = json_extract(data, 'shutter_speed')
 
-            # Cludge json data together even if it isn't listed as exif
-            # Check if value actually has useful data, there has to be a better way to do this...
+            #Cludge json data together even if it isn't listed as exif
+            #Check if value actually has useful data, there has to be a better way to do this...
             cludge_camera_data = []
             if iso:
                 cludge_iso = "ISO: " + str(iso[0])
@@ -100,7 +85,7 @@ for root, dirs, files in os.walk(image_captions_path):
                 json_category = (data['category'])
             else:
                 json_category = ""
-            # Global fields
+            #Global fields
             if "title" in data:
                 title = (data['title'])
             else:
@@ -122,7 +107,7 @@ for root, dirs, files in os.walk(image_captions_path):
                 username = (data['username'])
             else:
                 username = ""
-            # Reddit
+            #Reddit
             if "subreddit_name_prefixed" in data:
                 subreddit = str(data['subreddit_name_prefixed'])
             else:
@@ -132,28 +117,19 @@ for root, dirs, files in os.walk(image_captions_path):
                 da_category = (data['da_category'])
             else:
                 da_category = ""
-            # Artstation
+            #Artstation
             if json_category == "artstation":
                 as_data = json_extract(data, 'name')
                 as_username = json_extract(data, 'username')
             else:
                 as_data = ""
                 as_username = ""
-            # Catch null or nothing values before it gets passed to regex
+
+            #Catch null or nothing values before it gets passed to regex
             if desc is None:
                 desc = ""
             if title is None:
                 title = ""
-
-            # Clear data if command line data if flagged as disabled
-            if cmd_args.disable_exif is True:
-                cludge_camera_data = []
-            if cmd_args.disable_title is True:
-                    title = ""
-            if cmd_args.disable_desc is True:
-                    desc = ""
-            if cmd_args.disable_tags is True:
-                    tags = ""
 
             # Simple filtering
             # Remove text, html href links, and new lines
@@ -161,32 +137,32 @@ for root, dirs, files in os.walk(image_captions_path):
             exclusions = '|'.join(exclusionList)
             title = re.sub(exclusions, '', title)
             desc = re.sub(exclusions, '', desc)
-            # remove explicit :wiki: word, unable to get this to work any other way
+            #remove explicit :wiki: word, unable to get this to work any other way
             desc = re.sub(r'\:wiki\:', ' ', desc)
             title = re.sub(r'\:wiki\:', ' ', title)
-            # remove triple and double dots
+            #remove triple and double dots
             desc = re.sub(r'\.\.\.', ' ', desc)
             title = re.sub(r'\.\.\.', ' ', title)
             desc = re.sub(r'\.\.', ' ', desc)
             title = re.sub(r'\.\.', ' ', title)
-            # Change any " ~ " to simple space
+            #Change any " ~ " to simple space
             desc = re.sub(r' ~ ', ' ', desc)
             title = re.sub(r' ~ ', ' ', title)
-            # Change any " - " to simple space
+            #Change any " - " to simple space
             desc = re.sub(r' - ', ' ', desc)
             title = re.sub(r' - ', ' ', title)
-            # remove some additional symbols
+            #remove some additional symbols
             desc = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', desc)
             title = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', title)
-            # If we leave behind any double spaces, change them to single space.
+            #If we leave behind any double spaces, change them to single space.
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
-            # Final removal of all non-standard characters that break strings being selected, uncomment if needed.
-            # desc = re.sub(r"[^-/().&' \w]|_", '', desc)
-            # title = re.sub(r"[^-/().&' \w]|_", '', title)
-            # Function to convert cludged camera data to string
+            #Final removal of all non-standard characters that break strings being selected, uncomment if needed.
+            #desc = re.sub(r"[^-/().&' \w]|_", '', desc)
+            #title = re.sub(r"[^-/().&' \w]|_", '', title)
+            #Function to convert cludged camera data to string
             def listToString(cludge_camera_data):
-                # initialize a seperator string
+                #initialize a seperator string
                 seperator = ", "
                 #return string
                 return (seperator.join(cludge_camera_data))
@@ -194,7 +170,7 @@ for root, dirs, files in os.walk(image_captions_path):
             #move string into new variable to get camera cludge into output
             final_cludge_camera_data = (listToString(cludge_camera_data))
 
-            # Function to convert tags to string
+            #Function to convert tags to string
             def listToString(tags):
                 #initialize a seperator string
                 seperator = ", "
@@ -204,9 +180,9 @@ for root, dirs, files in os.walk(image_captions_path):
             #move string into new variable to get tags into output
             final_tags_string = (listToString(tags))
 
-            # Function to convert Artstation data to string
+                        #Function to convert tags to string
             def listToString(as_data):
-                # initialize a seperator string
+                #initialize a seperator string
                 seperator = ", "
                 #return string
                 return (seperator.join(as_data))
@@ -214,7 +190,7 @@ for root, dirs, files in os.walk(image_captions_path):
             #move string into new variable to get tags into output
             final_as_data = (listToString(as_data))
 
-            # Make it easier on final output, append only existing results to a list
+            #Make it easier on final output, append only existing results to a list
             appended_output = []
 
             if title != "":
@@ -249,22 +225,22 @@ for root, dirs, files in os.walk(image_captions_path):
 
             #Function to convert list to string with seperator
             def listToString(appended_output):
-                # initialize a seperator string
+                #initialize a seperator string
                 seperator = ", "
                 #return string
                 return (seperator.join(appended_output))
 
             return_appended_output = (listToString(appended_output))
 
-            # Seperator for output
+            #Seperator for output
             seperator = ", "
-            # Folder and File locations
+            #Folder and File locations
             single_files = image_captions_single_file_base_dir + "\\" + image_captions_single_file + ".txt"
             appended_file = str(image_captions_path) + "\\" + image_captions_appended_file
             #Appended file contents
             appended_contents = image_captions_single_file_base_dir + "\\" + image_captions_single_file + seperator + return_appended_output + "\n"
 
-            # Create new file and overwrite if exists
+            #Create new file and overwrite if exists
             with open(single_files, 'w', encoding='UTF-8') as f:
                 f.write(return_appended_output)
                 f.close
@@ -272,3 +248,7 @@ for root, dirs, files in os.walk(image_captions_path):
             with open(appended_file, 'a', encoding='UTF-8') as fa:
                 fa.write(appended_contents)
                 fa.close
+
+           # with open(appended_file, 'a', encoding='UTF-8') as falog:
+           #     falog.write(image_captions_single_file)
+           #     falog.close

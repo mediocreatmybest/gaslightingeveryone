@@ -7,26 +7,32 @@ import argparse
 import pathlib
 from pathlib import Path
 
-#This script is intended to be used with plain text only
+# This script is intended to be used with plain text only
 
-#List of supported sites.
-supported_filter_urls = ['www.reddit.com','www.unsplash.com']
-#URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
-reddit_top = ['/top/?t=all','/top/?t=month']
-unsplash_search_filter = ['/cats?orientation=squarish']
-artstation_search_filter = ['?sort_by=rank']
+# List of supported sites.
+SUPPORTED_FILTER_URLS = ['www.reddit.com','www.unsplash.com', 'www.artstation.com']
 
-#Gallery-DL defaults
-gallery_cmd ='gallery-dl'
-gallery_arg = '--write-metadata --sleep 2-4 --range 1-1'
+# Gallery-DL defaults
+GALLER_CMD ='gallery-dl'
+GALLERY_ARG = '--write-metadata --sleep 2-4 --range 1-1'
+
+# YT-DLP Defaults ######## To do ######
+YTDLP_CMD = 'yt-dlp'
+YTDLP_ARG = '--write-info-json'
+
+config_parser = ConfigParser()
+
+# Get the scripts parent directory so we can locate the config file
+
+workingdir = Path( __file__ ).parent.absolute()
+# print('This is the script dir:', workingdir)
 
 # Name of working config file
 # *Todo: * Switch this to a list, just because
 configfile = 'config.ini'
 
-#YT-DLP Defaults ######## To do ######
-ytdlp_cmd = 'yt-dlp'
-ytdlp_arg = '--write-info-json'
+# Join the working parent directory with the config file
+workingconfig = pathlib.Path.joinpath(workingdir, configfile)
 
 # Set how to read the contents of the config
 read_files = config_parser.read(workingconfig)
@@ -44,29 +50,28 @@ parser.add_argument('--directory', type=str, required=False)
 # Parse the argument
 CMD_ARGS = parser.parse_args()
 
-#Set Defaults if non selected
-if cmd_args.downloader == None:
-    cmd_args.downloader = 'gallery-dl'
-if cmd_args.type == None:
-    cmd_args.type = 'url'
-if cmd_args.txtmode == None:
-    cmd_args.txtmode = 'plain'
+# Set Defaults if non selected
+if CMD_ARGS.downloader is None:
+    CMD_ARGS.downloader = 'gallery-dl'
+if CMD_ARGS.type is None:
+    SRC_LIST_TYPE = config_parser.get('src_list', 'type')
+else:
+    SRC_LIST_TYPE = CMD_ARGS.type
 
-print('program selected is:', cmd_args.downloader)
-print('program type is:', cmd_args.type)
-print('program mode is:', cmd_args.txtmode)
-print('program source list is:', cmd_args.sourcelist)
-
-
-#Set this based on command line arguments or defaults
-if cmd_args.txtmode == 'plain':
-    csv_mode = False
+if CMD_ARGS.mode is None:
+    GLOBAL_MODE = config_parser.get('global', 'mode')
+else:
+    GLOBAL_MODE = CMD_ARGS.mode
+if CMD_ARGS.sourcelist is None:
+    TXT_SRC = config_parser.get('src_list', 'txt_src')
 else:
     TXT_SRC = CMD_ARGS.sourcelist
 
-#Set this based on command line arguments or defaults
-if cmd_args.type == 'url':
-    file_mode = False
+# Set directory location based off command line arguments or config file
+if CMD_ARGS.directory is None:
+    DIRLOC = config_parser.get('global', 'directory')
+    GALLERY_EXTRACT_PATH = f'--directory {DIRLOC}'
+    YTDLP_DL_PATH = f'--output {DIRLOC}'
 else:
     GALLERY_EXTRACT_PATH = f'--directory {CMD_ARGS.directory}'
     YTDLP_DL_PATH = f'--output {CMD_ARGS.directory}'
@@ -76,19 +81,17 @@ print('source list type is:', SRC_LIST_TYPE)
 print('The global mode is:', GLOBAL_MODE)
 print('program source list is:', TXT_SRC)
 
-#Set this based on command line arguments
-#Currently file source is broken, only a url with raw text will work
-txt_src = cmd_args.sourcelist
+# URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
+REDDIT_TOP = config_parser.get('web_config_reddit', 'filter')
+UNSPLASH_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
+ARTSTATION_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
 
-#Set directory location based off command line arguments
-gallery_extract_path = f'--directory {cmd_args.directory}'
-ytdlp_dl_path = f'--output {cmd_args.directory}'
+# Organise defaults into single string
+GALLERY_FULLCMDARG = GALLER_CMD.split() + GALLERY_EXTRACT_PATH.split() + GALLERY_ARG.split()
 
-#Organise defaults into single string
-gallery_full_cmdarg = gallery_cmd.split() + gallery_extract_path.split() + gallery_arg.split()
+# Doesn't really need to be a function but might as well see if this works.
+# Function to check if the data is parsed as a url, might not be the best way to do it.
 
-#Doesn't really need to be a function but might as well see if this works.
-#Function to check if the data is parsed as a url, might not be the best way to do it.
 def is_url_data_type():
         print('Checking if text source is URL')
         function_url = urllib.parse.urlparse(TXT_SRC)
@@ -111,77 +114,78 @@ def is_url_data_type():
 print('global is now:',  GLOBAL_MODE)
 print('SRC_LIST is now:',  SRC_LIST_TYPE)
 
-#Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
-#https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
 
-#Using plain text data as input data
-if csv_mode == False:
-    #Check if we are using a websites data
+# Using plain text data as input data
+if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
+    print('GLOBAL MODE IS TXT AND SRC LIST TYPE IS URL')
+    # Check if we are using a websites data
     if is_url_data_type() is True:
-        txt_url = txt_src
-        with urllib.request.urlopen(txt_url) as txt_read:
-            #Read, decode and then split the final data from the webserver to allow reading each line
-            rawoutput = txt_read.read().decode('utf-8').split()
-            #Loop through each line
+        TXT_URL = TXT_SRC
+        print(TXT_URL)
+        with urllib.request.urlopen(TXT_URL) as TXT_READ:
+            # Read, decode and then split the final data from the webserver to allow reading each line
+            rawoutput = TXT_READ.read().decode('UTF-8').split()
+            # Loop through each line
             for eachdomain in rawoutput:
 
-                #Do a check against each domain as they may have different options
-                #Create URL Check Variable, not sure if this will work...
+                # Do a check against each domain as they may have different options
+                # Create URL Check Variable, not sure if this will work...
                 urlcheck = urllib.parse.urlparse(eachdomain).netloc
                 if urlcheck == 'www.reddit.com':
-                    for topsearch in reddit_top:
-                        eachdomain_top = eachdomain + topsearch
-                        gallery_full_cmdarg.append(eachdomain_top)
-                        result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True, encoding='UTF-8')
+                    for topsearch in REDDIT_TOP:
+                        EACHDOMAIN_TOP = eachdomain + topsearch
+                        GALLERY_FULLCMDARG.append(EACHDOMAIN_TOP)
+                        print('Reddit! Beep Boop!')
+                        #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True, encoding='UTF-8')
 
                 if urlcheck == 'www.unsplash.com':
-                    gallery_full_cmdarg.append(eachdomain)
-                    result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
+                    GALLERY_FULLCMDARG.append(eachdomain)
+                    print('Unsplash! Beep! Boop!')
+                    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
                 if urlcheck == 'www.artstation.com':
-                    gallery_full_cmdarg.append(eachdomain)
-                    result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
+                    GALLERY_FULLCMDARG.append(eachdomain)
+                    print('Artstation! Beep Boop!')
+                    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
-                #if (web1 != query and web2 != query and web3 != query):
-                #   print('This should only be triggered if Web1 and Web2 and Web3 are not found')
-
-                #Catch any websites that don't exist in the supported filter and do standard download
-                if (urlcheck != supported_filter_urls):
-                    gallery_full_cmdarg.append(eachdomain)
-                    result = subprocess.run(gallery_full_cmdarg, capture_output=True, text=True)
-
+                # Catch any websites that don't exist in the supported filter and do standard download
+                if (urlcheck != SUPPORTED_FILTER_URLS):
+                    GALLERY_FULLCMDARG.append(eachdomain)
+                    print('CATCHALL! Beep Boop!')
+                    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
 
 
 
 
-    #Check if we are using a text file for data #Also this is broken.
+
+    ##Check if we are using a text file for data #Also this is broken.
     if is_url_data_type() is False:
-        txt_file = Path(rf'{txt_src}')  #Broken
+        TXT_FILE = Path(rf'{TXT_SRC}')
         print ('TXT MODE!')
         print ('The test path is')
-        print(txt_file)
+        print(TXT_FILE)
 
 
 #Using CSV seperated data instead of plain text.
-if csv_mode == True:
-    with open(txt_file) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            download = (row[0])
-            #domain_details = (row[1])
-            url = urllib.parse.urlparse(row[0])
-            print(url.netloc)
-            #print(is_valid_hostname(download))
-            print('CSV MODE!')
+#if GLOBAL_MODE == 'csv':
+#    with open(TXT_FILE) as csv_file:
+#        csv_reader = csv.reader(csv_file, delimiter=',')
+#        for row in csv_reader:
+#            download = (row[0])
+#            #domain_details = (row[1])
+#            url = urllib.parse.urlparse(row[0])
+#            print(url.netloc)
+#            #print(is_valid_hostname(download))
+#            print('CSV MODE!')
 
 
 
 
 
-# Give single message, or two.
+#Give single message, or two.
 
-# if result.stdout:
+#if result.stdout:
 #    print('\n')
 #    print('###############################')
 #    print('Progress was made! Check logs.')
@@ -195,10 +199,10 @@ if csv_mode == True:
 #    print('###############################')
 #    print('\n')
 #
-print('###############################')
-print('errors:')
-print (result.stderr)
-print('###############################')
-print('Results:')
-print (result.stdout)
-print('###############################')
+#print('###############################')
+#print('errors:')
+#print (result.stderr)
+#print('###############################')
+#print('Results:')
+#print (result.stdout)
+#print('###############################')
