@@ -81,7 +81,8 @@ print('source list type is:', SRC_LIST_TYPE)
 print('The global mode is:', GLOBAL_MODE)
 print('program source list is:', TXT_SRC)
 
-# URL filters for supported websites (reddit, etc.) This will allow us to loop through each type of top search
+# URL filters for supported websites (reddit, etc.)
+# This will allow us to loop through each type of top search
 REDDIT_TOP = config_parser.get('web_config_reddit', 'filter')
 UNSPLASH_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
 ARTSTATION_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
@@ -125,7 +126,8 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
         TXT_URL = TXT_SRC
         print(TXT_URL)
         with urllib.request.urlopen(TXT_URL) as TXT_READ:
-            # Read, decode and then split the final data from the webserver to allow reading each line
+            # Read, decode and then split the final data
+            # from the webserver to allow reading each line
             rawoutput = TXT_READ.read().decode('UTF-8').split()
             # Loop through each line
             for eachdomain in rawoutput:
@@ -138,7 +140,10 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
                         EACHDOMAIN_TOP = eachdomain + topsearch
                         GALLERY_FULLCMDARG.append(EACHDOMAIN_TOP)
                         print('Reddit! Beep Boop!')
-                        #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True, encoding='UTF-8')
+                        #result = subprocess.run(GALLERY_FULLCMDARG,
+                        #         capture_output=True,
+                        #         text=True,
+                        #         encoding='UTF-8')
 
                 if urlcheck == 'www.unsplash.com':
                     GALLERY_FULLCMDARG.append(eachdomain)
