@@ -160,11 +160,11 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
 
 
     ##Check if we are using a text file for data #Also this is broken.
-    #if is_url_data_type() is False:
-    #    TXT_FILE = Path(rf'{TXT_SRC}')  #Broken
-    #    print ('TXT MODE!')
-    #    print ('The test path is')
-    #    print(TXT_FILE)
+    if is_url_data_type() is False:
+        TXT_FILE = Path(rf'{TXT_SRC}')
+        print ('TXT MODE!')
+        print ('The test path is')
+        print(TXT_FILE)
 
 
 #Using CSV seperated data instead of plain text.
