@@ -113,8 +113,8 @@ def is_url_data_type():
 # Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
 # https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
 
-print('global is now:',  GLOBAL_MODE)
-print('SRC_LIST is now:',  SRC_LIST_TYPE)
+print('global is now:', GLOBAL_MODE)
+print('SRC_LIST is now:', SRC_LIST_TYPE)
 
 
 # Using plain text data as input data
