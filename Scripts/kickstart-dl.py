@@ -10,10 +10,10 @@ from pathlib import Path
 # This script is intended to be used with plain text only
 
 # List of supported sites.
-SUPPORTED_FILTER_URLS = ['www.reddit.com','www.unsplash.com', 'www.artstation.com']
+SUPPORTED_FILTER_URLS = ['www.reddit.com', 'www.unsplash.com', 'www.artstation.com']
 
 # Gallery-DL defaults
-GALLER_CMD ='gallery-dl'
+GALLER_CMD = 'gallery-dl'
 GALLERY_ARG = '--write-metadata --sleep 2-4 --range 1-1'
 
 # YT-DLP Defaults ######## To do ######
@@ -24,7 +24,7 @@ config_parser = ConfigParser()
 
 # Get the scripts parent directory so we can locate the config file
 
-workingdir = Path( __file__ ).parent.absolute()
+workingdir = Path( __file__ ).parent
 # print('This is the script dir:', workingdir)
 
 # Name of working config file
@@ -93,6 +93,8 @@ GALLERY_FULLCMDARG = GALLER_CMD.split() + GALLERY_EXTRACT_PATH.split() + GALLERY
 # Function to check if the data is parsed as a url, might not be the best way to do it.
 
 def is_url_data_type():
+        """Is this a URL or a Filesystem location, returns: True or False"""
+
         print('Checking if text source is URL')
         function_url = urllib.parse.urlparse(TXT_SRC)
         # print(function_url.path)
@@ -149,7 +151,7 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
                     #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
                 # Catch any websites that don't exist in the supported filter and do standard download
-                if (urlcheck != SUPPORTED_FILTER_URLS):
+                if urlcheck != SUPPORTED_FILTER_URLS:
                     GALLERY_FULLCMDARG.append(eachdomain)
                     print('CATCHALL! Beep Boop!')
                     #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
@@ -162,8 +164,8 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
     ##Check if we are using a text file for data #Also this is broken.
     if is_url_data_type() is False:
         TXT_FILE = Path(rf'{TXT_SRC}')
-        print ('TXT MODE!')
-        print ('The test path is')
+        print('TXT MODE!')
+        print('The test path is:')
         print(TXT_FILE)
 
 
