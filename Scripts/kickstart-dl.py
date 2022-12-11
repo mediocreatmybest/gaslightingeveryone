@@ -1,11 +1,15 @@
 import subprocess
 import csv
+import sys
 import urllib
 import urllib.request
 from configparser import ConfigParser
 import argparse
 import pathlib
 from pathlib import Path
+from tqdm import tqdm
+
+
 
 # This script is intended to be used with plain text only
 
@@ -13,7 +17,7 @@ from pathlib import Path
 SUPPORTED_FILTER_URLS = ['www.reddit.com', 'www.unsplash.com', 'www.artstation.com']
 
 # Gallery-DL defaults
-GALLER_CMD = 'gallery-dl'
+GALLERY_CMD = 'gallery-dl'
 GALLERY_ARG = '--write-metadata --sleep 2-4 --range 1-1'
 
 # YT-DLP Defaults ######## To do ######
@@ -88,7 +92,7 @@ UNSPLASH_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
 ARTSTATION_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
 
 # Organise defaults into single string
-GALLERY_FULLCMDARG = GALLER_CMD.split() + GALLERY_EXTRACT_PATH.split() + GALLERY_ARG.split()
+GALLERY_FULLCMDARG = GALLERY_CMD.split() + GALLERY_EXTRACT_PATH.split() + GALLERY_ARG.split()
 
 # Doesn't really need to be a function but might as well see if this works.
 # Function to check if the data is parsed as a url, might not be the best way to do it.
@@ -110,6 +114,9 @@ def is_url_data_type():
             print('netloc is:', function_url.netloc)
             return True
 
+def run_task(task, t):
+    s = subprocess.Popen(task, shell=True, stdout=subprocess.PIPE)
+    t.write(s.stdout.readline().decode("utf-8"))
 
 # Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
 # https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
@@ -135,15 +142,35 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
                 # Do a check against each domain as they may have different options
                 # Create URL Check Variable, not sure if this will work...
                 urlcheck = urllib.parse.urlparse(eachdomain).netloc
+                print(urlcheck)
                 if urlcheck == 'www.reddit.com':
-                    for topsearch in REDDIT_TOP:
-                        EACHDOMAIN_TOP = eachdomain + topsearch
-                        GALLERY_FULLCMDARG.append(EACHDOMAIN_TOP)
-                        print('Reddit! Beep Boop!')
+                    #for topsearch in REDDIT_TOP:
+                        #EACHDOMAIN_TOP = eachdomain + topsearch
+                        #GALLERY_FULLCMDARG.append(EACHDOMAIN_TOP)
+                        
+                        #print('Reddit! Beep Boop!')
+                        print(GALLERY_FULLCMDARG, eachdomain)
+                        
                         #result = subprocess.run(GALLERY_FULLCMDARG,
                         #         capture_output=True,
                         #         text=True,
                         #         encoding='UTF-8')
+                        #Example from : https://gist.github.com/timothymugayi/fee21fd931d3b03ed62a32c14534bc96 
+                        #with tqdm(unit='Downloads', unit_scale=True, miniters=1, desc="run_task={}".format(GALLERY_FULLCMDARG + eachdomain)) as t:
+                        #    process = subprocess.Popen(GALLERY_FULLCMDARG + eachdomain, shell=True, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
+                        #    stderr=subprocess.PIPE)
+
+                        #    # print subprocess output line-by-line as soon as its stdout buffer is flushed in Python 3:
+                        #    for line in process.stdout:
+                        #        t.update()
+                        #        # forces stdout to "flush" the buffer
+                        #        sys.stdout.flush()
+
+                        #    process.stdout.close()
+                       
+
+
+                        
 
                 if urlcheck == 'www.unsplash.com':
                     GALLERY_FULLCMDARG.append(eachdomain)
@@ -156,10 +183,12 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
                     #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
                 # Catch any websites that don't exist in the supported filter and do standard download
-                if urlcheck != SUPPORTED_FILTER_URLS:
-                    GALLERY_FULLCMDARG.append(eachdomain)
-                    print('CATCHALL! Beep Boop!')
-                    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
+                #if urlcheck != SUPPORTED_FILTER_URLS:
+                #    GALLERY_FULLCMDARG.append(eachdomain)
+                #    print (urlcheck)
+                #    print(GALLERY_FULLCMDARG)
+                #    print('CATCHALL! Beep Boop!')
+                #    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
 
 
