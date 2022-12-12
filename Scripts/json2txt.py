@@ -2,32 +2,70 @@ import json
 import os
 import re
 import argparse
+from configparser import ConfigParser
+from tqdm import tqdm
 from pathlib import Path
+import pathlib
 
-# Create the parser
+# Define our functions, doesn't seem to work
+#Function to extract nested json data
+#https://hackersandslackers.com/extract-data-from-complex-json-python/
+def json_extract(obj, key):
+    """Recursively fetch values from nested JSON."""
+    arr = []
+    def extract(obj, arr, key):
+    # Recursively search for values of key in JSON tree
+        if isinstance(obj, dict):
+         for k, v in obj.items():
+            if isinstance(v, (dict, list)):
+                extract(v, arr, key)
+            elif k == key:
+                arr.append(v)
+            elif isinstance(obj, list):
+                for item in obj:
+                    extract(item, arr, key)
+            return arr
+    values = extract(obj, arr, key)
+    return values
+
+# Create the arg parser
 parser = argparse.ArgumentParser()
 # Add an argument
-parser.add_argument('--imagedir', type=str, help='Image directory to caption', metavar='c:\images', required=True)
+parser.add_argument('--imagedir', type=str, help='Image directory to caption', metavar='c:\images', required=False)
 # Add arguments to disable unwanted data
 parser.add_argument('--disable-title', action='store_true', help='Set this option to disable Title', required=False)
 parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
 parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
 parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
 
-
 # Parse the argument
 cmd_args = parser.parse_args()
 
+# Create ConfigParser
+config_parser = ConfigParser()
+# Get the scripts parent directory so we can locate the config file
+workingdir = Path(__file__).parent
+# Name of working config file
+# *Todo: * Switch this to a list, just because
+configfile = 'config.ini'
+# Join the working parent directory with the config file
+workingconfig = pathlib.Path.joinpath(workingdir, configfile)
+# read config file
+read_files = config_parser.read(workingconfig)
+
+# Sets the config file as a fallback directory
+if cmd_args.imagedir is None:
+    cmd_args.imagedir = config_parser.get('global', 'directory')
 
 # Sets the Image and json directory from arguemnts
-# To do: not delete old caption data and back it up.
+# Warning: this deletes the previous caption file
 
 image_captions_path = Path(rf"{cmd_args.imagedir}")
 image_captions_appended_file = "appended_captions.txt"
 seperator = ", "
 
 for root, dirs, files in os.walk(image_captions_path):
-    for file in files:
+    for file in tqdm(files, desc="Creating txt files", unit="json2txts"):
         if file.endswith(".json"):
             jsonfile = (os.path.join(root, file))
             image_captions_single_file_base_dir = (os.path.join(root))
@@ -42,11 +80,11 @@ for root, dirs, files in os.walk(image_captions_path):
             #Function to extract nested json data,
             #https://hackersandslackers.com/extract-data-from-complex-json-python/
             def json_extract(obj, key):
-                # Recursively fetch values from nested JSON.
+                """ Recursively fetch values from nested JSON """
                 arr = []
 
                 def extract(obj, arr, key):
-                    # Recursively search for values of key in JSON tree
+                    """ Recursively search for values of key in JSON tree """
                     if isinstance(obj, dict):
                         for k, v in obj.items():
                             if isinstance(v, (dict, list)):
@@ -60,9 +98,6 @@ for root, dirs, files in os.walk(image_captions_path):
 
                 values = extract(obj, arr, key)
                 return values
-
-            #Extract nested json via function
-            #print(json_extract(data, 'iso'))
 
             iso = json_extract(data, 'iso')
             focal_length = json_extract(data, 'focal_length')
