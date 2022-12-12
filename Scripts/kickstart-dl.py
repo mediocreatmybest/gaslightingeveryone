@@ -8,8 +8,7 @@ import argparse
 import pathlib
 from pathlib import Path
 from tqdm import tqdm
-
-
+from time import sleep
 
 # This script is intended to be used with plain text only
 
@@ -24,12 +23,63 @@ GALLERY_ARG = '--write-metadata --sleep 2-4 --range 1-1'
 YTDLP_CMD = 'yt-dlp'
 YTDLP_ARG = '--write-info-json'
 
+# Define our functions
+
+# Function to check if the data is a valid url
+def urldatacheck(urldata):
+        """Simple check to see if this is a valid URL, returns: True or False"""
+
+        function_url = urllib.parse.urlparse(urldata)
+
+        if function_url.netloc == '':
+            return False
+        else:
+            return True
+
+def starttaskprog(task):
+    """ Subprocess task function, should start a subprocess """
+    #subprocess.Popen(args, bufsize=0, executable=None, stdin=None, stdout=None,
+    #stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None,
+    #env=None, universal_newlines=False, startupinfo=None, creationflags=0)
+    #https://gist.github.com/timothymugayi/fee21fd931d3b03ed62a32c14534bc96
+    try:
+        with tqdm(unit='B', unit_scale=True, miniters=1, desc="run_task={}".format(task)) as t:
+            process = subprocess.Popen(task, shell=True, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # print subprocess output line-by-line as soon as its stdout buffer is flushed in Python 3:
+            for line in process.stdout:
+                # Update the progress, since we do not have a predefined iterator
+                # tqdm doesnt know before hand when to end and cant generate a progress bar
+                # hence elapsed time will be shown, this is good enough as we know
+                # something is in progress
+                t.update()
+                # forces stdout to "flush" the buffer
+                sys.stdout.flush()
+
+            process.stdout.close()
+
+            return_code = process.wait()
+
+            if return_code != 0:
+                raise subprocess.CalledProcessError(return_code, task)
+
+    except subprocess.CalledProcessError as e:
+        sys.stderr.write(
+            "common::run_command() : [ERROR]: output = %s, error code = %s\n"
+            % (e.output, e.returncode))
+
+def starttask(task):
+    """ Subprocess task function, should start a subprocess """
+    process = subprocess.Popen(task, shell=True, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return_code = process.wait()
+    #if return_code != 0:
+    #   raise subprocess.CalledProcessError(return_code, task)
+
+# Create ConfigParser
 config_parser = ConfigParser()
 
 # Get the scripts parent directory so we can locate the config file
-
 workingdir = Path(__file__).parent
-# print('This is the script dir:', workingdir)
 
 # Name of working config file
 # *Todo: * Switch this to a list, just because
@@ -38,7 +88,7 @@ configfile = 'config.ini'
 # Join the working parent directory with the config file
 workingconfig = pathlib.Path.joinpath(workingdir, configfile)
 
-# Set how to read the contents of the config
+# read config file
 read_files = config_parser.read(workingconfig)
 
 # Create the parser
@@ -50,13 +100,13 @@ parser.add_argument('--mode', type=str, choices=['csv', 'txt'], required=False)
 parser.add_argument('--sourcelist', type=str, required=False)
 parser.add_argument('--directory', type=str, required=False)
 
-
-# Parse the argument
+# Parse the arguments
 CMD_ARGS = parser.parse_args()
 
 # Set Defaults if non selected
 if CMD_ARGS.downloader is None:
     CMD_ARGS.downloader = 'gallery-dl'
+
 if CMD_ARGS.type is None:
     SRC_LIST_TYPE = config_parser.get('src_list', 'type')
 else:
@@ -66,6 +116,7 @@ if CMD_ARGS.mode is None:
     GLOBAL_MODE = config_parser.get('global', 'mode')
 else:
     GLOBAL_MODE = CMD_ARGS.mode
+
 if CMD_ARGS.sourcelist is None:
     TXT_SRC = config_parser.get('src_list', 'txt_src')
 else:
@@ -94,101 +145,57 @@ ARTSTATION_SEARCH_FILTER = config_parser.get('web_config_unsplash', 'filter')
 # Organise defaults into single string
 GALLERY_FULLCMDARG = GALLERY_CMD.split() + GALLERY_EXTRACT_PATH.split() + GALLERY_ARG.split()
 
-# Doesn't really need to be a function but might as well see if this works.
-# Function to check if the data is parsed as a url, might not be the best way to do it.
-
-def is_url_data_type():
-        """Is this a URL or a Filesystem location, returns: True or False"""
-
-        print('Checking if text source is URL')
-        function_url = urllib.parse.urlparse(TXT_SRC)
-        # print(function_url.path)
-        # print(function_url)
-        if function_url.netloc == '':
-            print('netloc is empty')
-            print('path is:', function_url.path)
-            print('this does not pass the url sniff test')
-            return False
-        else:
-            print('netloc has data')
-            print('netloc is:', function_url.netloc)
-            return True
-
-def run_task(task, t):
-    s = subprocess.Popen(task, shell=True, stdout=subprocess.PIPE)
-    t.write(s.stdout.readline().decode("utf-8"))
-
 # Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
 # https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
 
 print('global is now:', GLOBAL_MODE)
 print('SRC_LIST is now:', SRC_LIST_TYPE)
 
-
 # Using plain text data as input data
 if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
     print('GLOBAL MODE IS TXT AND SRC LIST TYPE IS URL')
     # Check if we are using a websites data
-    if is_url_data_type() is True:
+    if urldatacheck(TXT_SRC) is True:
         TXT_URL = TXT_SRC
-        print(TXT_URL)
         with urllib.request.urlopen(TXT_URL) as TXT_READ:
             # Read, decode and then split the final data
             # from the webserver to allow reading each line
             rawoutput = TXT_READ.read().decode('UTF-8').split()
-            # Loop through each line
-            for eachdomain in rawoutput:
-
+            # Loop through each line with tqdm as the progress bar
+            pbar = tqdm(rawoutput)
+            #for eachdomain in tqdm(rawoutput, unit="downloads"):
+            for rawoutput in pbar:
+                urlcheck = urllib.parse.urlparse(rawoutput).netloc
+                pbar.set_description(f'{urlcheck}')
                 # Do a check against each domain as they may have different options
                 # Create URL Check Variable, not sure if this will work...
-                urlcheck = urllib.parse.urlparse(eachdomain).netloc
-                print(urlcheck)
+                #urlcheck = urllib.parse.urlparse(eachdomain).netloc
+                urlcheck = urllib.parse.urlparse(rawoutput).netloc
+                sleep(1)
                 if urlcheck == 'www.reddit.com':
                     #for topsearch in REDDIT_TOP:
                         #EACHDOMAIN_TOP = eachdomain + topsearch
                         #GALLERY_FULLCMDARG.append(EACHDOMAIN_TOP)
-                        
-                        #print('Reddit! Beep Boop!')
-                        print(GALLERY_FULLCMDARG, eachdomain)
-                        
-                        #result = subprocess.run(GALLERY_FULLCMDARG,
-                        #         capture_output=True,
-                        #         text=True,
-                        #         encoding='UTF-8')
-                        #Example from : https://gist.github.com/timothymugayi/fee21fd931d3b03ed62a32c14534bc96 
-                        #with tqdm(unit='Downloads', unit_scale=True, miniters=1, desc="run_task={}".format(GALLERY_FULLCMDARG + eachdomain)) as t:
-                        #    process = subprocess.Popen(GALLERY_FULLCMDARG + eachdomain, shell=True, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
-                        #    stderr=subprocess.PIPE)
-
-                        #    # print subprocess output line-by-line as soon as its stdout buffer is flushed in Python 3:
-                        #    for line in process.stdout:
-                        #        t.update()
-                        #        # forces stdout to "flush" the buffer
-                        #        sys.stdout.flush()
-
-                        #    process.stdout.close()
-                       
-
-
-                        
+                        print('Reddit! Beep Boop!')
+                        #print(GALLERY_FULLCMDARG, eachdomain)
+                        print(GALLERY_FULLCMDARG, rawoutput)
 
                 if urlcheck == 'www.unsplash.com':
-                    GALLERY_FULLCMDARG.append(eachdomain)
+                    #print(GALLERY_FULLCMDARG, eachdomain)
                     print('Unsplash! Beep! Boop!')
                     #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
                 if urlcheck == 'www.artstation.com':
-                    GALLERY_FULLCMDARG.append(eachdomain)
+                    #print(GALLERY_FULLCMDARG, eachdomain)
                     print('Artstation! Beep Boop!')
                     #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
 
                 # Catch any websites that don't exist in the supported filter and do standard download
-                #if urlcheck != SUPPORTED_FILTER_URLS:
-                #    GALLERY_FULLCMDARG.append(eachdomain)
-                #    print (urlcheck)
-                #    print(GALLERY_FULLCMDARG)
-                #    print('CATCHALL! Beep Boop!')
-                #    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
+                if urlcheck != SUPPORTED_FILTER_URLS:
+                    #print(GALLERY_FULLCMDARG, eachdomain)
+                    #print('CATCHALL! Beep Boop!')
+                    #result = subprocess.run(GALLERY_FULLCMDARG, capture_output=True, text=True)
+                    starttask(GALLERY_CMD)
 
 
 
@@ -196,7 +203,7 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
 
 
     ##Check if we are using a text file for data #Also this is broken.
-    if is_url_data_type() is False:
+    if urldatacheck(TXT_SRC) is False:
         TXT_FILE = Path(rf'{TXT_SRC}')
         print('TXT MODE!')
         print('The test path is:')
@@ -242,3 +249,4 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
 #print('Results:')
 #print (result.stdout)
 #print('###############################')
+
