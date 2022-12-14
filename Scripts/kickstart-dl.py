@@ -72,9 +72,6 @@ def starttask(task):
     if return_code != 0:
         print(f'Error# Code: {return_code}')
         #raise subprocess.CalledProcessError(return_code, task)
-    if return_code == 0:
-        print(f'Error# Code: {return_code}')
-        print('Yay')
 
 # Create ConfigParser
 config_parser = ConfigParser()
@@ -146,12 +143,6 @@ if CMD_ARGS.directory is None:
 else:
     EXTRACTPATH = f'--directory {CMD_ARGS.directory}'
 
-
-#print('program selected is:', downloader)
-#print('source list type is:', SRC_LIST_TYPE)
-#print('The global mode is:', GLOBAL_MODE)
-#print('program source list is:', TXT_SRC)
-
 # URL filters for supported websites (reddit, etc.)
 # This will allow us to loop through each type of top search
 REDDIT_TOP = config_parser.get('web_config_reddit', 'filter')
@@ -165,11 +156,6 @@ taskseq = downloader.split() + EXTRACTPATH.split() + downloaderarg.split()
 # Parse URL details from https://www.simplified.guide/python/get-host-name-from-url
 # https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse
 
-#print('global mode is now:', GLOBAL_MODE)
-#print('SRC_LIST is now:', SRC_LIST_TYPE)
-
-#sys.exit()
-
 # Using plain text data as input data
 if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
     # Check if we are using a websites data
@@ -178,49 +164,42 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
         with urllib.request.urlopen(TXT_URL) as TXT_READ:
             # Read, decode and then split the final data
             # from the webserver to allow reading each line
-            rawoutput = TXT_READ.read().decode('UTF-8').split()
+            URLOUTPUT = TXT_READ.read().decode('UTF-8').split()
             # Loop through each line with tqdm as the progress bar
-            pbar = tqdm(rawoutput, unit='scraps')
-            #for eachdomain in tqdm(rawoutput, unit="downloads"):
-            for rawoutput in pbar:
-                urlcheck = urllib.parse.urlparse(rawoutput).netloc
+            pbar = tqdm(URLOUTPUT, unit='per URL')
+            #for eachdomain in tqdm(URLOUTPUT, unit="downloads"):
+            for URLOUTPUT in pbar:
+                urlcheck = urllib.parse.urlparse(URLOUTPUT).netloc
+                #urlcheck = urllib.parse.urlparse(eachdomain).netloc
                 pbar.set_description(f'{urlcheck}')
-                #pbar.set_description('URL')
                 # Do a check against each domain as they may have different options
                 # Create URL Check Variable, not sure if this will work...
                 #urlcheck = urllib.parse.urlparse(eachdomain).netloc
-                urlcheck = urllib.parse.urlparse(rawoutput).netloc
-                #sleep(0.5)
 
                 if urlcheck == 'www.reddit.com':
                         #print('Reddit! Beep Boop!')
-                        taskseq.append(rawoutput)
+                        taskseq.append(URLOUTPUT)
                         starttask(taskseq)
                         taskseq = taskseq[ : -1]
 
                 if urlcheck == 'www.unsplash.com':
                     #print('Unsplash! Beep! Boop!')
-                    taskseq.append(rawoutput)
+                    taskseq.append(URLOUTPUT)
                     starttask(taskseq)
                     taskseq = taskseq[ : -1]
 
                 if urlcheck == 'www.artstation.com':
                     #print('Artstation! Beep Boop!'
-                    taskseq.append(rawoutput)
+                    taskseq.append(URLOUTPUT)
                     starttask(taskseq)
                     taskseq = taskseq[ : -1]
 
                 # Catch any websites that don't exist in the supported filter and do standard download
                 if urlcheck != SUPPORTED_FILTER_URLS:
                     #print('CATCHALL! Beep Boop!')
-                    taskseq.append(rawoutput)
+                    taskseq.append(URLOUTPUT)
                     starttask(taskseq)
                     taskseq = taskseq[ : -1]
-
-
-
-
-
 
     ##Check if we are using a text file for data #Also this is broken.
     if urldatacheck(TXT_SRC) is False:
