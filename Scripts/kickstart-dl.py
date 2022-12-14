@@ -72,6 +72,8 @@ def starttask(task):
     if return_code != 0:
         print(f'Error# Code: {return_code}')
         #raise subprocess.CalledProcessError(return_code, task)
+    else:
+        print('Return 0 - Yay')
 
 # Create ConfigParser
 config_parser = ConfigParser()
@@ -182,7 +184,7 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
             for rawoutput in pbar:
                 urlcheck = urllib.parse.urlparse(rawoutput).netloc
                 #pbar.set_description(f'{urlcheck}')
-                pbar.set_description('Scrapping')
+                pbar.set_description('URL')
                 # Do a check against each domain as they may have different options
                 # Create URL Check Variable, not sure if this will work...
                 #urlcheck = urllib.parse.urlparse(eachdomain).netloc
@@ -190,8 +192,9 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
                 sleep(1)
 
                 if urlcheck == 'example.com':
-                    print('Stopping')
-                    sys.exit()
+                    print('example.com')
+                    taskseq = ['dir']
+                    starttask(taskseq)
 
 
                 if urlcheck == 'www.reddit.com':
