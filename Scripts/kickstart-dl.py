@@ -72,8 +72,9 @@ def starttask(task):
     if return_code != 0:
         print(f'Error# Code: {return_code}')
         #raise subprocess.CalledProcessError(return_code, task)
-    else:
-        print('Return 0 - Yay')
+    if return_code == 0:
+        print(f'Error# Code: {return_code}')
+        print('Yay')
 
 # Create ConfigParser
 config_parser = ConfigParser()
@@ -183,44 +184,38 @@ if GLOBAL_MODE == 'txt' and SRC_LIST_TYPE == 'url':
             #for eachdomain in tqdm(rawoutput, unit="downloads"):
             for rawoutput in pbar:
                 urlcheck = urllib.parse.urlparse(rawoutput).netloc
-                #pbar.set_description(f'{urlcheck}')
-                pbar.set_description('URL')
+                pbar.set_description(f'{urlcheck}')
+                #pbar.set_description('URL')
                 # Do a check against each domain as they may have different options
                 # Create URL Check Variable, not sure if this will work...
                 #urlcheck = urllib.parse.urlparse(eachdomain).netloc
                 urlcheck = urllib.parse.urlparse(rawoutput).netloc
-                sleep(1)
-
-                if urlcheck == 'example.com':
-                    print('example.com')
-                    taskseq = ['dir']
-                    starttask(taskseq)
-
+                #sleep(0.5)
 
                 if urlcheck == 'www.reddit.com':
-                    #for topsearch in REDDIT_TOP:
-                        #EACHDOMAIN_TOP = eachdomain + topsearch
-                        #FULLCMDARG.append(EACHDOMAIN_TOP)
-                        print('Reddit! Beep Boop!')
-                        #print(FULLCMDARG, eachdomain)
-                        #print(taskseq, rawoutput)
+                        #print('Reddit! Beep Boop!')
+                        taskseq.append(rawoutput)
+                        starttask(taskseq)
+                        taskseq = taskseq[ : -1]
 
                 if urlcheck == 'www.unsplash.com':
-                    #print(FULLCMDARG, eachdomain)
-                    print('Unsplash! Beep! Boop!')
-                    #result = subprocess.run(FULLCMDARG, capture_output=True, text=True)
+                    #print('Unsplash! Beep! Boop!')
+                    taskseq.append(rawoutput)
+                    starttask(taskseq)
+                    taskseq = taskseq[ : -1]
 
                 if urlcheck == 'www.artstation.com':
-                    #print(FULLCMDARG, eachdomain)
-                    print('Artstation! Beep Boop!')
-                    #result = subprocess.run(FULLCMDARG, capture_output=True, text=True)
+                    #print('Artstation! Beep Boop!'
+                    taskseq.append(rawoutput)
+                    starttask(taskseq)
+                    taskseq = taskseq[ : -1]
 
                 # Catch any websites that don't exist in the supported filter and do standard download
                 if urlcheck != SUPPORTED_FILTER_URLS:
-                    #print(FULLCMDARG, eachdomain)
-                    print('CATCHALL! Beep Boop!')
-                    #result = subprocess.run(FULLCMDARG, capture_output=True, text=True)
-                    #starttask(GALLERY_CMD)
+                    #print('CATCHALL! Beep Boop!')
+                    taskseq.append(rawoutput)
+                    starttask(taskseq)
+                    taskseq = taskseq[ : -1]
 
 
 
