@@ -69,8 +69,10 @@ for root, dirs, files in os.walk(image_captions_path):
         if file.endswith(".json"):
             jsonfile = (os.path.join(root, file))
             image_captions_single_file_base_dir = (os.path.join(root))
+            # remove 1st extension
             image_captions_single_file_base_name = (os.path.splitext(file)[0])
-            image_captions_single_file = image_captions_single_file_base_name
+            # remove the 2nd extension, better way to do this?
+            image_captions_single_file = (os.path.splitext(image_captions_single_file_base_name)[0])
 
             #load json file from os.walk search
             with open(jsonfile, "r", encoding='UTF-8' ) as json_read:
