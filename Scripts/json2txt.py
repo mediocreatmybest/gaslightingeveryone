@@ -5,9 +5,9 @@ import argparse
 import pathlib
 
 from configparser import ConfigParser
-from tqdm import tqdm
 from pathlib import Path
 from func import json_extract, list2String # Local function script
+from tqdm import tqdm
 
 # Create the arg parser
 parser = argparse.ArgumentParser()
