@@ -22,8 +22,14 @@ captions = []
 for file in os.listdir(folder_path):
     # Check if the file is an image
     if file.endswith('.jpg') or file.endswith('.png'):
+        # Find basename of the image files
+        basename = (os.path.splitext(file)[0])
+        txtfile = basename + '.txt'
         # Add the image filename to the list
         image_filenames.append(file)
+
+
+
     # Check if the file is a caption file
     elif file.endswith('.txt'):
         # Open the caption file and read the caption
@@ -40,6 +46,8 @@ df = pd.DataFrame(data, columns=['image', 'caption'])
 
 # Print the first 5 rows of the dataframe
 print(df.head())
+
+
 
 # Access the image filenames and captions
 image_filenames = df['image']
