@@ -3,6 +3,7 @@ import os
 import re
 import argparse
 import pathlib
+import platform
 
 from configparser import ConfigParser
 from pathlib import Path
@@ -161,24 +162,14 @@ for root, dirs, files in os.walk(image_captions_path):
 
             # Simple filtering
             # Remove text, html href links, and new lines
-            exclusionList = ['www.','.com','.org','.net','http://','https://','<h1>','</h1>','<h2>','</h2>','<h3>','</h3>','<strong>','</strong>','<div>','</div>','<span>','</span>','<b>','</b>','< /b>','<br />','<pre>','</pre>','|','&nbsp;','PROCESS INFO','SOURCE INFO','IMAGE INFO','<img.*/>','<a.*</a>','\n']
+            exclusionList = ['<.*>','^^','www.','.com','.org','.net','http://','https://','|','&nbsp;','&amp','&gt','"','PROCESS INFO','SOURCE INFO','IMAGE INFO','\n']
             #exclusionList = ''
             exclusions = '|'.join(exclusionList)
             desc = re.sub(exclusions, '', desc)
             title = re.sub(exclusions, '', title)
-            # Some additional HTML tags
-            desc = re.sub(r'<li>', '', desc)
-            title = re.sub(r'<li>', '', title)
-            desc = re.sub(r'</li>', ' ', desc)
-            title = re.sub(r'</li>', ' ', title)
-            desc = re.sub(r'<p>', ' ', desc)
-            title = re.sub(r'<p>', ' ', title)
-            desc = re.sub(r'</p>', ' ', desc)
-            title = re.sub(r'</p>', ' ', title)
-            desc = re.sub(r'<ul>', '', desc)
-            title = re.sub(r'<ul>', '', title)
-            desc = re.sub(r'</ul>', ' ', desc)
-            title = re.sub(r'</ul>', ' ', title)
+            # Some additional HTML tags and move some symbols around
+            desc = re.sub(r';', ', ', desc)
+            title = re.sub(r';', ', ', title)
             # remove explicit :wiki: word, unable to get this to work any other way
             desc = re.sub(r'\:wiki\:', ' ', desc)
             title = re.sub(r'\:wiki\:', ' ', title)
@@ -197,6 +188,8 @@ for root, dirs, files in os.walk(image_captions_path):
             desc = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', desc)
             title = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', title)
             # If we leave behind any double spaces, change them to single space.
+            desc = re.sub(r', , ', ', ', desc)
+            title = re.sub(r', , ', ', ', title)           
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
             desc = re.sub(r'   ', ' ', desc)
@@ -249,13 +242,19 @@ for root, dirs, files in os.walk(image_captions_path):
 
             return_appended_output = list2String(appended_output)
 
+            # Quick fix to work if platform.system() == "Windows":out directory seperators, maybe switch to path?
+            if platform.system() == "Windows":
+                pathsep = "\\"
+            else:
+                pathsep = "/"
+            
             # Seperator for output
             seperator = ", "
             # Folder and File locations
-            single_files = image_captions_single_file_base_dir + "/" + image_captions_single_file + ".txt"
-            appended_file = str(image_captions_path) + "/" + image_captions_appended_file
+            single_files = image_captions_single_file_base_dir + pathsep + image_captions_single_file + ".txt"
+            appended_file = str(image_captions_path) + pathsep + image_captions_appended_file
             #Appended file contents
-            appended_contents = image_captions_single_file_base_dir + "/" + image_captions_single_file_base_name + seperator + return_appended_output + "\n"
+            appended_contents = image_captions_single_file_base_dir + pathsep + image_captions_single_file_base_name + seperator + return_appended_output + "\n"
             
             # Debug print file name and locations
             if cmd_args.debug is True:
@@ -277,4 +276,5 @@ for root, dirs, files in os.walk(image_captions_path):
                 with open(appended_file, 'a', encoding='UTF-8') as fa:
                     fa.write(appended_contents)
                     fa.close
+
 
