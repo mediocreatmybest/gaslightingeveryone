@@ -3,6 +3,7 @@ import os
 import re
 import argparse
 import pathlib
+import platform
 
 from configparser import ConfigParser
 from pathlib import Path
@@ -18,6 +19,9 @@ parser.add_argument('--disable-title', action='store_true', help='Set this optio
 parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
 parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
 parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
+parser.add_argument('--append', action='store_true', help='Set this option to append the files instead of overwriting', required=False)
+# Add debug option to help disable save and prints out useful variables
+parser.add_argument('--debug', action='store_true', help='Disables Saving files, prints output locations', required=False)
 
 # Parse the argument
 cmd_args = parser.parse_args()
@@ -159,10 +163,14 @@ for root, dirs, files in os.walk(image_captions_path):
 
             # Simple filtering
             # Remove text, html href links, and new lines
-            exclusionList = ['www.','.com','.org','.net','http://','https://','<b>','</b>','PROCESS INFO','SOURCE INFO','IMAGE INFO','<a.*</a>','\n']
+            exclusionList = ['<.*>','^^','www.','.com','.org','.net','http://','https://','|','&nbsp;','&amp','&gt','"','PROCESS INFO','SOURCE INFO','IMAGE INFO','\n']
+            #exclusionList = ''
             exclusions = '|'.join(exclusionList)
-            title = re.sub(exclusions, '', title)
             desc = re.sub(exclusions, '', desc)
+            title = re.sub(exclusions, '', title)
+            # Some additional HTML tags and move some symbols around
+            desc = re.sub(r';', ', ', desc)
+            title = re.sub(r';', ', ', title)
             # remove explicit :wiki: word, unable to get this to work any other way
             desc = re.sub(r'\:wiki\:', ' ', desc)
             title = re.sub(r'\:wiki\:', ' ', title)
@@ -181,8 +189,12 @@ for root, dirs, files in os.walk(image_captions_path):
             desc = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', desc)
             title = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', title)
             # If we leave behind any double spaces, change them to single space.
+            desc = re.sub(r', , ', ', ', desc)
+            title = re.sub(r', , ', ', ', title)           
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
+            desc = re.sub(r'   ', ' ', desc)
+            title = re.sub(r'   ', ' ', title)
             # Final removal of all non-standard characters that break strings being selected, uncomment if needed.
             # desc = re.sub(r"[^-/().&' \w]|_", '', desc)
             # title = re.sub(r"[^-/().&' \w]|_", '', title)
@@ -231,19 +243,49 @@ for root, dirs, files in os.walk(image_captions_path):
 
             return_appended_output = list2String(appended_output)
 
+            # Quick fix to work if platform.system() == "Windows":out directory seperators, maybe switch to path?
+            if platform.system() == "Windows":
+                pathsep = "\\"
+            else:
+                pathsep = "/"
+            
             # Seperator for output
             seperator = ", "
             # Folder and File locations
-            single_files = image_captions_single_file_base_dir + "\\" + image_captions_single_file + ".txt"
-            appended_file = str(image_captions_path) + "\\" + image_captions_appended_file
+            single_files = image_captions_single_file_base_dir + pathsep + image_captions_single_file + ".txt"
+            appended_file = str(image_captions_path) + pathsep + image_captions_appended_file
             #Appended file contents
-            appended_contents = image_captions_single_file_base_dir + "\\" + image_captions_single_file_base_name + seperator + return_appended_output + "\n"
+            appended_contents = image_captions_single_file_base_dir + pathsep + image_captions_single_file_base_name + seperator + return_appended_output + "\n"
+            
+            # Debug print file name and locations
+            if cmd_args.debug is True:
+                print(single_files)
+                print(appended_contents)
+
+            # Check if debug is enabled to disable saving
+            if cmd_args.debug is True:
+                savefiles = False
+            else:
+                savefiles = True
+
+            # Set write flag to overwrite 
+            writeflag = 'w'
+
+            # Set append if cmd is flagged
+            if cmd_args.append is True:
+                writeflag = 'a'
+
+            if cmd_args.debug is True:
+                print('writeflag is: ', writeflag)
 
             # Create new file and overwrite if exists
-            with open(single_files, 'w', encoding='UTF-8') as f:
-                f.write(return_appended_output)
-                f.close
+            if savefiles is True:
+                with open(single_files, f'{writeflag}', encoding='UTF-8') as f:
+                    f.write(return_appended_output)
+                    f.close
 
-            with open(appended_file, 'a', encoding='UTF-8') as fa:
-                fa.write(appended_contents)
-                fa.close
+                with open(appended_file, 'a', encoding='UTF-8') as fa:
+                    fa.write(appended_contents)
+                    fa.close
+
+
