@@ -19,6 +19,7 @@ parser.add_argument('--disable-title', action='store_true', help='Set this optio
 parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
 parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
 parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
+parser.add_argument('--append', action='store_true', help='Set this option to append the files instead of overwriting', required=False)
 # Add debug option to help disable save and prints out useful variables
 parser.add_argument('--debug', action='store_true', help='Disables Saving files, prints output locations', required=False)
 
@@ -267,9 +268,19 @@ for root, dirs, files in os.walk(image_captions_path):
             else:
                 savefiles = True
 
+            # Set write flag to overwrite 
+            writeflag = 'w'
+
+            # Set append if cmd is flagged
+            if cmd_args.append is True:
+                writeflag = 'a'
+
+            if cmd_args.debug is True:
+                print('writeflag is: ', writeflag)
+
             # Create new file and overwrite if exists
             if savefiles is True:
-                with open(single_files, 'w', encoding='UTF-8') as f:
+                with open(single_files, f'{writeflag}', encoding='UTF-8') as f:
                     f.write(return_appended_output)
                     f.close
 
