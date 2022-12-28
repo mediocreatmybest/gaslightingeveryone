@@ -200,15 +200,16 @@ for root, dirs, files in os.walk(image_captions_path):
             # Final removal of all non-standard characters that break strings being selected, uncomment if needed.
             # desc = re.sub(r"[^-/().&' \w]|_", '', desc)
             # title = re.sub(r"[^-/().&' \w]|_", '', title)
-            # filter hash symbol if flagged in command arg
-            if cmd_args.remove_hash is True:
-                tags = re.sub(r'\#', '', tags)
 
             #move string into new variable to get camera cludge into output
             final_cludge_camera_data = list2String(cludge_camera_data)
 
             #move string into new variable to get tags into output
             final_tags_string = list2String(tags)
+            
+            # filter hash symbol if flagged in command arg
+            if cmd_args.remove_hash is True:
+                final_tags_string = re.sub(r'#', '', final_tags_string)
 
             #move string into new variable to get tags into output
             final_as_data = list2String(as_data)
@@ -247,6 +248,8 @@ for root, dirs, files in os.walk(image_captions_path):
                 appended_output.append(final_tags_string.strip())
 
             return_appended_output = list2String(appended_output)
+
+
 
             # Quick fix to work if platform.system() == "Windows":out directory seperators, maybe switch to path?
             if platform.system() == "Windows":
