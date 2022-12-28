@@ -202,7 +202,7 @@ for root, dirs, files in os.walk(image_captions_path):
             # title = re.sub(r"[^-/().&' \w]|_", '', title)
             # filter hash symbol if flagged in command arg
             if cmd_args.remove_hash is True:
-                tags = re.sub(r'#', '', tags)
+                tags = re.sub(r'\#', '', tags)
 
             #move string into new variable to get camera cludge into output
             final_cludge_camera_data = list2String(cludge_camera_data)
