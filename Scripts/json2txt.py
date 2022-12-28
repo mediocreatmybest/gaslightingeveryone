@@ -18,8 +18,10 @@ parser.add_argument('--imagedir', type=str, help='Image directory to caption', m
 parser.add_argument('--disable-title', action='store_true', help='Set this option to disable Title', required=False)
 parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
 parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
+parser.add_argument('--remove-hash', action='store_true', help='Set this option to filter hash symbol from tags', required=False)
 parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
 parser.add_argument('--append', action='store_true', help='Set this option to append the files instead of overwriting', required=False)
+
 # Add debug option to help disable save and prints out useful variables
 parser.add_argument('--debug', action='store_true', help='Disables Saving files, prints output locations', required=False)
 
@@ -198,6 +200,9 @@ for root, dirs, files in os.walk(image_captions_path):
             # Final removal of all non-standard characters that break strings being selected, uncomment if needed.
             # desc = re.sub(r"[^-/().&' \w]|_", '', desc)
             # title = re.sub(r"[^-/().&' \w]|_", '', title)
+            # filter hash symbol if flagged in command arg
+            if cmd_args.remove_hash is True:
+                tags = re.sub(r'#', '', tags)
 
             #move string into new variable to get camera cludge into output
             final_cludge_camera_data = list2String(cludge_camera_data)
