@@ -1,5 +1,3 @@
 
-Scripts/working/__pycache__/func.cpython-310.pyc
-Scripts/working/__pycache__/json_extract.cpython-310.pyc
-Scripts/working/test.py
+Scripts/working/test*
 *.pyc
