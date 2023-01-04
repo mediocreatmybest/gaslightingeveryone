@@ -59,6 +59,9 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
             print('The scientific name is: ', scientific_name)
             print('The quality match score out of 100 is: ', match_score)
 
+            # Close  the file I guess. 
+            open_image.close
+
             
             #with open('data.json', 'w') as f:
             #    json.dump(json_result, f)
