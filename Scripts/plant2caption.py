@@ -63,7 +63,7 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
                 print('Full image path and base file name is: ', file_base_name)
                 print('Full image path and caption file is: ', caption_file)
 
-            # Open file as read in binary, rb. 
+            # Open file as read in binary, rb.
             open_image = open(full_image_path, 'rb')
 
             image_file_w_data = [('images', (full_image_path, open_image))]
@@ -88,7 +88,7 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
 
             data_content = f'a {common_name}, also called {scientific_name}'
             data_content_append = f', a {common_name}, also called {scientific_name}'
-            
+
             # Debug
             if cmd_args.debug is True:
                 print('The best match is: ', best_match)
@@ -97,11 +97,11 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
                 print('The quality match score out of 100 is: ', match_score)
                 if best_match == scientific_name:
                     print('Best match and scientific name match.')
-                else: 
+                else:
                     print('Best match and scientific name do not match.')
-                
 
-            # Close the file I guess. 
+
+            # Close the file I guess.
             open_image.close
 
              # Check if debug is enabled to disable saving
@@ -110,7 +110,7 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
             else:
                 savefiles = True
 
-            # Set write flag to overwrite 
+            # Set write flag to overwrite
             writeflag = 'w'
 
             # Set append if cmd is flagged
@@ -125,28 +125,15 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
                 with open(caption_file, f'{writeflag}', encoding='utf-8') as f:
                     f.write(data_content)
                     f.close
-            
+
              # Create new file and or append
             if savefiles is True and writeflag == 'a':
                 with open(caption_file, f'{writeflag}', encoding='utf-8') as f:
                     f.write(data_content_append)
                     f.close
-            
+
             # Create new file and or overwrite if exists
             if savefiles is True and cmd_args.dump_json is True:
                 with open(json_file, 'w', encoding='utf-8') as f:
                     json.dump(json_result, f)
                     f.close
-
-
-
-
-
-
-
-
-
-
-
-
-
