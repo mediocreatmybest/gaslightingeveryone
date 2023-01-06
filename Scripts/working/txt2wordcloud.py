@@ -16,6 +16,8 @@ parser.add_argument('--outputfile', type=str,
                     help='Image directory to caption', metavar='c:\captions', required=True)
 parser.add_argument('--mask', type=str,
                     help='PNG mask for the wordcloud', metavar='c:\captions', required=False)
+parser.add_argument('--maxwords', type=int,
+                    help='Maximum words to use in the wordcloud', default=250, metavar='250', required=False)
 # Add debug option to help disable save and prints out useful variables
 #parser.add_argument('--debug', action='store_true',
 #                    help='Disables Saving files, prints output locations', required=False)
@@ -37,7 +39,7 @@ mystopwords = ['a', 'is', 'you', 'of', 'in', 'to', 'too']
 #A function to generate the word cloud from text
 def generate_colormask_wordcloud(data, mask=None):
     cloud = WordCloud(scale=2,
-                      max_words=500,
+                      max_words=cmd_args.maxwords,
                       color_func=colors,
                       mask=mask,
                       background_color='white',
@@ -52,7 +54,7 @@ def generate_colormask_wordcloud(data, mask=None):
 #A function to generate the word cloud from text
 def generate_colormap_wordcloud(data, mask=None):
     cloud = WordCloud(scale=2,
-                      max_words=500,
+                      max_words=cmd_args.maxwords,
                       colormap='RdYlGn',
                       mask=mask,
                       background_color='white',
