@@ -7,13 +7,22 @@ from func import concatenate_files, list2String_space_sep
 # Create the arg parser
 parser = argparse.ArgumentParser()
 # Add an argument
-parser.add_argument('--inputdir', type=str, help='Directory with text files', metavar='c:\captions', required=True)
-parser.add_argument('--outputfile', type=str, help='Image directory to caption', metavar='c:\captions\allwords.txt', required=True)
-parser.add_argument('--dedup', action='store_true', help='Remove all duplicate words', required=False)
-parser.add_argument('--filter', action='store_true', help='Run a filter to remove single symbols', required=False)
+parser.add_argument('--inputdir', type=str,
+                    help='Directory with text files', metavar='c:\captions', required=True)
+parser.add_argument('--outputfile', type=str,
+                    help='Image directory to caption', metavar='c:\captions\allwords.txt', required=True)
+parser.add_argument('--dedup', action='store_true',
+                    help='Remove all duplicate words', required=False)
+# TODO: Create a function for the filter options, make it easier in future to be more selective in what is filtered
+#       This would then allow less commandline arguments.
+parser.add_argument('--filter', action='store_true',
+                    help='Run the regex filter to help remove symbols and whitespace', required=False)
+parser.add_argument('--filter-urls', action='store_true',
+                    help='Run the regex filter to also remove URLS. This is a sub filter to be used with --filter', required=False)
 #parser.add_argument('--write', action='store_true', help='Allow writing or modifying files', required=False)
 # Add debug option to help disable save and prints out useful variables
-parser.add_argument('--debug', action='store_true', help='Disables Saving files, prints output locations', required=False)
+parser.add_argument('--debug', action='store_true',
+                    help='Disables Saving files, prints output locations', required=False)
 
 # Parse the argument
 cmd_args = parser.parse_args()
@@ -32,6 +41,7 @@ if cmd_args.debug is True:
     print('Filtered dedup file is: ', out_file_dedup_filtered)
     print('remove duplicate words: ', cmd_args.dedup)
     print('Filter text is: ', cmd_args.filter)
+    print('Filter URLS is: ', cmd_args.filter_urls)
     #print('Write files is: ', cmd_args.write)
 
 # Call and use the concatenate function to combine all text files
@@ -64,7 +74,12 @@ if cmd_args.filter is True and cmd_args.dedup is True:
 
     # Remove all items in th exclusionList
     filtered_words = re.sub(exclusions, '', filtered_words)
+    if cmd_args.filter_urls is True:
+        # Remove URLs? Not sure how this magic works.
+        filtered_words = re.sub(r'\b(https?):\/\/([-A-Z0-9.]+)(\/[-A-Z0-9+&@#\/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#\/%=~_|!:,.;]*)?','', filtered_words, flags=re.I)
+
     # Additional filtering
+    # White space removal, \s
     filtered_words = re.sub(r'\s+', ' ', filtered_words)
 
     with open(out_file_dedup_filtered, 'w', encoding='utf-8') as file_filtered:
