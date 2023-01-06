@@ -11,9 +11,9 @@ from wordcloud import WordCloud, ImageColorGenerator, STOPWORDS
 parser = argparse.ArgumentParser()
 # Add an argument
 parser.add_argument('--inputfile', type=str,
-                    help='Directory with text files', metavar='c:\captions\allcaptions.txt', required=True)
+                    help='Text file with all your words', metavar='c:\captions\allcaptions.txt', required=True)
 parser.add_argument('--outputfile', type=str,
-                    help='Image directory to caption', metavar='c:\captions', required=True)
+                    help='Image file to save', metavar='c:\images\wordcloud.png', required=True)
 parser.add_argument('--mask', type=str,
                     help='PNG mask for the wordcloud', metavar='c:\captions', required=False)
 parser.add_argument('--maxwords', type=int,
