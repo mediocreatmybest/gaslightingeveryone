@@ -79,7 +79,7 @@ if cmd_args.filter is True and cmd_args.dedup is True:
         filtered_words = re.sub(r'\b(https?):\/\/([-A-Z0-9.]+)(\/[-A-Z0-9+&@#\/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#\/%=~_|!:,.;]*)?','', filtered_words, flags=re.I)
 
     # Additional filtering
-    # White space to get a substitute (teacher) with single (and lonley) space, \s+
+    # White space to get a substitute (teacher) with single (and lonely) space, \s+
     filtered_words = re.sub(r'\s+', ' ', filtered_words)
 
     with open(out_file_dedup_filtered, 'w', encoding='utf-8') as file_filtered:
