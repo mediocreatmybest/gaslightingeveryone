@@ -157,11 +157,11 @@ for root, dirs, files in os.walk(image_captions_path):
             if cmd_args.disable_exif is True:
                 cludge_camera_data = []
             if cmd_args.disable_title is True:
-                    title = ""
+                title = ""
             if cmd_args.disable_desc is True:
-                    desc = ""
+                desc = ""
             if cmd_args.disable_tags is True:
-                    tags = ""
+                tags = ""
 
             # Simple filtering
             # Remove text, html href links, and new lines
@@ -192,7 +192,7 @@ for root, dirs, files in os.walk(image_captions_path):
             title = re.sub(r'[\[\]\#!~?\=\(\)*.:-]', '', title)
             # If we leave behind any double spaces, change them to single space.
             desc = re.sub(r', , ', ', ', desc)
-            title = re.sub(r', , ', ', ', title)           
+            title = re.sub(r', , ', ', ', title)
             desc = re.sub(r'  ', ' ', desc)
             title = re.sub(r'  ', ' ', title)
             desc = re.sub(r'   ', ' ', desc)
@@ -206,7 +206,7 @@ for root, dirs, files in os.walk(image_captions_path):
 
             #move string into new variable to get tags into output
             final_tags_string = list2String(tags)
-            
+
             # filter hash symbol if flagged in command arg
             if cmd_args.remove_hash is True:
                 final_tags_string = re.sub(r'#', '', final_tags_string)
@@ -250,13 +250,12 @@ for root, dirs, files in os.walk(image_captions_path):
             return_appended_output = list2String(appended_output)
 
 
-
             # Quick fix to work if platform.system() == "Windows":out directory seperators, maybe switch to path?
             if platform.system() == "Windows":
                 pathsep = "\\"
             else:
                 pathsep = "/"
-            
+
             # Seperator for output
             seperator = ", "
             # Folder and File locations
@@ -264,7 +263,7 @@ for root, dirs, files in os.walk(image_captions_path):
             appended_file = str(image_captions_path) + pathsep + image_captions_appended_file
             #Appended file contents
             appended_contents = image_captions_single_file_base_dir + pathsep + image_captions_single_file_base_name + seperator + return_appended_output + "\n"
-            
+
             # Debug print file name and locations
             if cmd_args.debug is True:
                 print(single_files)
@@ -276,7 +275,7 @@ for root, dirs, files in os.walk(image_captions_path):
             else:
                 savefiles = True
 
-            # Set write flag to overwrite 
+            # Set write flag to overwrite
             writeflag = 'w'
 
             # Set append if cmd is flagged
@@ -290,10 +289,8 @@ for root, dirs, files in os.walk(image_captions_path):
             if savefiles is True:
                 with open(single_files, f'{writeflag}', encoding='UTF-8') as f:
                     f.write(return_appended_output)
-                    f.close
 
                 with open(appended_file, 'a', encoding='UTF-8') as fa:
                     fa.write(appended_contents)
-                    fa.close
 
 

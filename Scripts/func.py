@@ -1,5 +1,9 @@
+import codecs
+import os
+
 # Function to extract nested json data,
 # https://hackersandslackers.com/extract-data-from-complex-json-python/
+
 
 def json_extract(obj, key):
     """ Recursively fetch values from nested JSON """
@@ -21,23 +25,26 @@ def json_extract(obj, key):
     values = extract(obj, arr, key)
     return values
 
+
 # Function to convert tags to string
 
-def list2String(list):
+
+def list2String(convertlist):
     """initialize a list into seperated string"""
     seperator = ", "
     #return string
-    return (seperator.join(list))
+    return (seperator.join(convertlist))
 
-def list2String_space_sep(list):
+
+def list2String_space_sep(convertlist):
     """initialize a list into space seperated string"""
     seperator = " "
     #return string
-    return (seperator.join(list))
+    return (seperator.join(convertlist))
+
 
 # Function to help cocatenate simple txt files
-import codecs
-import os
+
 
 def concatenate_files(root_dir, output_file):
     """ Function to concatenate text files into a single file  """
