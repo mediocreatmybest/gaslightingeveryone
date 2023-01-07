@@ -104,7 +104,7 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
             # Close the file I guess.
             open_image.close
 
-             # Check if debug is enabled to disable saving
+            # Check if debug is enabled to disable saving
             if cmd_args.debug is True:
                 savefiles = False
             else:
@@ -126,7 +126,7 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
                     f.write(data_content)
                     f.close
 
-             # Create new file and or append
+            # Create new file and or append
             if savefiles is True and writeflag == 'a':
                 with open(caption_file, f'{writeflag}', encoding='utf-8') as f:
                     f.write(data_content_append)
