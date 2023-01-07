@@ -13,7 +13,7 @@ parser.add_argument('--captiondir', type=str, help='Directory with captions', me
 parser.add_argument('--caption-remove', type=str, help='Text to remove', metavar='"Monkey Magic is great!', required=True)
 parser.add_argument('--caption-replace', type=str, help='Image directory to caption', metavar='"Tripitaka is the best!"', required=True)
 parser.add_argument('--extension', type=str, help='File extension of caption files e.g. ".txt"', metavar='".txt"', default='.txt', required=False)
-# Debug 
+# Debug
 parser.add_argument('--debug', action='store_true', help='Disables Saving files, prints output locations', required=False)
 
 # Parse the argument
@@ -38,7 +38,7 @@ for root, dirs, files in os.walk(captions_path):
             # Open the found caption file ending with .txt (TODO: update to allow string re.sub on any extension)
             with open(caption_file, 'r', encoding='UTF-8') as caption_read:
                 data = caption_read.read()
-                # Push argument into new variable and run re.sub to remove specified text 
+                # Push argument into new variable and run re.sub to remove specified text
                 replacement_str = re.sub(rf'{cmd_args.caption_remove}', rf'{cmd_args.caption_replace}', data, flags=re.I)
                 if cmd_args.debug is True:
                     print('Data in txt file before re.sub: ')
@@ -57,14 +57,14 @@ for root, dirs, files in os.walk(captions_path):
                 pathsep = "\\"
             else:
                 pathsep = "/"
-            
+
             # Check if debug is enabled to disable saving
             if cmd_args.debug is True:
                 savefiles = False
             else:
                 savefiles = True
 
-            # Set write flag to overwrite 
+            # Set write flag to overwrite
             writeflag = 'w'
 
             if cmd_args.debug is True:
@@ -74,4 +74,3 @@ for root, dirs, files in os.walk(captions_path):
             if savefiles is True:
                 with open(caption_file, f'{writeflag}', encoding='UTF-8') as f:
                     f.write(replacement_str)
-                    f.close
