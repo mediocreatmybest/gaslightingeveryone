@@ -124,16 +124,13 @@ for root, dirs, imgfiles in os.walk(image_captions_path):
             if savefiles is True and writeflag == 'w':
                 with open(caption_file, f'{writeflag}', encoding='utf-8') as f:
                     f.write(data_content)
-                    f.close
 
             # Create new file and or append
             if savefiles is True and writeflag == 'a':
                 with open(caption_file, f'{writeflag}', encoding='utf-8') as f:
                     f.write(data_content_append)
-                    f.close
 
             # Create new file and or overwrite if exists
             if savefiles is True and cmd_args.dump_json is True:
                 with open(json_file, 'w', encoding='utf-8') as f:
                     json.dump(json_result, f)
-                    f.close
