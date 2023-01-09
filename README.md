@@ -4,6 +4,8 @@ This repository contains strong traces gaslighting, along with a few files for; 
 
 ## Caption creation tools
 
+## Now available in tools folder
+
 ### json2txt.py
 
 This script may help with collecting captions from known websites that give useful; titles, descrptions, exif, tags, for the media.
@@ -31,15 +33,15 @@ Usage example: python captions2remove.py --captiondir c:\captions --caption-remo
 
 ### plant2caption.py
 
-This script is less useful for general images but can be useful in identifying plants that you may have close ups. 
+This script is less useful for general images but can be useful in identifying plants that you may have close ups.
 The script uses Plant NET API and you need a developer account with API key. They have a free account that allows up to 500 API calls a day.
 Commandline options available with "python plant2caption.py --help"
 
 ### txts2txt.py
 
-This is a simple script that will concatenate all text files (.txt) into a single file. 
-This can be useful when you want to have all available words used with captions in a single text file. 
-Useful for wordclouds and creating a summary of words use (--dedup) 
+This is a simple script that will concatenate all text files (.txt) into a single file.
+This can be useful when you want to have all available words used with captions in a single text file.
+Useful for wordclouds and creating a summary of words use (--dedup)
 Commandline options available with "python txts2txt --help"
 
 ### txt2wordcloud.py
