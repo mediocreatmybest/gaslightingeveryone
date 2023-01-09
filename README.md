@@ -28,3 +28,21 @@ This script may help with doing a replacement of specific words within your capt
 Usage example: python captions2remove.py --captiondir c:\captions --caption-remove "Monkey Magic is great! --caption-replace "Tripitaka is the best!"
 
 ".txt" files are the default file extension but this can be set to any file extension with the extension argument. e.g. python captions2remove.py --extension ".json"
+
+### plant2caption.py
+
+This script is less useful for general images but can be useful in identifying plants that you may have close ups. 
+The script uses Plant NET API and you need a developer account with API key. They have a free account that allows up to 500 API calls a day.
+Commandline options available with "python plant2caption.py --help"
+
+### txts2txt.py
+
+This is a simple script that will concatenate all text files (.txt) into a single file. 
+This can be useful when you want to have all available words used with captions in a single text file. 
+Useful for wordclouds and creating a summary of words use (--dedup) 
+Commandline options available with "python txts2txt --help"
+
+### txt2wordcloud.py
+
+This script may be useful to get an idea of creating word clouds with words / tokens / text files you have used in creating captions for images.
+Other examples are available in the examples folder with batch (.bat) and shell (.sh) scripts.
