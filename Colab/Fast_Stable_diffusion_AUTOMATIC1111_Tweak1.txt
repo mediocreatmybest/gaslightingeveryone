@@ -7,7 +7,7 @@ import subprocess
 
 #@markdown https://github.com/TheLastBen/fast-stable-diffusion/issues/914
 update_diff_trans = False #@param {type:"boolean"}
-#@markdown  - Update Diffusers to 0.10.2 and Transformers to 4.25.1
+#@markdown  - Update Diffusers to 0.10.2 and Transformers to 4.25.1 and install requirements from sd_dreambooth_extension
 
 reset_to_head = False #@param {type:"boolean"}
 #@markdown  - Check to force update AUTOMATIC1111 Web Ui to latest version, this discards any modified changes and removes pycache folders recursively in EVERY FOLDER within the WebUI. You will need to restart whole colab session to successfully start Web Ui.
@@ -19,7 +19,9 @@ reset_dreambooth_ext = False #@param {type:"boolean"}
 #@markdown  - Check to force update to dreambooth extension, this removed all modified files and resets to latest update and removed pycache folders recursivily in EVERY FOLDER within dreambooth extension.
 
 if update_diff_trans is True:
-  !pip install diffusers==0.10.2 transformers==4.25.1
+    !pip install diffusers==0.10.2 transformers==4.25.1
+    !wget -O sd_dream_ext_req.txt https://raw.githubusercontent.com/mediocreatmybest/sd_dreambooth_extension/main/requirements.txt
+    !pip install -r sd_dream_ext_req.txt
 
 if reset_dreambooth_ext is True:
     #!rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/extensions/sd_dreambooth_extension/dreambooth/diff_to_sd.py
