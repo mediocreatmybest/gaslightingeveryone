@@ -1,3 +1,8 @@
-tqdm
+torch
+torchvision
+Pillow
 requests
-wordcloud
+tqdm
+open_clip_torch
+ipython
+argparse
