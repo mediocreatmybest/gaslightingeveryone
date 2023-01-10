@@ -8,7 +8,7 @@ This repository contains strong traces gaslighting, along with a few files for; 
 
 ### json2txt.py
 
-This script may help with collecting captions from known websites that give useful; titles, descrptions, exif, tags, for the media.
+This script may help with collecting captions from known websites that give useful; titles, descrptions, exif, tags, for the media using gallery-dl to create metadata files.
 The script currently takes information from a useful but randomly organised json file and creates a text file next to it based on the same name as well as an appended file.
 
 The contents of the file will be: *Title, Description, EXIF data, Tags*
