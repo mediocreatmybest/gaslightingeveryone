@@ -1,5 +1,6 @@
 import os
 import argparse
+import shutil
 from PIL import Image
 
 # Create the parser
@@ -25,7 +26,9 @@ if not os.path.exists(args.output_dir):
 # Quick jog through all files in the input directory recursively
 for root, dirs, files in os.walk(args.input_dir):
     for file in files:
-        # Apply basic image filter (Sorry GIF)
+        # Find the base name for all files
+        base_file = (os.path.splitext(file)[0])
+        # Apply basic image filter (Sorry GIF) we also want to be insensitive like Jann Arden
         if file.casefold().endswith(image_filter):
             # Open the image
             image = Image.open(os.path.join(root, file))
@@ -33,7 +36,8 @@ for root, dirs, files in os.walk(args.input_dir):
             # Get the width and height of the image
             width, height = image.size
             if args.size >= min(width, height):
-                raise ValueError(f"The size you specified: {args.size} is too big. *cough* sorry. It should be smaller than the existing image: {file}")
+                # Better way to do this?
+                raise ValueError(f"The size you specified: {args.size} is WAY WAY too big. It should be smaller than the existing image: {file}")
 
             # Determine the new size of the image
             if width < height:
@@ -46,3 +50,9 @@ for root, dirs, files in os.walk(args.input_dir):
 
             # Save the resized image recursivily (hopefully)
             resized_image.save(os.path.join(args.output_dir, file))
+
+            # Check if the image file as a matching text file and copy to new directory
+            text_file = base_file + ".txt"
+            if os.path.exists(os.path.join(root, text_file)):
+                # If it exists, copy it
+                shutil.copy2(os.path.join(root, text_file), os.path.join(args.output_dir, text_file))
