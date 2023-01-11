@@ -142,11 +142,29 @@ for root, dirs, files in os.walk(image_captions_path):
                 da_category = ""
             # Artstation
             if json_category == "artstation":
-                as_data = json_extract(data, 'name')
+                #as_full_name = json_extract(data, 'full_name')
+                as_full_name = data['user']['full_name']
                 as_username = json_extract(data, 'username')
+                as_software = []
+                as_software_list = data['software_items']
+                for idx in as_software_list:
+                    as_software.append(idx['name'])
+                as_categories = []
+                as_categories_list = (data['categories'])
+                for idx in as_categories_list:
+                    as_categories.append(idx['name'])
+                as_mediums = []
+                as_mediums_list = (data['mediums'])
+                for idx in as_mediums_list:
+                    as_mediums.append(idx['name'])
+
             else:
-                as_data = ""
+                as_full_name = ""
                 as_username = ""
+                as_software = ""
+                as_categories = ""
+                as_mediums = ""
+
             # Catch null or nothing values before it gets passed to regex
             if desc is None:
                 desc = ""
@@ -163,7 +181,7 @@ for root, dirs, files in os.walk(image_captions_path):
             if cmd_args.disable_tags is True:
                 tags = ""
 
-            # Simple filtering
+            # Simple filtering, move me somewhere else...
             # Remove text, html href links, and new lines
             exclusionList = ['<.*>','^^','www.','.com','.org','.net','http://','https://','|','&nbsp;','&amp','&gt','"','PROCESS INFO','SOURCE INFO','IMAGE INFO','\n']
             #exclusionList = ''
@@ -201,18 +219,18 @@ for root, dirs, files in os.walk(image_captions_path):
             # desc = re.sub(r"[^-/().&' \w]|_", '', desc)
             # title = re.sub(r"[^-/().&' \w]|_", '', title)
 
-            #move string into new variable to get camera cludge into output
+            # move string into new variable to get camera cludge into output
             final_cludge_camera_data = list2String(cludge_camera_data)
 
-            #move string into new variable to get tags into output
+            # move string into new variable to get tags into output
             final_tags_string = list2String(tags)
 
             # filter hash symbol if flagged in command arg
             if cmd_args.remove_hash is True:
                 final_tags_string = re.sub(r'#', '', final_tags_string)
 
-            #move string into new variable to get tags into output
-            final_as_data = list2String(as_data)
+            # move string into new variable to get name into output
+            # final_as_full_name = as_full_name
 
             # Make it easier on final output, append only existing results to a list
             appended_output = []
@@ -238,8 +256,22 @@ for root, dirs, files in os.walk(image_captions_path):
             if username != "":
                 appended_output.append(username)
 
-            if as_data != "":
-                appended_output.append(final_as_data)
+            # Artstation append
+
+            # AS Software as a caption
+            if as_software != "":
+                as_software_str = 'Created with '
+                as_software_str = as_software_str + list2String(as_software)
+                appended_output.append(as_software_str)
+
+            if len(as_categories):
+                appended_output.append(list2String(as_categories))
+
+            if len(as_mediums):
+                appended_output.append(list2String(as_mediums))
+
+            if as_full_name != "":
+                appended_output.append(as_full_name)
 
             if as_username != "":
                 appended_output.append(as_username[0])
@@ -249,19 +281,19 @@ for root, dirs, files in os.walk(image_captions_path):
 
             return_appended_output = list2String(appended_output)
 
+            # Trailing comma, please leave.
+            return_appended_output = return_appended_output.strip(', ')
 
-            # Quick fix to work if platform.system() == "Windows":out directory seperators, maybe switch to path?
+            # Quick fix to work if platform.system() == "Windows":out directory seperators, please switch me to path
             if platform.system() == "Windows":
                 pathsep = "\\"
             else:
                 pathsep = "/"
 
-            # Seperator for output
-            seperator = ", "
             # Folder and File locations
             single_files = image_captions_single_file_base_dir + pathsep + image_captions_single_file + ".txt"
             appended_file = str(image_captions_path) + pathsep + image_captions_appended_file
-            #Appended file contents
+            # Appended file contents
             appended_contents = image_captions_single_file_base_dir + pathsep + image_captions_single_file_base_name + seperator + return_appended_output + "\n"
 
             # Debug print file name and locations
@@ -292,5 +324,3 @@ for root, dirs, files in os.walk(image_captions_path):
 
                 with open(appended_file, 'a', encoding='UTF-8') as fa:
                     fa.write(appended_contents)
-
-
