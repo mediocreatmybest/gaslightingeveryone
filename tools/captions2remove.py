@@ -1,7 +1,6 @@
 import os
 import re
 import argparse
-import platform
 
 from pathlib import Path
 from tqdm import tqdm
@@ -51,12 +50,6 @@ for root, dirs, files in os.walk(captions_path):
                     print('######################################')
                     print(replacement_str)
                     print('######################################')
-
-            # Quick fix to work if platform.system() == "Windows", maybe switch to path?
-            if platform.system() == "Windows":
-                pathsep = "\\"
-            else:
-                pathsep = "/"
 
             # Check if debug is enabled to disable saving
             if cmd_args.debug is True:

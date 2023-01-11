@@ -259,7 +259,7 @@ for root, dirs, files in os.walk(image_captions_path):
             # Artstation append
 
             # AS Software as a caption
-            if as_software != "":
+            if len(as_software):
                 as_software_str = 'Created with '
                 as_software_str = as_software_str + list2String(as_software)
                 appended_output.append(as_software_str)
