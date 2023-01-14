@@ -72,6 +72,9 @@ for root, dirs, files in os.walk(captions_path):
                 with open(caption_file, 'r', encoding='utf-8') as ff:
                     data = ff.read()
                     # If replacing strings we want to push the argument into new variable and run re.sub to remove specified text
+                    # Make omitting replace argument pass '' instead of None, this should allow simple removal without replacement arg
+                    if cmd_args.caption_replace is None:
+                        cmd_args.caption_replace = ''
                     replacement_data = re.sub(rf'{cmd_args.caption_find}', rf'{cmd_args.caption_replace}', data, flags=re.I)
                     save_file(file_path=caption_file, data=replacement_data, mode='w', debug=cmd_args.debug)
 
