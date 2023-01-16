@@ -1,4 +1,5 @@
-
 Scripts/working/test*
 *.pyc
 *.otf
+.vscode/
+venv/

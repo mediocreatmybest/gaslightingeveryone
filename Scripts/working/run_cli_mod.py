@@ -22,10 +22,13 @@ def main():
     parser.add_argument('-c', '--clip', default='ViT-L-14/openai', help='name of CLIP model to use')
     parser.add_argument('-d', '--device', default='auto', help='device to use (auto, cuda or cpu)')
     parser.add_argument('-f', '--folder', help='path to folder of images')
-    parser.add_argument('-ft', '--folder-txt', help='path to folder of images and create matching text files')
     parser.add_argument('-i', '--image', help='image file or url')
     parser.add_argument('-m', '--mode', default='best', help='best, classic, or fast')
-    parser.add_argument('-o', '--output-type', default='captions', help='captions, csv', choices=['captions', 'csv'])
+    parser.add_argument('-o', '--output-type', default='captions', help='captions, csv',
+                        choices=['captions', 'csv'])
+    parser.add_argument('-wm', '--write-mode', default='w',
+                        help='Write mode for saving text files, append or overwrite with --output-type only',
+                        choices=['a', 'w'])
 
 
     args = parser.parse_args()
@@ -82,9 +85,9 @@ def main():
             prompts.append(prompt)
             print(prompt)
 
-        if args.output-type == 'csv':
+        if args.output_type == 'csv':
             csv_path = os.path.join(args.folder, 'desc.csv')
-            with open(csv_path, 'w', encoding='utf-8', newline='') as f:
+            with open(csv_path, args.write_mode, encoding='utf-8', newline='') as f:
                 w = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
                 w.writerow(['image', 'prompt'])
                 for file, prompt in zip(files, prompts):
@@ -92,11 +95,11 @@ def main():
 
             print(f"\n\n\n\nGenerated {len(prompts)} and saved to {csv_path}, enjoy!")
 
-        elif args.output-type == 'captions':
+        elif args.output_type == 'captions':
             for file, prompt in zip(files, prompts):
                 file_name = os.path.splitext(file)[0] + '.txt'
                 file_path = os.path.join(args.folder, file_name)
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, args.write_mode, encoding='utf-8') as f:
                     f.write(prompt)
 
             print(f"\n\n\n\nGenerated {len(prompts)} prompts and saved to {args.folder}, enjoy!")
