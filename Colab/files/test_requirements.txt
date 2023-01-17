@@ -40,6 +40,8 @@ timm==0.6.7
 torch
 torchdiffeq==0.2.3
 torchsde==0.2.5
+torchtext==0.14.1
+torchaudio==0.13.1
 tqdm==4.64.1
 transformers==4.25.1
 triton==2.0.0.dev20221202
