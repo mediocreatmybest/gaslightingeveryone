@@ -1,6 +1,3 @@
-import os
-import subprocess
-
 #@markdown # Tweak #1
 #@markdown Some tweaks to enable some Automatic1111 extensions
 #@markdown from the discussion:
@@ -19,24 +16,15 @@ reset_dreambooth_ext = False #@param {type:"boolean"}
 #@markdown  - Check to force update to dreambooth extension, this removed all modified files and resets to latest update and removed pycache folders recursivily in EVERY FOLDER within dreambooth extension.
 
 if update_diff_trans is True:
-    !pip install diffusers==0.10.2 transformers==4.25.1
-    !wget -O sd_dream_ext_req.txt https://raw.githubusercontent.com/mediocreatmybest/sd_dreambooth_extension/main/requirements.txt
-    !pip install -r sd_dream_ext_req.txt
+    !pip install diffusers==0.10.2 transformers==4.25.1 bitsandbytes==0.35.0 discord-webhook
 
 if reset_dreambooth_ext is True:
-    #!rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/extensions/sd_dreambooth_extension/dreambooth/diff_to_sd.py
-    #!rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/extensions/sd_dreambooth_extension/dreambooth/train_dreambooth.py
     %cd /content/gdrive/MyDrive/sd/stable-diffusion-webui/extensions/sd_dreambooth_extension
     !find $pwd -type d -name "__pycache__" -exec rm -rf \;
     !git reset --hard main
     !git pull
 
 if reset_to_head is True:
-    !rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/webui.sh
-    !rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/modules/paths.py
-    !rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/webui.py
-    !rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/modules/ui.py
-    !rm /content/gdrive/MyDrive/sd/stable-diffusion-webui/style.css
     %cd /content/gdrive/MyDrive/sd/stable-diffusion-webui
     !find $pwd -type d -name "__pycache__" -exec rm -rf \;
     !git reset --hard master
