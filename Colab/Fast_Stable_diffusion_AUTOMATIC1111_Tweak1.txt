@@ -4,7 +4,7 @@
 
 #@markdown https://github.com/TheLastBen/fast-stable-diffusion/issues/914
 update_diff_trans = False #@param {type:"boolean"}
-#@markdown  - Update Diffusers to 0.10.2 and Transformers to 4.25.1 and install requirements from sd_dreambooth_extension
+#@markdown  - Update a large number of pip files to enable sd_dreambooth_extension (slow install)
 
 reset_to_head = False #@param {type:"boolean"}
 #@markdown  - Check to force update AUTOMATIC1111 Web Ui to latest version, this discards any modified changes and removes pycache folders recursively in EVERY FOLDER within the WebUI. You will need to restart whole colab session to successfully start Web Ui.
@@ -16,7 +16,8 @@ reset_dreambooth_ext = False #@param {type:"boolean"}
 #@markdown  - Check to force update to dreambooth extension, this removed all modified files and resets to latest update and removed pycache folders recursivily in EVERY FOLDER within dreambooth extension.
 
 if update_diff_trans is True:
-    !pip install diffusers==0.10.2 transformers==4.25.1 bitsandbytes==0.35.0 discord-webhook
+    !wget -O test_requirements.txt https://raw.githubusercontent.com/mediocreatmybest/gaslightingeveryone/main/Colab/files/test_requirements.txt
+    !pip install -r test_requirements.txt --extra-index-url https://download.pytorch.org/whl/cu116
 
 if reset_dreambooth_ext is True:
     %cd /content/gdrive/MyDrive/sd/stable-diffusion-webui/extensions/sd_dreambooth_extension
@@ -29,6 +30,7 @@ if reset_to_head is True:
     !find $pwd -type d -name "__pycache__" -exec rm -rf \;
     !git reset --hard master
     !git pull
+
 if update_extensions is True:
     %cd /content/gdrive/MyDrive/sd/stable-diffusion-webui/extensions
     !find $pwd -mindepth 1 -maxdepth 1 -type d -exec git --git-dir={}/.git --work-tree=$PWD/{} pull \;
