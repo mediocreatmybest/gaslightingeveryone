@@ -12,6 +12,7 @@ image_filter = ('jpeg','jpg','png','bmp','webp')
 # Add the arguments
 parser.add_argument('--input-dir', metavar='c:\images', type=str, help='the input image directory path', required=True)
 parser.add_argument('--output-dir', metavar='c:\images_resize', type=str, help='the image output directory path', required=True)
+parser.add_argument('--keep-relative', action='store_true', default=True, help='Keep relative folder structure with output directory, on by default')
 parser.add_argument('--size', metavar='576', type=int, help='desired size of the smallest side', required=True)
 parser.add_argument('--copy-format', action='store_true', default=False, help='Keeps the same file format from the input image')
 parser.add_argument('--format', metavar='jpg', type=str, help=f'Change the image format {image_filter}')
@@ -23,7 +24,6 @@ args = parser.parse_args()
 if args.copy_format is False and args.format is None:
     raise Exception('Please select a format, use one of the following: --format or --format-copy')
 
-
 # Lets create the output directory if it doesn't exist
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
@@ -33,6 +33,8 @@ for root, dirs, files in os.walk(args.input_dir):
     for file in files:
         # Find the base name for all files
         base_file = (os.path.splitext(file)[0])
+        # Find relative path of the input directory and file
+        rel_path = os.path.relpath(root, args.input_dir)
         # Apply basic image filter (Sorry GIF) we also want to be insensitive like Jann Arden
         if file.casefold().endswith(image_filter):
             # Open the image
@@ -66,16 +68,45 @@ for root, dirs, files in os.walk(args.input_dir):
 
             # Save the resized image recursively while checking for jpeg vs jpg with its silly extension arguments
             if format == 'jpg':
-                resized_image.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg')
+                if args.keep_relative is True:
+                    if args.keep_relative is True:
+                        output_path = (os.path.join(args.output_dir, rel_path))
+                    if not os.path.exists(output_path):
+                        os.makedirs(output_path)
+                    resized_image.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg')
+                else:
+                    resized_image.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg')
 
             if args.copy_format is False and format != 'jpg':
-                resized_image.save(os.path.join(args.output_dir, base_file + '.'+format), format)
+                if args.keep_relative is True:
+                    output_path = (os.path.join(args.output_dir, rel_path))
+                    if not os.path.exists(output_path):
+                        os.makedirs(output_path)
+                    resized_image.save(os.path.join(output_path, base_file + '.'+format), format)
+                else:
+                    resized_image.save(os.path.join(args.output_dir, base_file + '.'+format), format)
 
             if args.copy_format:
-                resized_image.save(os.path.join(args.output_dir, file), format)
+                if args.keep_relative is True:
+                    if args.keep_relative is True:
+                        output_path = (os.path.join(args.output_dir, rel_path))
+                    if not os.path.exists(output_path):
+                        os.makedirs(output_path)
+                    resized_image.save(os.path.join(output_path, file), format)
+                else:
+                    resized_image.save(os.path.join(args.output_dir, file), format)
 
             # Check if the image file as a matching text file and copy to new directory
             text_file = base_file + '.txt'
-            if os.path.exists(os.path.join(root, text_file)):
+
+            if args.keep_relative is True:
+                output_path = (os.path.join(args.output_dir, rel_path))
+                if not os.path.exists(output_path):
+                    os.makedirs(output_path)
+                if os.path.exists(os.path.join(root, text_file)):
                 # If it exists, copy it
-                shutil.copy2(os.path.join(root, text_file), os.path.join(args.output_dir, text_file))
+                    shutil.copy2(os.path.join(root, text_file), os.path.join(output_path, text_file))
+            else:
+                if os.path.exists(os.path.join(root, text_file)):
+                    # If it exists, copy it
+                    shutil.copy2(os.path.join(root, text_file), os.path.join(args.output_dir, text_file))
