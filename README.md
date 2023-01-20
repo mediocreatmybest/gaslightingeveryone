@@ -48,3 +48,8 @@ Commandline options available with "python txts2txt --help"
 
 This script may be useful to get an idea of creating word clouds with words / tokens / text files you have used in creating captions for images.
 Other examples are available in the examples folder with batch (.bat) and shell (.sh) scripts.
+
+## Google Colabs
+
+Slow Stable Diffusion and Very Slow Stable Diffusion are both modified Colabs located in the Colab folder and based on TheLastBens Fast_Stable_Diffusion_AUTOMATIC1111 Colab.
+Testing only but seem to work fine.
