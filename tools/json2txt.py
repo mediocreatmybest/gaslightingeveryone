@@ -13,17 +13,27 @@ from tqdm import tqdm
 # Create the arg parser
 parser = argparse.ArgumentParser()
 # Add an argument
-parser.add_argument('--imagedir', type=str, help='Image directory to caption', metavar='c:\images', required=False)
+parser.add_argument('--imagedir', type=str,
+ help='Image directory to caption', metavar='c:\images', required=False)
 # Add arguments to disable unwanted data
-parser.add_argument('--disable-title', action='store_true', help='Set this option to disable Title', required=False)
-parser.add_argument('--disable-desc', action='store_true', help='Set this option to disable Desc', required=False)
-parser.add_argument('--disable-tags', action='store_true', help='Set this option to disable Tags', required=False)
-parser.add_argument('--remove-hash', action='store_true', help='Set this option to filter hash symbol from tags', required=False)
-parser.add_argument('--disable-exif', action='store_true', help='Set this option to disable exif data', required=False)
-parser.add_argument('--append', action='store_true', help='Set this option to append the files instead of overwriting', required=False)
+parser.add_argument('--disable-title', action='store_true',
+ help='Set this option to disable Title', required=False)
+parser.add_argument('--disable-desc', action='store_true',
+ help='Set this option to disable descriptions', required=False)
+parser.add_argument('--disable-altdesc', action='store_true',
+ help='Set this option to alt disable descriptions', required=False)
+parser.add_argument('--disable-tags', action='store_true',
+ help='Set this option to disable tags', required=False)
+parser.add_argument('--remove-hash', action='store_true',
+ help='Set this option to filter hash symbol from tags', required=False)
+parser.add_argument('--disable-exif', action='store_true',
+ help='Set this option to disable exif data', required=False)
+parser.add_argument('--append', action='store_true',
+ help='Set this option to append the files to prevent overwriting', required=False)
 
 # Add debug option to help disable save and prints out useful variables
-parser.add_argument('--debug', action='store_true', help='Disables Saving files, prints output locations', required=False)
+parser.add_argument('--debug', action='store_true',
+ help='Disables Saving files, prints output locations', required=False)
 
 # Parse the argument
 cmd_args = parser.parse_args()
@@ -109,6 +119,10 @@ for root, dirs, files in os.walk(image_captions_path):
                 desc = (data['description'])
             else:
                 desc = ""
+            if "alt_description" in data:
+                alt_desc = (data['alt_description'])
+            else:
+                alt_desc = ""
             if "tags" in data:
                 tags = (data['tags'])
             else:
@@ -118,10 +132,10 @@ for root, dirs, files in os.walk(image_captions_path):
                 city = json_extract(data, 'city')
                 country = json_extract(data, 'country')
                 for val in city:
-                    if val != None :
+                    if val != None:
                         locationlist.append(val)
                 for val in country:
-                    if val != None :
+                    if val != None:
                         locationlist.append(val)
                 location = list2String(locationlist)
             else:
@@ -165,11 +179,14 @@ for root, dirs, files in os.walk(image_captions_path):
                 as_categories = ""
                 as_mediums = ""
 
-            # Catch null or nothing values before it gets passed to regex
+            # Catch null or nothing values
             if desc is None:
                 desc = ""
             if title is None:
                 title = ""
+            if alt_desc is None:
+                alt_desc = ""
+
 
             # Clear data if command line data if flagged as disabled
             if cmd_args.disable_exif is True:
@@ -178,10 +195,12 @@ for root, dirs, files in os.walk(image_captions_path):
                 title = ""
             if cmd_args.disable_desc is True:
                 desc = ""
+            if cmd_args.disable_altdesc is True:
+                alt_desc = ""
             if cmd_args.disable_tags is True:
                 tags = ""
 
-            # Simple filtering, move me somewhere else...
+            # Simple filtering, move me somewhere else...maybe into a function please mr creator... existance is pain
             # Remove text, html href links, and new lines
             exclusionList = ['<.*>','^^','www.','.com','.org','.net','http://','https://','|','&nbsp;','&amp','&gt','"','PROCESS INFO','SOURCE INFO','IMAGE INFO','\n']
             #exclusionList = ''
@@ -240,6 +259,9 @@ for root, dirs, files in os.walk(image_captions_path):
 
             if desc != "":
                 appended_output.append(desc.strip())
+
+            if alt_desc != "":
+                appended_output.append(alt_desc.strip())
 
             if location != "":
                 appended_output.append(location.strip())
