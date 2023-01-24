@@ -63,10 +63,19 @@ for json_file in tqdm(json_files, desc="Creating txt files", unit="json2txts"):
     model = json_extract(data, 'model')
     aperture = json_extract(data, 'aperture')
     shutter_speed = json_extract(data, 'shutter_speed')
+    # Some predefined locations for camera info at 500px
+    camera_info = data['camera_info']['friendly_name']
+    lens_info = data['lens_info']['friendly_name']
 
     # Cludge json data together even if it isn't listed as exif
     # Check if value actually has useful data, there has to be a better way to do this...
     cludge_camera_data = []
+
+    #if camera_info:
+    #    cludge_camera_info = str(camera_info)
+    #    if cludge_camera_info != str(camera_info):
+    #        cludge_camera_data.append(cludge_camera_info)
+
     if iso:
         cludge_iso = "ISO: " + str(iso[0])
         if cludge_iso != "ISO: ":
