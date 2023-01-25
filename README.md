@@ -4,9 +4,11 @@ This repository contains strong traces gaslighting, along with a few files for; 
 
 ## Caption creation tools
 
+### Now available in tools folder
+
 These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, utilising existing metadata (from gallery-dl downloads) or editing text files in bulk.
 
-### Now available in tools folder
+See docs folder for more information.
 
 ## Google Colabs
 
