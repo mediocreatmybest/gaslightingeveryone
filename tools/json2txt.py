@@ -4,6 +4,7 @@ import argparse
 
 from pathlib import Path
 from func import json_extract, list2String # Local function script
+from filter_func import filter_spacing, filter_urls # Local function script
 from tqdm import tqdm
 
 # Create the arg parser
@@ -63,25 +64,47 @@ for json_file in tqdm(json_files, desc="Creating txt files", unit="json2txts"):
     model = json_extract(data, 'model')
     aperture = json_extract(data, 'aperture')
     shutter_speed = json_extract(data, 'shutter_speed')
+    # Some predefined locations for camera info at 500px
+
+    camera_info = data.get('camera_info', {})
+    if camera_info is not None:
+        camera_info = camera_info.get('friendly_name', "")
+    else:
+        camera_info = ""
+
+    lens_info = data.get('lens_info', {})
+    if lens_info is not None:
+        lens_info = lens_info.get('friendly_name', "")
+    else:
+        lens_info = ""
 
     # Cludge json data together even if it isn't listed as exif
     # Check if value actually has useful data, there has to be a better way to do this...
     cludge_camera_data = []
+
+    if camera_info:
+        cludge_camera_info = (camera_info)
+        cludge_camera_data.append(cludge_camera_info)
+
+    if lens_info:
+        cludge_lens_info = (lens_info)
+        cludge_camera_data.append(cludge_lens_info)
+
     if iso:
         cludge_iso = "ISO: " + str(iso[0])
         if cludge_iso != "ISO: ":
             cludge_camera_data.append(cludge_iso)
     if focal_length:
-        cludge_focal_length = "Focal Length: " + str(focal_length[0])
-        if cludge_focal_length != "Focal Length: ":
+        cludge_focal_length = "Focal Length: " + str(focal_length[0] + 'mm')
+        if cludge_focal_length != "Focal Length: mm":
             cludge_camera_data.append(cludge_focal_length)
     if model:
         cludge_model = "Model is " + str(model[0])
         if cludge_model != "Model is ":
             cludge_camera_data.append(cludge_model)
     if aperture:
-        cludge_aperture = "Aperture: " + str(aperture[0])
-        if cludge_aperture != "Aperture: ":
+        cludge_aperture = "Aperture: ƒ/" + str(aperture[0])
+        if cludge_aperture != "Aperture: ƒ/":
             cludge_camera_data.append(cludge_aperture)
     if shutter_speed:
         cludge_shutter = "Shutter speed: " +str(shutter_speed[0])
