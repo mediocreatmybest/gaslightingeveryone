@@ -4,6 +4,7 @@ import argparse
 
 from pathlib import Path
 from func import json_extract, list2String # Local function script
+from filter_func import filter_spacing, filter_urls # Local function script
 from tqdm import tqdm
 
 # Create the arg parser
@@ -64,17 +65,30 @@ for json_file in tqdm(json_files, desc="Creating txt files", unit="json2txts"):
     aperture = json_extract(data, 'aperture')
     shutter_speed = json_extract(data, 'shutter_speed')
     # Some predefined locations for camera info at 500px
-    camera_info = data['camera_info']['friendly_name']
-    lens_info = data['lens_info']['friendly_name']
+
+    camera_info = data.get('camera_info', {})
+    if camera_info is not None:
+        camera_info = camera_info.get('friendly_name', "")
+    else:
+        camera_info = ""
+
+    lens_info = data.get('lens_info', {})
+    if lens_info is not None:
+        lens_info = lens_info.get('friendly_name', "")
+    else:
+        lens_info = ""
 
     # Cludge json data together even if it isn't listed as exif
     # Check if value actually has useful data, there has to be a better way to do this...
     cludge_camera_data = []
 
-    #if camera_info:
-    #    cludge_camera_info = str(camera_info)
-    #    if cludge_camera_info != str(camera_info):
-    #        cludge_camera_data.append(cludge_camera_info)
+    if camera_info:
+        cludge_camera_info = (camera_info)
+        cludge_camera_data.append(cludge_camera_info)
+
+    if lens_info:
+        cludge_lens_info = (lens_info)
+        cludge_camera_data.append(cludge_lens_info)
 
     if iso:
         cludge_iso = "ISO: " + str(iso[0])
