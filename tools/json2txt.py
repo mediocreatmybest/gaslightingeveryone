@@ -95,16 +95,16 @@ for json_file in tqdm(json_files, desc="Creating txt files", unit="json2txts"):
         if cludge_iso != "ISO: ":
             cludge_camera_data.append(cludge_iso)
     if focal_length:
-        cludge_focal_length = "Focal Length: " + str(focal_length[0])
-        if cludge_focal_length != "Focal Length: ":
+        cludge_focal_length = "Focal Length: " + str(focal_length[0] + 'mm')
+        if cludge_focal_length != "Focal Length: mm":
             cludge_camera_data.append(cludge_focal_length)
     if model:
         cludge_model = "Model is " + str(model[0])
         if cludge_model != "Model is ":
             cludge_camera_data.append(cludge_model)
     if aperture:
-        cludge_aperture = "Aperture: " + str(aperture[0])
-        if cludge_aperture != "Aperture: ":
+        cludge_aperture = "Aperture: ƒ/" + str(aperture[0])
+        if cludge_aperture != "Aperture: ƒ/":
             cludge_camera_data.append(cludge_aperture)
     if shutter_speed:
         cludge_shutter = "Shutter speed: " +str(shutter_speed[0])
