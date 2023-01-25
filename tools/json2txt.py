@@ -91,25 +91,34 @@ for json_file in tqdm(json_files, desc="Creating txt files", unit="json2txts"):
         cludge_camera_data.append(cludge_lens_info)
 
     if iso:
-        cludge_iso = "ISO: " + str(iso[0])
-        if cludge_iso != "ISO: ":
-            cludge_camera_data.append(cludge_iso)
+        if iso[0]:
+            cludge_iso = "ISO: " + str(iso[0])
+            if cludge_iso != "ISO: ":
+                cludge_camera_data.append(cludge_iso)
+
     if focal_length:
-        cludge_focal_length = "Focal Length: " + str(focal_length[0] + 'mm')
-        if cludge_focal_length != "Focal Length: mm":
-            cludge_camera_data.append(cludge_focal_length)
+        if focal_length[0]:
+            cludge_focal_length = "Focal Length: " + str(focal_length[0]) + "mm"
+            if cludge_focal_length != "Focal Length: mm":
+                cludge_camera_data.append(cludge_focal_length)
+
     if model:
-        cludge_model = "Model is " + str(model[0])
-        if cludge_model != "Model is ":
-            cludge_camera_data.append(cludge_model)
+        if model[0]:
+            cludge_model = "Model is " + str(model[0])
+            if cludge_model != "Model is ":
+                cludge_camera_data.append(cludge_model)
+
     if aperture:
-        cludge_aperture = "Aperture: ƒ/" + str(aperture[0])
-        if cludge_aperture != "Aperture: ƒ/":
-            cludge_camera_data.append(cludge_aperture)
+        if aperture[0]:
+            cludge_aperture = "Aperture: ƒ/" + str(aperture[0])
+            if cludge_aperture != "Aperture: ƒ/":
+                cludge_camera_data.append(cludge_aperture)
+
     if shutter_speed:
-        cludge_shutter = "Shutter speed: " +str(shutter_speed[0])
-        if cludge_shutter != "Shutter speed: ":
-            cludge_camera_data.append(cludge_shutter)
+        if shutter_speed[0]:
+            cludge_shutter = "Shutter speed: " +str(shutter_speed[0])
+            if cludge_shutter != "Shutter speed: ":
+                cludge_camera_data.append(cludge_shutter)
 
     # Some basic checks if data exists in json data that we don't want to search for via nested search
     # Assign json category to variable, hopefully this makes it easier to select known json data structures.
