@@ -1,3 +1,4 @@
+tools/test*
 Scripts/working/test*
 *.pyc
 *.otf

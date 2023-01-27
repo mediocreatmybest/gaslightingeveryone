@@ -1,6 +1,7 @@
-import os
 import argparse
+import os
 import shutil
+
 from PIL import Image
 
 # Create the parser
@@ -13,7 +14,7 @@ image_filter = ('jpeg','jpg','png','bmp','webp')
 parser.add_argument('--input-dir', metavar='c:\images', type=str, help='the input image directory path', required=True)
 parser.add_argument('--output-dir', metavar='c:\images_resize', type=str, help='the image output directory path', required=True)
 parser.add_argument('--keep-relative', action='store_true', default=True, help='Keep relative folder structure with output directory, on by default')
-parser.add_argument('--size', metavar='576', type=int, help='desired size of the smallest side', required=True)
+parser.add_argument('--min-size', metavar='576', type=int, help='desired size of the smallest side', required=True)
 parser.add_argument('--copy-format', action='store_true', default=False, help='Keeps the same file format from the input image')
 parser.add_argument('--format', metavar='jpg', type=str, help=f'Change the image format {image_filter}')
 
@@ -22,7 +23,7 @@ args = parser.parse_args()
 
 # Create error if copy-format is False and the format argument is None
 if args.copy_format is False and args.format is None:
-    raise Exception('Please select a format, use one of the following: --format or --format-copy')
+    raise Exception('Please select a format, use one of the following: --format or --copy-format')
 
 # Lets create the output directory if it doesn't exist
 if not os.path.exists(args.output_dir):
@@ -42,18 +43,18 @@ for root, dirs, files in os.walk(args.input_dir):
 
             # Get the width and height of the image
             width, height = image.size
-            if args.size >= min(width, height):
+            if args.min_size >= min(width, height):
                 # Better way to do this? It *should* still resize and keep toddling on
                 try:
-                    raise ValueError((f'Beep boop! The size you specified: {args.size} is equal or larger than the source image: {file}'))
+                    raise ValueError((f'Beep boop! The size you specified: {args.min_size} is equal or larger than the source image: {file}'))
                 except ValueError as err:
                     print(err)
 
             # Determine the new size of the image
             if width < height:
-                new_size = (args.size, int(height * args.size / width))
+                new_size = (args.min_size, int(height * args.min_size / width))
             else:
-                new_size = (int(width * args.size / height), args.size)
+                new_size = (int(width * args.min_size / height), args.min_size)
 
             # Resize the image
             resized_image = image.resize(new_size)
