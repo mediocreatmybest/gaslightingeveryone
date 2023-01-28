@@ -52,9 +52,55 @@ def crop_to_multiple(image_path, multiple=64):
 
     return img
 
+# Set allowed images for directory scan (Sorry GIF)
+image_filter = ('jpeg','jpg','png','bmp','webp')
+
+def resize_small_side(image_path, min_size, image_filter=image_filter):
+    """ Resize an image to a specific size based on the smallest side of the image """
+
+    # Open image
+
+    if image_path.casefold().endswith(image_filter):
+        # Open the image
+        img = Image.open(image_path)
+
+        # Get the width and height of the image
+        width, height = img.size
+        if min_size >= min(width, height):
+            # Better way to do this? It *should* still resize and keep toddling on
+            try:
+                raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image_path}'))
+            except ValueError as err:
+                print(err)
+
+        # Determine the new size of the image
+        if width < height:
+            new_size = (min_size, int(height * min_size / width))
+        else:
+            new_size = (int(width * min_size / height), min_size)
+
+        # Resize the image
+        img = img.resize(new_size)
+
+    return img
+
 if __name__ == '__main__':
+    print('\n')
     print('Aspect Crop Function')
-
+    print('for example: ')
+    print('image = aspect_crop_image(image_path, aspect_ratios)')
+    print('or: ')
+    print('image = aspect_crop_image(barnaby.jpg, 1:1,4:3,16:9)')
+    print('\n')
     print('Crop to Multiple Function')
-
-
+    print('for example: ')
+    print('image = crop_to_multiple(image_path, multiple)')
+    print('or: ')
+    print('image = crop_to_multiple(barnaby.jpg, 64)')
+    print('\n')
+    print ('resize on small side Function)')
+    print('for example: ')
+    print('image = resize_small_side(image_path, min_size, image_filter)')
+    print('or: ')
+    print('image_filter = (\'jpeg\',\'jpg\',\'png\',\'bmp\',\'webp\')')
+    print('image = resize_small_side(barnaby.jpg, 1024, image_filter)')
