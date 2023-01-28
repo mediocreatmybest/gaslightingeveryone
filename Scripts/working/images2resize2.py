@@ -24,11 +24,11 @@ parser.add_argument('--format', metavar='jpg', type=str,
                     help=f'Change the image format {image_filter}')
 parser.add_argument('--multiples-crop', action='store_true', default=False,
                     help='Crops the image to the closest specified multiple')
-parser.add_argument('--multiples-of', metavar='32', default=32, type=int,
+parser.add_argument('--multiples-of', metavar='64', default=64, type=int,
                     help='Desired image size in multiples of pixel count e.g 64', required=False)
 parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
-parser.add_argument('--aspect-ratios', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
+parser.add_argument('--aspect-ratios', type=str, default='1:1,4:3,3:4,5:3,5:4,16:9,9:16',
                     help='Set desired aspect ratios is comma seperated list e.g 1:1,4:3')
 parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
@@ -72,45 +72,20 @@ for root, dirs, files in os.walk(args.input_dir):
                 print('Image file is: ', file)
                 print('Original Image size: ', image.size)
 
-                # Use the resize_to_min function from multi_crop_func.py
-                # This should be done before any other silly resizing is done
-
-            if args.resize_small_side is True:
-            # As we didn't set a default for min_size we need to check for it
-                if args.min_size is None:
-                    raise Exception('Please select the minimum size, use the following: --min-size')
-                else:
-                    img = resize_small_side(image, args.min_size)
-                    if args.debug is True:
-                        print(f'Multiple Crop is: {(args.multiples_crop)}')
-                        print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
-                        print('Resize on small side size: ', img.size)
-                        print('Min_size was set to: ', args.min_size)
-
             # Use the crop_to_multiple function from multi_crop_func.py
             # As we need to strip the image of these pixels first to maintain a useful image
-            # This function should probably be done on its own
             if args.multiples_crop is True:
-                if args.resize_small_side is True:
-                    img = crop_to_multiple(img, args.multiples_of)
-                    if args.debug is True:
-                        print(f'Multiple Crop is: {(args.multiples_crop)}')
-                        print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
-                        print('Output of multiples_crop size: ', img.size)
-                else:
-                    img = crop_to_multiple(image, args.multiples_of)
-                    if args.debug is True:
-                        print(f'Multiple Crop is: {(args.multiples_crop)}')
-                        print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
-                        print('Output of multiples_crop size: ', img.size)
+                img = crop_to_multiple(image, args.multiples_of)
+                if args.debug is True:
+                    print(f'Multiple Crop is: {(args.multiples_crop)}')
+                    print(f'Aspect Crop is: {(args.aspect_crop)}')
+                    print(f'Resize on small size is: {(args.resize_small_side)}')
+                    print('Output of multiples_crop size: ', img.size)
 
             # Use the crop_to_aspect function from multi_crop_func.py
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
             if args.aspect_crop is True:
-                if args.multiples_crop is True or args.resize_small_side is True:
+                if args.multiples_crop is True:
                     img = aspect_crop(img, args.aspect_ratios)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
@@ -125,6 +100,32 @@ for root, dirs, files in os.walk(args.input_dir):
                         print(f'Resize on small size is: {(args.resize_small_side)}')
                         print('Output of aspect_crop size: ', img.size)
 
+
+            # Use the resize_to_min function from multi_crop_func.py
+            # This should be done last if all options are used
+            # Using 2 or more options doesn't seem to work as intended # Fix this!!
+
+            if args.resize_small_side is True:
+                # As we didn't set a default for min_size we need to check for it
+                if args.min_size is None:
+                    raise Exception('Please select the minimum size, use the following: --min-size')
+                else:
+                    if args.aspect_crop is True or args.multiples_crop is True:
+                        img = resize_small_side(img, args.min_size)
+                        if args.debug is True:
+                            print(f'Multiple Crop is: {(args.multiples_crop)}')
+                            print(f'Aspect Crop is: {(args.aspect_crop)}')
+                            print(f'Resize on small size is: {(args.resize_small_side)}')
+                            print('Resize on small side size: ', img.size)
+                            print('Min_size was set to: ', args.min_size)
+                    else:
+                        img = resize_small_side(image, args.min_size)
+                        if args.debug is True:
+                            print(f'Multiple Crop is: {(args.multiples_crop)}')
+                            print(f'Aspect Crop is: {(args.aspect_crop)}')
+                            print(f'Resize on small size is: {(args.resize_small_side)}')
+                            print('Resize on small side size: ', img.size)
+                            print('Min_size was set to: ', args.min_size)
 
             # Check for copy input format (I think this works)
             if args.copy_format:
