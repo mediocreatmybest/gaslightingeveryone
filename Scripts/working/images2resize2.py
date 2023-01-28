@@ -28,7 +28,7 @@ parser.add_argument('--multiples-of', metavar='64', default=64, type=int,
                     help='Desired image size in multiples of pixel count e.g 64', required=False)
 parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
-parser.add_argument('--aspect-ratios', type=str, default='1:1,4:3,3:4,16:9,9:16',
+parser.add_argument('--aspect-ratios', type=str, default='1:1,4:3,3:4,5:3,5:4,16:9,9:16',
                     help='Set desired aspect ratios is comma seperated list e.g 1:1,4:3')
 parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
@@ -66,14 +66,20 @@ for root, dirs, files in os.walk(args.input_dir):
             fullpath = os.path.join(root, file)
 
             # Use the crop_to_multiple function from multi_crop_func.py
-            # As we need to strip the image of these pixels first to maintain useful image
+            # As we need to strip the image of these pixels first to maintain a useful image
             if args.multiples_crop is True:
-                resized_image = crop_to_multiple(fullpath, args.multiples_of)
+                resized_image = crop_to_multiple(image, args.multiples_of)
+                resized_image = resized_image
 
             # Use the crop_to_aspect function from multi_crop_func.py
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
             if args.aspect_crop is True:
-                resized_image = aspect_crop(fullpath, args.aspect_ratios)
+                if args.multiples_crop is True:
+                    resized_image = aspect_crop(resized_image, args.aspect_ratios)
+                    resized_image = resized_image
+                else:
+                    resized_image = aspect_crop(image, args.aspect_ratios)
+                    resized_image = resized_image
 
             # Use the resize_to_min function from multi_crop_func.py
             # This should be done last if all options are used
@@ -84,7 +90,12 @@ for root, dirs, files in os.walk(args.input_dir):
                 if args.min_size is None:
                     raise Exception('Please select the minimum size, use the following: --min-size')
                 else:
-                    resized_image = resize_small_side(fullpath, args.min_size)
+                    if args.aspect_crop is True or args.multiples_crop is True:
+                        resized_image = resize_small_side(resized_image, args.min_size)
+                        resized_image = resized_image
+                    else:
+                        resized_image = resize_small_side(image, args.min_size)
+                        resized_image = resized_image
 
             # Check for copy input format (I think this works)
             if args.copy_format:

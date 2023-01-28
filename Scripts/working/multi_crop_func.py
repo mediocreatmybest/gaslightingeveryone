@@ -1,15 +1,11 @@
 from PIL import Image
 
-# Set default aspect ratios if none are used
-aspect_ratios = '1:1,4:3,3:4,5:3,5:4,16:9,9:16'
-
-def aspect_crop(image_path, aspect_ratios=aspect_ratios):
+def aspect_crop(image, aspect_ratios):
     """ Crop an image to a given aspect ratio in the format W:H """
     # Parse allowed aspect ratios
     aspect_ratios = [float(x.split(':')[0])/float(x.split(':')[1]) for x in aspect_ratios.split(',')]
 
-    # Open image
-    img = Image.open(image_path)
+    img = image
     width, height = img.size
 
     # Get original aspect ratio
@@ -35,10 +31,10 @@ def aspect_crop(image_path, aspect_ratios=aspect_ratios):
     # return image
     return img
 
-def crop_to_multiple(image_path, multiple=64):
+def crop_to_multiple(image, multiple=64):
     """ Crop an image to a multiple of a given number in pixels (64 by default) """
-    # Open image
-    img = Image.open(image_path)
+
+    img = image
     # Get the current width and height of the image
     width, height = img.size
 
@@ -55,36 +51,29 @@ def crop_to_multiple(image_path, multiple=64):
 
     return img
 
-# Set allowed images for directory scan (Sorry GIF)
-image_filter = ('jpeg','jpg','png','bmp','webp')
 
-def resize_small_side(image_path, min_size, image_filter=image_filter):
+def resize_small_side(image, min_size):
     """ Resize an image to a specific size based on the smallest side of the image """
 
-    # Open image
+    img = image
 
-    if image_path.casefold().endswith(image_filter):
-        # Open the image
-        img = Image.open(image_path)
+    # Get the width and height of the image
+    width, height = img.size
+    if min_size >= min(width, height):
+        # Better way to do this? It *should* still resize and keep toddling on
+        try:
+            raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image}'))
+        except ValueError as err:
+            print(err)
 
-        # Get the width and height of the image
-        width, height = img.size
-        if min_size >= min(width, height):
-            # Better way to do this? It *should* still resize and keep toddling on
-            try:
-                raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image_path}'))
-            except ValueError as err:
-                print(err)
+    # Determine the new size of the image
+    if width < height:
+        new_size = (min_size, int(height * min_size / width))
+    else:
+        new_size = (int(width * min_size / height), min_size)
 
-        # Determine the new size of the image
-        if width < height:
-            new_size = (min_size, int(height * min_size / width))
-        else:
-            new_size = (int(width * min_size / height), min_size)
-
-        # Resize the image
-        img = img.resize(new_size)
-
+    # Resize the image
+    img = img.resize(new_size)
     return img
 
 if __name__ == '__main__':
@@ -93,19 +82,19 @@ if __name__ == '__main__':
     print('\n')
     print('Aspect Crop Function')
     print('for example: ')
-    print('image = aspect_crop_image(image_path, aspect_ratios)')
+    print('image = aspect_crop_image(image, aspect_ratios)')
     print('or: ')
     print('image = aspect_crop_image(barnaby.jpg, 1:1,4:3,16:9)')
     print('\n')
     print('Crop to Multiple Function')
     print('for example: ')
-    print('image = crop_to_multiple(image_path, multiple)')
+    print('image = crop_to_multiple(image, multiple)')
     print('or: ')
     print('image = crop_to_multiple(barnaby.jpg, 64)')
     print('\n')
     print ('resize on small side Function)')
     print('for example: ')
-    print('image = resize_small_side(image_path, min_size, image_filter)')
+    print('image = resize_small_side(image, min_size, image_filter)')
     print('or: ')
     print('image_filter = (\'jpeg\',\'jpg\',\'png\',\'bmp\',\'webp\')')
     print('image = resize_small_side(barnaby.jpg, 1024, image_filter)')
