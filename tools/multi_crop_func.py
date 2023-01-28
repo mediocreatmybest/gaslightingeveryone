@@ -5,7 +5,7 @@ def aspect_crop(image, aspect_ratios):
     # Parse allowed aspect ratios
     aspect_ratios = [float(x.split(':')[0])/float(x.split(':')[1]) for x in aspect_ratios.split(',')]
 
-    img = image
+    img = image.copy()
     width, height = img.size
 
     # Get original aspect ratio
@@ -34,7 +34,7 @@ def aspect_crop(image, aspect_ratios):
 def crop_to_multiple(image, multiple=64):
     """ Crop an image to a multiple of a given number in pixels (64 by default) """
 
-    img = image
+    img = image.copy()
     # Get the current width and height of the image
     width, height = img.size
 
@@ -55,14 +55,14 @@ def crop_to_multiple(image, multiple=64):
 def resize_small_side(image, min_size):
     """ Resize an image to a specific size based on the smallest side of the image """
 
-    img = image
+    img = image.copy()
 
     # Get the width and height of the image
     width, height = img.size
     if min_size >= min(width, height):
         # Better way to do this? It *should* still resize and keep toddling on
         try:
-            raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image}'))
+            raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {img.size}, enlarging instead.'))
         except ValueError as err:
             print(err)
 
@@ -84,20 +84,19 @@ if __name__ == '__main__':
     print('for example: ')
     print('image = aspect_crop_image(image, aspect_ratios)')
     print('or: ')
-    print('image = aspect_crop_image(barnaby.jpg, 1:1,4:3,16:9)')
+    print('image = aspect_crop_image(image_object, 1:1,4:3,16:9)')
     print('\n')
     print('Crop to Multiple Function')
     print('for example: ')
     print('image = crop_to_multiple(image, multiple)')
     print('or: ')
-    print('image = crop_to_multiple(barnaby.jpg, 64)')
+    print('image = crop_to_multiple(image_object, 64)')
     print('\n')
     print ('resize on small side Function)')
     print('for example: ')
     print('image = resize_small_side(image, min_size, image_filter)')
     print('or: ')
-    print('image_filter = (\'jpeg\',\'jpg\',\'png\',\'bmp\',\'webp\')')
-    print('image = resize_small_side(barnaby.jpg, 1024, image_filter)')
+    print('image = resize_small_side(image_object, 1024)')
     print('\n')
     print('from multi_crop_func import *')
     print('\n')

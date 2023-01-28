@@ -34,6 +34,9 @@ parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
 parser.add_argument('--min-size', metavar='576', type=int,
                     help='desired size of the smallest side', required=False)
+parser.add_argument('--debug', action='store_true',
+                    help='Print debug messages of output images', required=False)
+
 
 # Parse the arguments
 args = parser.parse_args()
@@ -63,23 +66,40 @@ for root, dirs, files in os.walk(args.input_dir):
             # Open the image to get format
             image = Image.open(os.path.join(root, file))
             # Set full path for functions
-            fullpath = os.path.join(root, file)
+            #fullpath = os.path.join(root, file)
+
+            if args.debug is True:
+                print('Image file is: ', file)
+                print('Original Image size: ', image.size)
 
             # Use the crop_to_multiple function from multi_crop_func.py
             # As we need to strip the image of these pixels first to maintain a useful image
             if args.multiples_crop is True:
-                resized_image = crop_to_multiple(image, args.multiples_of)
-                resized_image = resized_image
+                img = crop_to_multiple(image, args.multiples_of)
+                if args.debug is True:
+                    print(f'Multiple Crop is: {(args.multiples_crop)}')
+                    print(f'Aspect Crop is: {(args.aspect_crop)}')
+                    print(f'Resize on small size is: {(args.resize_small_side)}')
+                    print('Output of multiples_crop size: ', img.size)
 
             # Use the crop_to_aspect function from multi_crop_func.py
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
             if args.aspect_crop is True:
                 if args.multiples_crop is True:
-                    resized_image = aspect_crop(resized_image, args.aspect_ratios)
-                    resized_image = resized_image
+                    img = aspect_crop(img, args.aspect_ratios)
+                    if args.debug is True:
+                        print(f'Multiple Crop is: {(args.multiples_crop)}')
+                        print(f'Aspect Crop is: {(args.aspect_crop)}')
+                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print('Output of aspect_crop size: ', img.size)
                 else:
-                    resized_image = aspect_crop(image, args.aspect_ratios)
-                    resized_image = resized_image
+                    img = aspect_crop(image, args.aspect_ratios)
+                    if args.debug is True:
+                        print(f'Multiple Crop is: {(args.multiples_crop)}')
+                        print(f'Aspect Crop is: {(args.aspect_crop)}')
+                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print('Output of aspect_crop size: ', img.size)
+
 
             # Use the resize_to_min function from multi_crop_func.py
             # This should be done last if all options are used
@@ -91,19 +111,27 @@ for root, dirs, files in os.walk(args.input_dir):
                     raise Exception('Please select the minimum size, use the following: --min-size')
                 else:
                     if args.aspect_crop is True or args.multiples_crop is True:
-                        resized_image = resize_small_side(resized_image, args.min_size)
-                        resized_image = resized_image
+                        img = resize_small_side(img, args.min_size)
+                        if args.debug is True:
+                            print(f'Multiple Crop is: {(args.multiples_crop)}')
+                            print(f'Aspect Crop is: {(args.aspect_crop)}')
+                            print(f'Resize on small size is: {(args.resize_small_side)}')
+                            print('Resize on small side size: ', img.size)
+                            print('Min_size was set to: ', args.min_size)
                     else:
-                        resized_image = resize_small_side(image, args.min_size)
-                        resized_image = resized_image
+                        img = resize_small_side(image, args.min_size)
+                        if args.debug is True:
+                            print(f'Multiple Crop is: {(args.multiples_crop)}')
+                            print(f'Aspect Crop is: {(args.aspect_crop)}')
+                            print(f'Resize on small size is: {(args.resize_small_side)}')
+                            print('Resize on small side size: ', img.size)
+                            print('Min_size was set to: ', args.min_size)
 
             # Check for copy input format (I think this works)
             if args.copy_format:
-                format = image.format
-                format = format.casefold()
+                format = img.format
             else:
                 format = args.format
-                format = format.casefold()
 
             # Save the resized image recursively while checking for jpeg vs jpg with its silly extension arguments
             if format == 'jpg':
@@ -112,18 +140,18 @@ for root, dirs, files in os.walk(args.input_dir):
                         output_path = (os.path.join(args.output_dir, rel_path))
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
-                    resized_image.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg')
+                    img.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg')
                 else:
-                    resized_image.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg')
+                    img.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg')
 
             if args.copy_format is False and format != 'jpg':
                 if args.keep_relative is True:
                     output_path = (os.path.join(args.output_dir, rel_path))
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
-                    resized_image.save(os.path.join(output_path, base_file + '.'+format), format)
+                    img.save(os.path.join(output_path, base_file + '.'+format), format)
                 else:
-                    resized_image.save(os.path.join(args.output_dir, base_file + '.'+format), format)
+                    img.save(os.path.join(args.output_dir, base_file + '.'+format), format)
 
             if args.copy_format:
                 if args.keep_relative is True:
@@ -131,9 +159,9 @@ for root, dirs, files in os.walk(args.input_dir):
                         output_path = (os.path.join(args.output_dir, rel_path))
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
-                    resized_image.save(os.path.join(output_path, file), format)
+                    img.save(os.path.join(output_path, file), format)
                 else:
-                    resized_image.save(os.path.join(args.output_dir, file), format)
+                    img.save(os.path.join(args.output_dir, file), format)
 
             # Check if the image file as a matching text file and copy to new directory
             text_file = base_file + '.txt'
