@@ -29,7 +29,9 @@ parser.add_argument('--multiples-of', metavar='32', default=32, type=int,
 parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
 parser.add_argument('--aspect-ratios', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
-                    help='Set desired aspect ratios is comma seperated list e.g 1:1,4:3')
+                    help='Set desired aspect ratios in comma seperated list e.g 1:1,4:3')
+#parser.add_argument('--aspect-ratios-fl', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
+#                    help='Set desired aspect ratios as a float in comma seperated list e.g 1,1.33,1.5,1.78,2.33')
 parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
 parser.add_argument('--min-size', metavar='576', type=int,
