@@ -1,0 +1,2 @@
+Image Source: https://en.wikipedia.org/wiki/Lenna
+Aspect ratio: 1:1

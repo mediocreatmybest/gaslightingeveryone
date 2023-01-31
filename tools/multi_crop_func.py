@@ -31,6 +31,40 @@ def aspect_crop(image, aspect_ratios):
     # return image
     return img
 
+from PIL import Image
+
+def aspect_crop_float(image, aspect_ratios):
+    """ Crop an image to a given aspect ratio in a float e.g. 1.33 """
+    # Parse allowed aspect ratios
+    aspect_ratios = [x for x in aspect_ratios.split(',')]
+
+    img = image.copy()
+    width, height = img.size
+
+    # Get original aspect ratio
+    original_ratio = width / height
+
+    # Find closest allowed aspect ratio
+    closest_ratio = min([float(x) for x in aspect_ratios], key=lambda x: abs(x - original_ratio))
+
+    # Crop image to closest allowed aspect ratio
+    if closest_ratio > original_ratio:
+        # Crop top and bottom
+        new_height = width / closest_ratio
+        top = (height - new_height) / 2
+        bottom = height - top
+        img = img.crop((0, top, width, bottom))
+    else:
+        # Crop left and right
+        new_width = height * closest_ratio
+        left = (width - new_width) / 2
+        right = width - left
+        img = img.crop((left, 0, right, height))
+
+    # return image
+    return img
+
+
 def crop_to_multiple(image, multiple=64):
     """ Crop an image to a multiple of a given number in pixels (64 by default) """
 
