@@ -1,6 +1,6 @@
 # Gaslightingeveryone
 
-This repository contains strong traces gaslighting, along with a few files for; machine learning, containers, and ultimately some poorly written scripts.
+This repository contains strong traces of gaslighting, along with a few files for; machine learning, containers, and ultimately some poorly written scripts.
 
 ## Caption creation tools
 
