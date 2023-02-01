@@ -1,0 +1,5 @@
+Image Source: https://www.flickr.com/photos/hadock/14688302627/
+Creative Commons
+Aspect ratio: 0.74:1 or 853:1152
+New aspect ratio: 1:1
+Arguments: --aspect-crop --multiples-crop --resize-small-side --min-size 768 --copy-format

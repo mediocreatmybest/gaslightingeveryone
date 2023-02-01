@@ -1,0 +1,5 @@
+Image Source: https://www.flickr.com/photos/fvega/51984793974/
+Creative Commons
+Aspect ratio: 1.5:1 or 3:2
+New aspect ratio: Aspect ratio: 1.5:1 or 3:2
+Arguments: --aspect-crop --multiples-crop --resize-small-side --min-size 768 --copy-format

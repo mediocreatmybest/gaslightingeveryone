@@ -28,13 +28,13 @@ parser.add_argument('--multiples-of', metavar='32', default=32, type=int,
                     help='Desired image size in multiples of pixel count e.g 64', required=False)
 parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
-parser.add_argument('--aspect-ratios', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
-                    help='Set desired aspect ratios in comma seperated list e.g 1:1,4:3')
-#parser.add_argument('--aspect-ratios-fl', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
-#                    help='Set desired aspect ratios as a float in comma seperated list e.g 1,1.33,1.5,1.78,2.33')
+#parser.add_argument('--aspect-ratios', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
+#                    help='Set desired aspect ratios in comma seperated list e.g 1:1,4:3')
+parser.add_argument('--aspect-ratios', type=str, default='1,1.33,1.5,1.78,2.33', # What are the most reliable and needed ratios?
+                    help='Set desired aspect ratios as a float in comma seperated list e.g 1,1.33,1.5,1.78,2.33')
 parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
-parser.add_argument('--min-size', metavar='576', type=int,
+parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
 parser.add_argument('--debug', action='store_true',
                     help='Print debug messages of output images', required=False)
@@ -113,14 +113,14 @@ for root, dirs, files in os.walk(args.input_dir):
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
             if args.aspect_crop is True:
                 if args.multiples_crop is True or args.resize_small_side is True:
-                    img = aspect_crop(img, args.aspect_ratios)
+                    img = aspect_crop_float(img, args.aspect_ratios)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
                         print(f'Resize on small size is: {(args.resize_small_side)}')
                         print('Output of aspect_crop size: ', img.size)
                 else:
-                    img = aspect_crop(image, args.aspect_ratios)
+                    img = aspect_crop_float(image, args.aspect_ratios)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
