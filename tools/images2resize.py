@@ -24,7 +24,7 @@ parser.add_argument('--format', metavar='jpg', type=str,
                     help=f'Change the image format {image_filter}')
 parser.add_argument('--multiples-crop', action='store_true', default=False,
                     help='Crops the image to the closest specified multiple')
-parser.add_argument('--multiples-of', metavar='32', default=32, type=int,
+parser.add_argument('--multiples-of', metavar='64', default=64, type=int,
                     help='Desired image size in multiples of pixel count e.g 64', required=False)
 parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
