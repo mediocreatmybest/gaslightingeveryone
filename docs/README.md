@@ -21,14 +21,23 @@ Command line options available with "json2txt.py --help"
 ### caption2remove.py
 
 This script can aid in replacing specific words within your captions recursively if they are stored in plain text files.
+".txt" files are the default file extension but this can be set to any file extension with the extension argument. e.g. captions2remove.py --extension ".json"
 
 Usage example: captions2remove.py --captiondir c:\captions --caption-find "Monkey Magic is great! --caption-replace "Tripitaka is the best!"
-
-".txt" files are the default file extension but this can be set to any file extension with the extension argument. e.g. captions2remove.py --extension ".json"
 
 Additionally, this script allows you to add text before and after your captions recursively, it does not impose any specific structure so you will need to include delimiters such as "text " or ", text" when doing so.
 
 Command line options available with "captions2remove.py --help"
+
+### images2resize.py
+
+This script now has a few *"attempted"* options:
+
+* Multiples Crop (--multiples-crop): Crops the edges of an image to the closest multiple of a specified number of pixels (e.g. 64 pixels for a 1024x768 image).
+* Aspect Ratio Crop (--aspect-crop): Crops the image to the closest specified aspect ratio (1,1.33,1.5,etc.), but wil not enlarge the image.
+* Resize on Small Side *(I'm sure this could have a better name)* (--resize-small-side): Shrinks or enlarges the image based on the smallest side of the image, with a warning if enlarging.
+
+Command line options available with "images2resize.py --help"
 
 ### plant2caption.py
 
@@ -38,9 +47,8 @@ Command line options available with "plant2caption.py --help"
 
 ### txts2txt.py
 
-This script simply concatenates all text files (.txt) into one file. It can be useful for creating a file containing all the words used.
-
-This can help create word clouds as well as creating a summary of words used (--dedup)
+This script simply concatenates all text files (.txt) into one file. It can be used to create a large text document with all words in a single file.
+This can help create word clouds as well as creating a summary of words used (with --dedup)
 
 Command line options available with "txts2txt.py --help"
 

@@ -6,18 +6,18 @@ This repository contains strong traces of gaslighting, along with a few files fo
 
 ### Now available in tools folder
 
-These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, utilising existing metadata (from gallery-dl downloads) or editing text files in bulk.
+These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, and utilising existing metadata (from gallery-dl --write-metadata) or just simply editing text files in bulk.
 
-See docs folder for more information.
+See the docs folder for more information.
 
-## Google Colabs
-
-Slow Stable Diffusion and Very Slow Stable Diffusion are both modified Colabs located in the Colab folder and based on TheLastBens Fast_Stable_Diffusion_AUTOMATIC1111 Colab.
-Testing only but seem to work fine.
-
-## Docker Files
+## Docker
 
 ### Sitting in the Containers folder
 
-Some Docker files I have created for testing, old and out of date.
-I do need to go and update these at some stage.
+Docker files that have been created for testing, these are old and out of date.
+At some stage I do need to go back and update these.
+
+## Google Colab
+
+Slow Stable Diffusion is just a modified Colab file located in the Colab folder, it is a modified colab from TheLastBens Fast_Stable_Diffusion_AUTOMATIC1111.
+Testing only but seem to work well enough.
