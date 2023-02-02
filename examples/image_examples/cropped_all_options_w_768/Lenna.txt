@@ -1,0 +1,5 @@
+Image Source: https://en.wikipedia.org/wiki/Lenna
+Aspect ratio: 1:1
+New aspect ratio 1:1
+Arguments: --aspect-crop --multiples-crop --resize-small-side --min-size 768 --copy-format
+Note: image was enlarged due to being smaller than command line argument of --min-size 768
