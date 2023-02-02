@@ -1,124 +1,126 @@
+import math
+from typing import List, Tuple
+
 from PIL import Image
 
-def aspect_crop(image, aspect_ratios):
-    """ Crop an image to a given aspect ratio in the format W:H """
-    # Parse allowed aspect ratios
-    aspect_ratios = [float(x.split(':')[0])/float(x.split(':')[1]) for x in aspect_ratios.split(',')]
+def ar_xy_to_float(xy):
+    """Aspect ratio in X:Y to a float
 
+    Args:
+        xy ('1:1, 3:4, 16:9'): returns a list of floats from X:Y string
+
+    Returns:
+        float: returns the aspect ratio as a tuple of floats
+    """
+    ratios = xy.split(',')
+    ratios = [tuple(map(float, r.split(':'))) for r in ratios]
+    return [x/y for x, y in ratios]
+
+
+def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> Tuple:
+    """
+    Crop an image to the closest allowed aspect ratio.
+
+    image: the input image to be cropped
+    aspect_ratios: a list of allowed aspect ratios as float values
+    Returns:
+        The cropped image
+    """
+
+    # Copy image instead of using original, not sure I need to do this
     img = image.copy()
+    # Simple width by height from image size
     width, height = img.size
-
-    # Get original aspect ratio
+    # Devide width by height for ratio
     original_ratio = width / height
 
-    # Find closest allowed aspect ratio
-    closest_ratio = min(aspect_ratios, key=lambda x: abs(x - original_ratio))
+    closest_ratio = None
+    closest_distance = math.inf
+    for aspect_ratio in aspect_ratios:
+        distance = abs(aspect_ratio - original_ratio)
 
-    # Crop image to closest allowed aspect ratio
+        if distance < closest_distance:
+            closest_ratio = aspect_ratio
+            closest_distance = distance
+            if closest_distance == 0:
+                break
+
+    if closest_ratio is None:
+        raise ValueError(f"No valid aspect ratio was found among {aspect_ratios}")
+
+    # Would closest_ratio == original_ratio be better? Not sure
+    if math.isclose(closest_ratio, original_ratio):
+        return img
+
     if closest_ratio > original_ratio:
-        # Crop top and bottom
         new_height = width / closest_ratio
         top = (height - new_height) / 2
         bottom = height - top
         img = img.crop((0, top, width, bottom))
     else:
-        # Crop left and right
         new_width = height * closest_ratio
         left = (width - new_width) / 2
         right = width - left
         img = img.crop((left, 0, right, height))
 
-    # return image
+    if debug is True:
+        print('Width x Height: ', width, 'x', height)
+        print('Original aspect ratio: ', original_ratio)
+        print('Allowed aspect ratios: ', aspect_ratios)
+        print('Closest aspect ratio: ', closest_ratio)
+        print('Distance from closest ratio: ', closest_distance)
+
     return img
-
-from PIL import Image
-
-def aspect_crop_float(image, aspect_ratios):
-    """ Crop an image to a given aspect ratio in a float e.g. 1.33 """
-    # Parse allowed aspect ratios
-    aspect_ratios = [x for x in aspect_ratios.split(',')]
-
-    img = image.copy()
-    width, height = img.size
-
-    # Get original aspect ratio
-    original_ratio = width / height
-
-    # Find closest allowed aspect ratio
-    closest_ratio = min([float(x) for x in aspect_ratios], key=lambda x: abs(x - original_ratio))
-
-    # Crop image to closest allowed aspect ratio
-    if closest_ratio > original_ratio:
-        # Crop top and bottom
-        new_height = width / closest_ratio
-        top = (height - new_height) / 2
-        bottom = height - top
-        img = img.crop((0, top, width, bottom))
-    else:
-        # Crop left and right
-        new_width = height * closest_ratio
-        left = (width - new_width) / 2
-        right = width - left
-        img = img.crop((left, 0, right, height))
-
-    # return image
-    return img
-
 
 def crop_to_multiple(image, multiple=64):
-    """ Crop an image to a multiple of a given number in pixels (64 by default) """
+    """
+    Crop an image to a multiple of a given number in pixels (64 by default).
 
-    img = image.copy()
-    # Get the current width and height of the image
-    width, height = img.size
+    Parameters:
+        image (PIL.Image): The image to be cropped.
+        multiple (int, optional): The multiple to which the image should be cropped. Defaults to 64.
 
-    # Calculate the new width and height of the image
+    Returns:
+        PIL.Image: The cropped image.
+    """
+    width, height = image.size
     new_width = (width // multiple) * multiple
     new_height = (height // multiple) * multiple
-
-    # Calculate the left and upper coordinates of the crop box
-    left = (width - new_width) / 2
-    upper = (height - new_height) / 2
-
-    # Crop the image
-    img = img.crop((left, upper, left + new_width, upper + new_height))
-
-    return img
+    left = int((width - new_width) / 2)
+    upper = int((height - new_height) / 2)
+    return image.crop((left, upper, left + new_width, upper + new_height))
 
 
 def resize_small_side(image, min_size):
-    """ Resize an image to a specific size based on the smallest side of the image """
+    """
+    Resize an image to a specific size based on the smallest side of the image.
 
-    img = image.copy()
+    Parameters:
+        image (PIL.Image): The image to be resized.
+        min_size (int): The size to which the smallest side of the image should be resized.
 
-    # Get the width and height of the image
-    width, height = img.size
+    Returns:
+        PIL.Image: The resized image.
+
+    Raises:
+        ValueError: If `min_size` is equal or larger than the smallest side of the source image.
+    """
+    width, height = image.size
     if min_size >= min(width, height):
-        # Better way to do this? It *should* still resize and keep toddling on
-        try:
-            raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {img.size}, enlarging instead.'))
-        except ValueError as err:
-            print(err)
-
-    # Determine the new size of the image
+        raise ValueError(f'Beep! Boop! The size you specified: {min_size} is equal or larger than the smallest side of the source image: {min(width, height)}')
     if width < height:
         new_size = (min_size, int(height * min_size / width))
     else:
         new_size = (int(width * min_size / height), min_size)
-
-    # Resize the image
-    img = img.resize(new_size)
-    return img
+    return image.resize(new_size)
 
 if __name__ == '__main__':
-    print('This script is designed to be imported into another script')
+    print('This script needs to be imported')
     print('It contains the following functions: ')
     print('\n')
     print('Aspect Crop Function')
     print('for example: ')
-    print('image = aspect_crop_image(image, aspect_ratios)')
-    print('or: ')
-    print('image = aspect_crop_image(image_object, 1:1,4:3,16:9)')
+    print('image = crop_to_set_aspect_ratio(image, aspect_ratios)')
     print('\n')
     print('Crop to Multiple Function')
     print('for example: ')
@@ -128,7 +130,7 @@ if __name__ == '__main__':
     print('\n')
     print ('resize on small side Function)')
     print('for example: ')
-    print('image = resize_small_side(image, min_size, image_filter)')
+    print('image = resize_small_side(image, min_size)')
     print('or: ')
     print('image = resize_small_side(image_object, 1024)')
     print('\n')

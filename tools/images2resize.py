@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from multi_crop_func import *
+from multi_crop_func2 import *
 
 from PIL import Image
 
@@ -28,17 +28,14 @@ parser.add_argument('--multiples-of', metavar='64', default=64, type=int,
                     help='Desired image size in multiples of pixel count e.g 64', required=False)
 parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
-#parser.add_argument('--aspect-ratios', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
-#                    help='Set desired aspect ratios in comma seperated list e.g 1:1,4:3')
-parser.add_argument('--aspect-ratios', type=str, default='1,1.33,1.5,1.78,2.33', # What are the most reliable and needed ratios?
-                    help='Set desired aspect ratios as a float in comma seperated list e.g 1,1.33,1.5,1.78,2.33')
+parser.add_argument('--aspect-ratios', type=str, default='0.56,0.75,0.8,1,1.33,1.5,1.6,1.78', # What are the most reliable and needed ratios?
+                    help='Set desired aspect ratios as a float in comma seperated list e.g 0.56,0.75,0.8,1,1.33,1.5,1.6,1.78')
 parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
 parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
-parser.add_argument('--debug', action='store_true',
+parser.add_argument('--debug', action='store_true', default=False,
                     help='Print debug messages of output images', required=False)
-
 
 # Parse the arguments
 args = parser.parse_args()
@@ -51,6 +48,11 @@ if args.aspect_crop is False and args.resize_small_side is False and args.multip
 # I suspect this should just be removed and --copy-format should be enabled by default?
 if args.copy_format is False and args.format is None:
     raise Exception('Please select a format, use one of the following: --format or --copy-format')
+
+# Convert the string to a list of floats
+# Will it be better to use the X:Y function instead?
+aspect_ratios_split = [float(x) for x in args.aspect_ratios.split(',')]
+aspect_ratios = [x for x in aspect_ratios_split]
 
 # Lets create the output directory if it doesn't exist
 if not os.path.exists(args.output_dir):
@@ -74,8 +76,8 @@ for root, dirs, files in os.walk(args.input_dir):
                 print('Image file is: ', file)
                 print('Original Image size: ', image.size)
 
-                # Use the resize_to_min function from multi_crop_func.py
-                # This should be done before any other silly resizing is done
+                # Use the resize_small_side function from multi_crop_func.py
+                # This should be done before any other of my silly resizing functions
 
             if args.resize_small_side is True:
             # As we didn't set a default for min_size we need to check for it
@@ -113,14 +115,14 @@ for root, dirs, files in os.walk(args.input_dir):
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
             if args.aspect_crop is True:
                 if args.multiples_crop is True or args.resize_small_side is True:
-                    img = aspect_crop_float(img, args.aspect_ratios)
+                    img = crop_to_set_aspect_ratio(img, aspect_ratios, debug=args.debug)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
                         print(f'Resize on small size is: {(args.resize_small_side)}')
                         print('Output of aspect_crop size: ', img.size)
                 else:
-                    img = aspect_crop_float(image, args.aspect_ratios)
+                    img = crop_to_set_aspect_ratio(image, aspect_ratios, debug=args.debug)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
