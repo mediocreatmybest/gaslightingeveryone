@@ -1,0 +1,3 @@
+Image Source: https://www.flickr.com/photos/volvob12b/50746511306/
+Creative Commons
+Arguments: --multiples-crop --resize-small-side --min-size 1024 --copy-format

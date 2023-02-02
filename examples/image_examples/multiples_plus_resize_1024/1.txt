@@ -1,0 +1,3 @@
+Image Source: https://www.flickr.com/photos/fvega/51984793974/
+Creative Commons
+Arguments: --multiples-crop --resize-small-side --min-size 1024 --copy-format

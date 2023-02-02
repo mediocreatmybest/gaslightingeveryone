@@ -107,7 +107,11 @@ def resize_small_side(image, min_size):
     """
     width, height = image.size
     if min_size >= min(width, height):
-        raise ValueError(f'Beep! Boop! The size you specified: {min_size} is equal or larger than the smallest side of the source image: {min(width, height)}')
+        # Better way to do this? It *should* still resize and keep toddling on
+        try:
+            raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.'))
+        except ValueError as err:
+            print(err)
     if width < height:
         new_size = (min_size, int(height * min_size / width))
     else:

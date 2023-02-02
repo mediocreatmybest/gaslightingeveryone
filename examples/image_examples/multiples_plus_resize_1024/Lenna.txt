@@ -1,0 +1,3 @@
+Image Source: https://en.wikipedia.org/wiki/Lenna
+Arguments: --multiples-crop --resize-small-side --min-size 1024 --copy-format
+Note: image was enlarged due to being smaller than command line argument of --min-size 1024
