@@ -31,7 +31,7 @@ parser.add_argument('--aspect-crop', action='store_true', default=False,
 #parser.add_argument('--aspect-ratios', type=str, default='1:1,1:2,2:1,3:4,4:3,9:16,16:9,21:9',
 #                    help='Set desired aspect ratios in comma seperated list e.g 1:1,4:3')
 parser.add_argument('--aspect-ratios', type=str, default='0.56,0.75,0.8,1,1.33,1.5,1.6,1.78', # What are the most reliable and needed ratios?
-                    help='Set desired aspect ratios as a float in comma seperated list e.g 1,1.33,1.5,1.6,1.78,2.33')
+                    help='Set desired aspect ratios as a float in comma seperated list e.g 0.56,0.75,0.8,1,1.33,1.5,1.6,1.78')
 parser.add_argument('--resize-small-side', action='store_true', default=False,
                     help='Resizes to the specified min_size while keeping the aspect ratio')
 parser.add_argument('--min-size', metavar='768', type=int,

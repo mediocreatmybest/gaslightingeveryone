@@ -9,7 +9,7 @@ def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> 
     Crop an image to the closest allowed aspect ratio.
 
     :param image: the input image to be cropped
-    :param aspect_ratios: a list of allowed aspect ratios
+    :param aspect_ratios: a list of allowed aspect ratios as float values
     :return: the cropped image
     """
 
@@ -17,13 +17,12 @@ def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> 
     img = image.copy()
     # Simple width by height from image size
     width, height = img.size
-    # Devide width by height for ratio and round to 3 places no silly 1.33333333333333334
-    original_ratio = round(width / height, 3)
-    # Bring the aspect ratios from the string into a split list of floats
+    # Devide width by height for ratio
+    original_ratio = width / height
+
+    # Convert the string to a list of floats ( Move to main script)
     aspect_ratios_split = [float(x) for x in aspect_ratios.split(',')]
-    # Also round these down to 3 places
-    aspect_ratios = [round(x, 3) for x in aspect_ratios_split]
-    aspect_ratios.sort()
+    aspect_ratios = [x for x in aspect_ratios_split]
 
     closest_ratio = None
     closest_distance = math.inf
@@ -36,18 +35,31 @@ def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> 
             if closest_distance == 0:
                 break
 
-
     if closest_ratio is None:
         raise ValueError(f"No valid aspect ratio was found among {aspect_ratios}")
+
+    if math.isclose(closest_ratio, original_ratio):
+        return img
+
+    if closest_ratio > original_ratio:
+        new_height = width / closest_ratio
+        top = (height - new_height) / 2
+        bottom = height - top
+        img = img.crop((0, top, width, bottom))
+    else:
+        new_width = height * closest_ratio
+        left = (width - new_width) / 2
+        right = width - left
+        img = img.crop((left, 0, right, height))
+
     if debug is True:
         print( 'Width x Height: ', width, 'x', height)
         print( 'Original aspect ratio: ', original_ratio)
         print('Allowed aspect ratios: ', aspect_ratios)
-        print('Aspect Ratio argument: ', aspect_ratio)
-        print('Distance from ratio: ', distance)
+        print('Closest aspect ratio: ', closest_ratio)
+        print('Distance from closest ratio: ', closest_distance)
 
     return img
-
 
 def aspect_crop_float(image, aspect_ratios, debug=False):
     """ Crop an image to a given aspect ratio in a float e.g. 1.33 """
