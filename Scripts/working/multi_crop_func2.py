@@ -4,10 +4,7 @@ from typing import List, Tuple
 from PIL import Image
 
 
-import math
-from typing import List, Tuple
-
-def crop_image_to_closest_aspect_ratio(image, aspect_ratios: List[float]) -> Tuple:
+def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> Tuple:
     """
     Crop an image to the closest allowed aspect ratio.
 
@@ -15,43 +12,44 @@ def crop_image_to_closest_aspect_ratio(image, aspect_ratios: List[float]) -> Tup
     :param aspect_ratios: a list of allowed aspect ratios
     :return: the cropped image
     """
+
+    # Copy image instead of using original, not sure I need to do this
     img = image.copy()
+    # Simple width by height from image size
     width, height = img.size
-    original_ratio = width / height
+    # Devide width by height for ratio and round to 3 places no silly 1.33333333333333334
+    original_ratio = round(width / height, 3)
+    # Bring the aspect ratios from the string into a split list of floats
+    aspect_ratios_split = [float(x) for x in aspect_ratios.split(',')]
+    # Also round these down to 3 places
+    aspect_ratios = [round(x, 3) for x in aspect_ratios_split]
+    aspect_ratios.sort()
 
     closest_ratio = None
-    closest_distance = float('inf')
+    closest_distance = math.inf
     for aspect_ratio in aspect_ratios:
         distance = abs(aspect_ratio - original_ratio)
+
         if distance < closest_distance:
             closest_ratio = aspect_ratio
             closest_distance = distance
+            if closest_distance == 0:
+                break
+
 
     if closest_ratio is None:
         raise ValueError(f"No valid aspect ratio was found among {aspect_ratios}")
-
-    if math.isclose(closest_ratio, original_ratio):
-        return img
-
-    if closest_ratio > original_ratio:
-        new_height = width / closest_ratio
-        top = (height - new_height) / 2
-        bottom = height - top
-        img = img.crop((0, top, width, bottom))
-    else:
-        new_width = height * closest_ratio
-        left = (width - new_width) / 2
-        right = width - left
-        img = img.crop((left, 0, right, height))
+    if debug is True:
+        print( 'Width x Height: ', width, 'x', height)
+        print( 'Original aspect ratio: ', original_ratio)
+        print('Allowed aspect ratios: ', aspect_ratios)
+        print('Aspect Ratio argument: ', aspect_ratio)
+        print('Distance from ratio: ', distance)
 
     return img
 
 
-
-from PIL import Image
-
-
-def aspect_crop_float(image, aspect_ratios):
+def aspect_crop_float(image, aspect_ratios, debug=False):
     """ Crop an image to a given aspect ratio in a float e.g. 1.33 """
     # Parse allowed aspect ratios
     aspect_ratios = [x for x in aspect_ratios.split(',')]
@@ -82,6 +80,74 @@ def aspect_crop_float(image, aspect_ratios):
     # return image
     return img
 
+def aspect_crop_float2(image, aspect_ratios, debug=False):
+    """ Crop an image to a given aspect ratio in a float e.g. 1.33 """
+    # Parse allowed aspect ratios
+    aspect_ratios = [x for x in aspect_ratios.split(',')]
+
+    img = image.copy()
+    width, height = img.size
+
+    # Get original aspect ratio
+    original_ratio = width / height
+
+    # Find closest allowed aspect ratio
+    closest_ratio = min([float(x) for x in aspect_ratios], key=lambda x: abs(x - original_ratio))
+
+    # Crop image to closest allowed aspect ratio
+    if closest_ratio > original_ratio:
+        # Crop top and bottom
+        new_height = width / closest_ratio
+        top = (height - new_height) / 2
+        bottom = height - top
+        img = img.crop((0, top, width, bottom))
+    else:
+        # Crop left and right
+        new_width = height * closest_ratio
+        left = (width - new_width) / 2
+        right = width - left
+        img = img.crop((left, 0, right, height))
+
+    # Lets try this again, catch problem images
+    width, height = img.size
+
+    print('width is: ', width)
+    print('height is: ', height)
+
+    # Get original aspect ratio
+    check_ratio = width / height
+
+    # Find closest allowed aspect ratio
+    check_closest_ratio = min([float(x) for x in aspect_ratios], key=lambda x: abs(x - check_ratio))
+
+    print('closest ratio is: ', check_closest_ratio)
+    print('check_ratio is: ', check_ratio)
+    if check_closest_ratio == check_ratio:
+        print('Nothing to do, RETURN')
+        print('check_closest_ratio is: ', check_closest_ratio)
+        print('check_ratio is: ', check_ratio)
+
+        return img
+
+
+    # Crop image to closest allowed aspect ratio
+    if check_closest_ratio < check_ratio:
+        # Crop top and bottom
+        new_height = width / check_closest_ratio
+        print('New Height:', new_height)
+        top = (height - new_height) / 2
+        bottom = height - top
+        img = img.crop((0, top, width, bottom))
+    else:
+        # Crop left and right
+        new_width = height * check_closest_ratio
+        print('New width: ', new_width)
+        left = (width - new_width) / 2
+        right = width - left
+        img = img.crop((left, 0, right, height))
+
+    # return image
+    return img
 
 def crop_to_multiple(image, multiple=64):
     """ Crop an image to a multiple of a given number in pixels (64 by default) """
