@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from multi_crop_func2 import *
+from multi_crop_func import *
 
 from PIL import Image
 
