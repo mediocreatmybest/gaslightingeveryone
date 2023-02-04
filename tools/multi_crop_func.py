@@ -72,6 +72,26 @@ def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> 
 
     return img
 
+
+def pad_to_1_to_1(image):
+    """Does a simple pad to 1:1 aspect ratio
+
+    Args:
+        image: Pass in an image object
+
+    Returns:
+        image: returns the image object padded 1:1
+    """
+    width, height = image.size
+    # Use max to return the largest side
+    max_side = max(width, height)
+    # Create new image with black background with max_side on both sides
+    new_img = Image.new("RGB", (max_side, max_side), (0, 0, 0))
+    # Paste image into new image, No other calculations. phew.
+    new_img.paste(image, (int((max_side - width) / 2), int((max_side - height) / 2)))
+    return new_img
+
+
 def crop_to_multiple(image, multiple=64):
     """
     Crop an image to a multiple of a given number in pixels (64 by default).

@@ -30,10 +30,12 @@ parser.add_argument('--aspect-crop', action='store_true', default=False,
                     help='Desired aspect ratios for the closest crop')
 parser.add_argument('--aspect-ratios', type=str, default='0.56,0.75,0.8,1,1.33,1.5,1.6,1.78', # What are the most reliable and needed ratios?
                     help='Set desired aspect ratios as a float in comma seperated list e.g 0.56,0.75,0.8,1,1.33,1.5,1.6,1.78')
-parser.add_argument('--resize-small-side', action='store_true', default=False,
-                    help='Resizes to the specified min_size while keeping the aspect ratio')
+parser.add_argument('--resize', action='store_true', default=False,
+                    help='Resizes (based on shortest side) to the specified min_size while keeping the aspect ratio')
 parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
+parser.add_argument('--pad-image', action='store_true', default=False,
+                    help='Pads the image to a 1:1 ratio')
 parser.add_argument('--debug', action='store_true', default=False,
                     help='Print debug messages of output images', required=False)
 
@@ -41,8 +43,8 @@ parser.add_argument('--debug', action='store_true', default=False,
 args = parser.parse_args()
 
 # Create error if resize and crop options are all False aka not used
-if args.aspect_crop is False and args.resize_small_side is False and args.multiples_crop is False:
-    raise Exception('Please select a resize method, use one of the following: --aspect-crop, --resize-small-side, --multiples-crop')
+if args.aspect_crop is False and args.resize is False and args.multiples_crop is False and args.pad_image is False:
+    raise Exception('Please select a resize method, use one of the following: --aspect-crop, --resize-small-side, --multiples-crop --pad-image')
 
 # Create error if copy-format is False and the format argument is None
 # I suspect this should just be removed and --copy-format should be enabled by default?
@@ -79,7 +81,7 @@ for root, dirs, files in os.walk(args.input_dir):
                 # Use the resize_small_side function from multi_crop_func.py
                 # This should be done before any other of my silly resizing functions
 
-            if args.resize_small_side is True:
+            if args.resize is True:
             # As we didn't set a default for min_size we need to check for it
                 if args.min_size is None:
                     raise Exception('Please select the minimum size, use the following: --min-size')
@@ -88,7 +90,7 @@ for root, dirs, files in os.walk(args.input_dir):
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print(f'Resize on small size is: {(args.resize)}')
                         print('Resize on small side size: ', img.size)
                         print('Min_size was set to: ', args.min_size)
 
@@ -96,39 +98,47 @@ for root, dirs, files in os.walk(args.input_dir):
             # As we need to strip the image of these pixels first to maintain a useful image
             # This function should probably be done on its own
             if args.multiples_crop is True:
-                if args.resize_small_side is True:
+                if args.resize is True:
                     img = crop_to_multiple(img, args.multiples_of)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print(f'Resize on small size is: {(args.resize)}')
                         print('Output of multiples_crop size: ', img.size)
                 else:
                     img = crop_to_multiple(image, args.multiples_of)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print(f'Resize on small size is: {(args.resize)}')
                         print('Output of multiples_crop size: ', img.size)
 
             # Use the crop_to_aspect function from multi_crop_func.py
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
             if args.aspect_crop is True:
-                if args.multiples_crop is True or args.resize_small_side is True:
+                if args.multiples_crop is True or args.resize is True:
                     img = crop_to_set_aspect_ratio(img, aspect_ratios, debug=args.debug)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print(f'Resize on small size is: {(args.resize)}')
                         print('Output of aspect_crop size: ', img.size)
                 else:
                     img = crop_to_set_aspect_ratio(image, aspect_ratios, debug=args.debug)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize_small_side)}')
+                        print(f'Resize on small size is: {(args.resize)}')
                         print('Output of aspect_crop size: ', img.size)
 
+            # Use Pad function from multi_crop_func.py
+            # Basic padding to move an image to a 1:1 aspect ratio
+            # Need to add debug
+            if args.pad_image is True:
+                if args.resize is True:
+                    img = pad_to_1_to_1(img)
+                else:
+                    img = pad_to_1_to_1(image)
 
             # Check for copy input format (I think this works)
             if args.copy_format:
