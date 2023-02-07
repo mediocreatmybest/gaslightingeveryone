@@ -1,0 +1,147 @@
+{
+    "category": "flickr",
+    "comments": 0,
+    "date": "2023-02-07 04:45:54",
+    "dates": {
+        "lastupdate": "1675750341",
+        "posted": "1675745154",
+        "taken": "2022-09-18 04:42:55",
+        "takengranularity": 0,
+        "takenunknown": "0"
+    },
+    "dateuploaded": "1675745154",
+    "description": "San Sabastian, Spain",
+    "editability": {
+        "canaddmeta": 0,
+        "cancomment": 0
+    },
+    "extension": "jpg",
+    "farm": 66,
+    "filename": "52674285159_08b916350e_o",
+    "geoperms": {
+        "iscontact": 0,
+        "isfamily": 0,
+        "isfriend": 0,
+        "ispublic": 1
+    },
+    "height": 3928,
+    "id": 52674285159,
+    "isfavorite": 0,
+    "label": "Original",
+    "license": "1",
+    "location": {
+        "accuracy": "14",
+        "context": "0",
+        "country": "Spain",
+        "county": "Gipuzkoa",
+        "latitude": "43.316776",
+        "locality": "San Sebastián",
+        "longitude": "-1.988091",
+        "neighbourhood": "San Martin",
+        "region": "Basque Country"
+    },
+    "media": "photo",
+    "notes": {
+        "note": []
+    },
+    "originalformat": "jpg",
+    "originalsecret": "08b916350e",
+    "owner": {
+        "gift": {
+            "eligible_durations": [
+                "year",
+                "month",
+                "week"
+            ],
+            "gift_eligible": true,
+            "new_flow": true
+        },
+        "iconfarm": 66,
+        "iconserver": "65535",
+        "location": "Colorado Springs, United States",
+        "nsid": "9766401@N03",
+        "path_alias": null,
+        "realname": "Ning Tranquiligold Jin",
+        "username": "Tranquiligold"
+    },
+    "people": {
+        "haspeople": 0
+    },
+    "publiceditability": {
+        "canaddmeta": 0,
+        "cancomment": 1
+    },
+    "rotation": 0,
+    "safety_level": "0",
+    "secret": "4cff2058f3",
+    "server": "65535",
+    "subcategory": "image",
+    "tags": [
+        "Fujifilm",
+        "x-t4",
+        "Spain",
+        "San Sebastian",
+        "Spainish",
+        "Basque",
+        "Travel",
+        "Outdoor",
+        "Houses",
+        "water",
+        "River",
+        "Buildings",
+        "historic",
+        "Scenic",
+        "clouds",
+        "Blue",
+        "sky",
+        "green",
+        "landmark",
+        "Europe",
+        "beach",
+        "waves",
+        "bay",
+        "sea",
+        "seascape"
+    ],
+    "title": "San Sabastian Bay",
+    "url": "https://live.staticflickr.com/65535/52674285159_08b916350e_o.jpg",
+    "urls": {
+        "url": [
+            {
+                "_content": "https://www.flickr.com/photos/9766401@N03/52674285159/",
+                "type": "photopage"
+            }
+        ]
+    },
+    "usage": {
+        "canblog": 0,
+        "candownload": 1,
+        "canprint": 0,
+        "canshare": 1
+    },
+    "user": {
+        "gift": {
+            "eligible_durations": [
+                "year",
+                "month",
+                "week"
+            ],
+            "gift_eligible": true,
+            "new_flow": true
+        },
+        "iconfarm": 66,
+        "iconserver": "65535",
+        "location": "Colorado Springs, United States",
+        "nsid": "9766401@N03",
+        "path_alias": null,
+        "realname": "Ning Tranquiligold Jin",
+        "username": "Tranquiligold"
+    },
+    "views": 31,
+    "visibility": {
+        "isfamily": 0,
+        "isfriend": 0,
+        "ispublic": 1
+    },
+    "width": 6240
+}
