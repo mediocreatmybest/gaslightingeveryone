@@ -47,8 +47,11 @@ def csv_to_parquet(csv_file, image_folder, parquet_file, recursive=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input-dir', type=str, required=True)
-    parser.add_argument('--input-csv', type=str, required=True)
+    parser.add_argument('--input-dir', type=str, help='Input image directory', required=True)
+    parser.add_argument('--input-captions-dir', type=str, required=True)
+    parser.add_argument('--input-captions1-dir', type=str, required=False)
+    parser.add_argument('--input-captions2-dir', type=str, required=False)
+    parser.add_argument('--input-captions3-dir', type=str, required=False)
     parser.add_argument('--output-dir', type=str, required=True)
     parser.add_argument('--parq-name', default='parquetfile.parquet', type=str, required=False)
 
@@ -57,15 +60,37 @@ if __name__ == '__main__':
 # Set some names to make it easier to remember
 image_folder = Path(args.input_dir)
 output_folder = Path(args.output_dir)
-input_csv = args.input_csv
+captions_folder = Path(args.input_captions_dir)
+captions_folder1 = Path(args.input_captions1_dir)
+captions_folder2 = Path(args.input_captions2_dir)
+captions_folder3 = Path(args.input_captions3_dir)
+
+# Set parquet name from args
 parq_name = args.parq_name
+
+# Find required files
+# Example from: https://www.adamsmith.haus/python/answers/how-to-get-a-list-of-multiple-file-types-in-a-directory-using-the-glob-module-in-python
+image_pattern = [f"{image_folder}/**/*.jpg", f"{image_folder}/**/*.jpeg", f"{image_folder}/**/*.png", f"{image_folder}/**/*.bmp",]
+caption_pattern = [f"{captions_folder}/**/*.txt"]
+
+images = []
+for files in image_pattern:
+    image_file = glob.glob(files)
+    images += image_file
+print(images)
+
+captions = []
+for caption in caption_pattern:
+    caption_file = glob.glob(caption)
+    captions += caption_file
+print(captions)
+
+
 
 # Check if output folder exists and create if not
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 # Join our path and parq_name as final ouput for function
 save_parq = os.path.join(output_folder, parq_name)
-print(save_parq)
 
-csv_to_parquet(csv_file=input_csv, image_folder=image_folder, parquet_file=save_parq, recursive=True)
 print('Done!, maybe..')
