@@ -1,49 +1,36 @@
 import argparse
 import glob
 import os
+import PIL
 from pathlib import Path
 
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+def folder_to_parquet(images, captions, captions1=None, captions2=None, captions3=None, parquet_file=None):
 
-def csv_to_parquet(csv_file, image_folder, parquet_file, recursive=True):
-    """csv_to_parquet
+    print('Not implemented yet')
 
-    Args:
-        csv_file (file): utf-8 csv file with headings
-        image_folder (folder): folder with image structure
-        parquet_file (parquet_file): outputs to parquet for storage
-        rec (recursive): True or False, default True
-    """
-    # Load CSV to a Pandas DataFrame
-    df = pd.read_csv(csv_file, header=0, encoding='utf-8', dtype=str)
+    data = []
+    for image, caption in zip(images, captions, captions1, captions2, captions3):
+        image_base = os.path.basename(image)
+        caption_base = os.path.basename(caption)
 
-    # List for image data
-    image_data_list = []
-    # Use globby glob glob to find images to load into dataframe
-    # Can't get this to work...
-    # image_ext = ('jpg', 'jpeg', 'png', 'bmp')
-    # pattern = f"{image_folder}/**/*.{{{','.join(image_ext)}}}"
-    pattern = f"{image_folder}/**/*.jpg"
-    image_files = glob.glob(pattern, recursive=recursive)
-    for image_file in image_files:
-        # Get binary data
-        print(image_file)
-        with open (image_file, 'rb') as file:
-            print(file)
-            image_data = file.read()
-        # Add to image_data_list
-        image_data_list.append(image_data)
+    if image_base == caption_base:
+        # Read image information and convert to binary data
+        # Add width and height using Pillow
+        # Extract information from caption file
+        # Append information to the dictionary
+        row = {'filename': filename, 'url': url, 'width': width, 'height': height,
+               'text': captions, 'alt_text_a': captions1, 'alt_text_b': captions2, 'alt_text_c': captions3,
+               'tags': tags, 'image': image_binary}
+        data.append(row)
 
-    # Add the image data to the Pandas DataFrame
-    df['image'] = pd.Series(image_data_list)
-    # Convert dataframe to pyarrow table
-    table = pa.Table.from_pandas(df)
-    # Write the pyarrow table to the parquet file
-    print(df)
-    pq.write_table(table, parquet_file)
+df = pd.DataFrame.from_dict(data)
+
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -72,6 +59,7 @@ parq_name = args.parq_name
 # Example from: https://www.adamsmith.haus/python/answers/how-to-get-a-list-of-multiple-file-types-in-a-directory-using-the-glob-module-in-python
 image_pattern = [f"{image_folder}/**/*.jpg", f"{image_folder}/**/*.jpeg", f"{image_folder}/**/*.png", f"{image_folder}/**/*.bmp",]
 caption_pattern = [f"{captions_folder}/**/*.txt"]
+caption_pattern1 = [f"{captions_folder}/**/*.txt"]
 
 images = []
 for files in image_pattern:
@@ -85,7 +73,28 @@ for caption in caption_pattern:
     captions += caption_file
 print(captions)
 
+captions1 = []
+for caption1 in caption_pattern1:
+    caption_file1 = glob.glob(caption1)
+    captions1 += caption_file1
+print(captions1)
 
+# List for image data
+image_data_list = []
+image_width = []
+image_height = []
+
+# Loop images and get binary data and image size
+for image_file in images:
+    # Get binary data
+    with open (image_file, 'rb') as file:
+        image_data = file.read()
+    # Add to image_data_list
+    image_data_list.append(image_data)
+    width, height = PIL.Image.open(image_file).size
+    image_width.append(width)
+    image_height.append(height)
+    PIL.Image.close()
 
 # Check if output folder exists and create if not
 if not os.path.exists(output_folder):
