@@ -5,12 +5,12 @@ import shutil
 from pathlib import Path
 
 import pandas as pd
-import PIL
+from PIL import Image
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 
-def folder_to_parquet_row(filename, url, image_binary, image_width, image_height, captions, captions1=None, captions2=None, captions3=None, tags=None):
+def folder_to_parquet_row(filename, url, image_path, caption_path, caption1_path=None, caption2_path=None, tags_path=None):
     """ Takes data from a folder and converts it to a row in a dataframe, that can be converted to a parquet file.
 
     Args:
@@ -19,12 +19,41 @@ def folder_to_parquet_row(filename, url, image_binary, image_width, image_height
         image_binary (_type_): _description_
         image_width (_type_): _description_
         image_height (_type_): _description_
-        captions (_type_): _description_
-        captions1 (_type_, optional): _description_. Defaults to None.
-        captions2 (_type_, optional): _description_. Defaults to None.
-        captions3 (_type_, optional): _description_. Defaults to None.
+        caption (_type_): _description_
+        caption1 (_type_, optional): _description_. Defaults to None.
+        caption2 (_type_, optional): _description_. Defaults to None.
+        caption3 (_type_, optional): _description_. Defaults to None.
         tags (_type_, optional): _description_. Defaults to None.
     """
+    def open_text(path):
+        with open (path, 'r', encoding='utf-8') as file:
+            text = file.read()
+        return text
+
+
+    with open (image_path, 'rb') as file:
+        image_data = file.read()
+        # Switch to PIL to get X Y dimensions
+        img = Image.open(file)
+        width, height = img.size
+
+    # Collect text if it exists
+    if caption_path:
+        caption = open_text(caption_path)
+    else:
+        caption = None
+    if caption1_path:
+        caption1 = open_text(caption1_path)
+    else:
+        caption1 = None
+    if caption2_path:
+        caption2 = open_text(caption2_path)
+    else:
+        caption2 = None
+    if tags_path:
+        tags = open_text(tags_path)
+    else:
+        tags = None
 
     # Create data
     data = []
@@ -32,16 +61,14 @@ def folder_to_parquet_row(filename, url, image_binary, image_width, image_height
     # Add width and height using Pillow
     # Extract information from caption file
     # Append information to the dictionary
-    row = {'file_name': filename, 'url': url, 'width': image_width, 'height': image_height,
-            'text': captions, 'alt_text_a': captions1, 'alt_text_b': captions2, 'alt_text_c': captions3,
-            'tags': tags, 'image': image_binary}
+    row = {'file_name': filename, 'url': url, 'width': width, 'height': height,
+            'text': caption, 'alt_text_a': caption1, 'alt_text_b': caption2, 'tags': tags,
+            'image': image_data}
     data.append(row)
+    return data
 
-#df = pd.DataFrame.from_dict(data)
-
-
-#image_base = os.path.basename(image)
-#caption_base = os.path.basename(captions)
+def matching(list1, list2, list3, list4, list5):
+    print('not used')
 
 def go_walk(folder, ext_filter):
     """ Walks through a folder and returns a list of files with a specific extension.
@@ -60,23 +87,29 @@ def go_walk(folder, ext_filter):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input-dir', type=str, help='Input image directory', required=True)
-    parser.add_argument('--input-captions-dir', type=str, required=False)
+    parser.add_argument('--input-image-dir', type=str, help='Input image directory', required=True)
+    parser.add_argument('--input-captions-dir', type=str, required=True)
     parser.add_argument('--input-captions1-dir', type=str, required=False)
     parser.add_argument('--input-captions2-dir', type=str, required=False)
-    parser.add_argument('--input-captions3-dir', type=str, required=False)
+    parser.add_argument('--input-tags-dir', type=str, required=False)
     parser.add_argument('--output-dir', type=str, required=False)
     parser.add_argument('--parq-name', default='parquetfile.parquet', type=str, required=False)
 
     args = parser.parse_args()
 
 # Set some names to make it easier to remember
-image_folder = Path(args.input_dir)
-#output_folder = Path(args.output_dir)
-captions_folder = Path(args.input_captions_dir)
-#captions_folder1 = Path(args.input_captions1_dir)
-#captions_folder2 = Path(args.input_captions2_dir)
-#captions_folder3 = Path(args.input_captions3_dir)
+if args.input_image_dir:
+    image_folder = Path(args.input_image_dir)
+if args.output_dir:
+    output_folder = Path(args.output_dir)
+if args.input_captions_dir:
+    captions_folder = Path(args.input_captions_dir)
+if args.input_captions1_dir:
+    captions_folder1 = Path(args.input_captions1_dir)
+if args.input_captions2_dir:
+    captions_folder2 = Path(args.input_captions2_dir)
+if args.input_tags_dir:
+    tags_folder = Path(args.input_tags_dir)
 
 # Set parquet name from args
 parq_name = args.parq_name
@@ -85,61 +118,33 @@ parq_name = args.parq_name
 # https://stackoverflow.com/questions/22812785/use-endswith-with-multiple-extensions
 image_filter = ['.jpg', '.jpeg', '.png', '.bmp']
 
-images = []
-# Find required files
-#for root, dirs, files in os.walk(image_folder):
-#    for file in files:
-#        if file.endswith(tuple(image_filter)):
-#            # Full directory path
-#            full_directory = root
-#            # Full path including file
-#            full_path = os.path.join(root, file)
-#            # Filename
-#            image_basename = os.path.basename(file)
-#            # Filename with removed extension for matching
-#            #image_match = image_basename.split('.')[0]
-#            # Alternative extension removal
-#            image_match = os.path.splitext(image_basename)
-#            #images.append(full_path)
-
-#for image in images:
-#    basename = os.path.basename(image)
-#    print(os.path.splitext(basename)[0])
-
+# Use function to toddle the files
 images_path = go_walk(image_folder, image_filter)
 
-#for image in images_path:
-#    basename = os.path.basename(image)
-#    print(os.path.splitext(basename)[0])
+for image in images_path:
+    basename_image = os.path.basename(image)
+    #print('Images: ', os.path.splitext(basename)[0])
 
+# Caption filter, can adjust this later if more extensions are required
 captions_filter = ['.txt']
-captions = []
+
 captions_path = go_walk(captions_folder, captions_filter)
 
 for caption in captions_path:
-    basename = os.path.basename(caption)
-    print(os.path.splitext(basename)[0])
+    basename_caption = os.path.basename(caption)
+    #print('Text files: ', os.path.splitext(basename)[0])
+
+test1 = 'filename.jpg'
+test2 = 'http://bob.com'
+test3 = 'c:\\images\\bird.jpg'
+test4 = 'c:\\images\\bird.txt'
 
 
-#images = []
-#for files in image_pattern:
-#    image_file = glob.glob(files)
-#    images += image_file
-#print(images)
+data = (folder_to_parquet_row(test1, test2, test3, test4))
 
-#captions = []
-#for caption in caption_pattern:
-#    caption_file = glob.glob(caption)
-#    captions += caption_file
-#print(captions)
+df = pd.DataFrame.from_dict(data)
 
-#captions1 = []
-#for caption1 in caption_pattern1:
-#    caption_file1 = glob.glob(caption1)
-#    captions1 += caption_file1
-#print(captions1)
-
-
+print(df)
 
 # Loop images and get binary data and image size
 #for image_file in images:
@@ -158,5 +163,7 @@ for caption in captions_path:
 #    os.makedirs(output_folder)
 # Join our path and parq_name as final ouput for function
 #save_parq = os.path.join(output_folder, parq_name)
+
+#df = pd.DataFrame.from_dict(data)
 
 print('Done!, maybe..')
