@@ -11,45 +11,36 @@ import pyarrow.parquet as pq
 
 
 def create_data_row(filename, url, image_path, caption_path, caption1_path=None, caption2_path=None, tags_path=None):
-    """ Takes data from a folder and converts it to a row in a dataframe, that can be converted to a parquet file.
 
-    Args:
-        filename (_type_): _description_
-        url (_type_): _description_
-        image_binary (_type_): _description_
-        image_width (_type_): _description_
-        image_height (_type_): _description_
-        caption (_type_): _description_
-        caption1 (_type_, optional): _description_. Defaults to None.
-        caption2 (_type_, optional): _description_. Defaults to None.
-        caption3 (_type_, optional): _description_. Defaults to None.
-        tags (_type_, optional): _description_. Defaults to None.
-    """
     def open_text(path):
         with open (path, 'r', encoding='utf-8') as file:
             text = file.read()
         return text
 
 
-    with open (image_path, 'rb') as file:
+    with open(image_path, 'rb') as file:
         image_data = file.read()
         # Switch to PIL to get X Y dimensions
         img = Image.open(file)
         width, height = img.size
 
     # Collect text if it exists
+
     if caption_path:
         caption = open_text(caption_path)
     else:
         caption = None
+
     if caption1_path:
         caption1 = open_text(caption1_path)
     else:
         caption1 = None
+
     if caption2_path:
         caption2 = open_text(caption2_path)
     else:
         caption2 = None
+
     if tags_path:
         tags = open_text(tags_path)
     else:
@@ -57,9 +48,12 @@ def create_data_row(filename, url, image_path, caption_path, caption1_path=None,
 
     # Create data
     data = []
-    # Read image information and convert to binary data
-    # Add width and height using Pillow
-    # Extract information from caption file
+    # Read image information and convert to binary data - Done.
+    # Add width and height using Pillow - Done.
+    # Extract information from caption file - Done.
+    # Add File name - Done.
+    # Add URL - TO DO.
+    # Add alt text(s) and tags - TO DO.
     # Append information to the dictionary
     row = {'file_name': filename, 'url': url, 'width': width, 'height': height,
             'text': caption, 'alt_text_a': caption1, 'alt_text_b': caption2, 'tags': tags,
@@ -129,41 +123,28 @@ parq_name = args.parq_name
 # https://stackoverflow.com/questions/22812785/use-endswith-with-multiple-extensions
 image_filter = ['.jpg', '.jpeg', '.png', '.bmp']
 
-# Use function to toddle the files
-images_path = go_walk(image_folder, image_filter)
+image_files = go_walk(image_folder, image_filter)
+text_files = go_walk(captions_folder, ['.txt'])
 
-for image in images_path:
-    basename_image = os.path.basename(image)
-    #print('Images: ', os.path.splitext(basename)[0])
+matches = match_image_to_text(image_files, text_files)
 
-# Caption filter, can adjust this later if more extensions are required
-captions_filter = ['.txt']
+data = []
+for match in matches:
+    row = create_data_row(
+        filename=os.path.basename(match['image']),
+        url=None,
+        image_path=match['image'],
+        caption_path=match['text'],
+        caption1_path=None,
+        caption2_path=None,
+        tags_path=None
+    )
+    data.extend(row)
 
-captions_path = go_walk(captions_folder, captions_filter)
-
-for caption in captions_path:
-    basename_caption = os.path.basename(caption)
-    #print('Text files: ', os.path.splitext(basename)[0])
-
-test1 = 'filename.png'
-test2 = 'http://bob.com'
-test3 = 'c:\\images\\bird.png'
-test4 = 'c:\\images\\bird.txt'
-
-
-data = (create_data_row(test1, test2, test3, test4))
-
-df = pd.DataFrame.from_dict(data)
+df = pd.DataFrame(data)
+#pq.write_table(pa.Table.from_pandas(df), args.parq_name)
 
 print(df)
 
-
-# Check if output folder exists and create if not
-#if not os.path.exists(output_folder):
-#    os.makedirs(output_folder)
-# Join our path and parq_name as final ouput for function
-#save_parq = os.path.join(output_folder, parq_name)
-
-#df = pd.DataFrame.from_dict(data)
 
 print('Done!, maybe..')
