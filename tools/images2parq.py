@@ -56,8 +56,10 @@ def create_data_row(filename, image_path, caption_path=None, caption1_path=None,
     # Add width and height using Pillow - Done.
     # Extract information from caption file - Done.
     # Add File name - Done.
-    # Add URL - TO DO.
-    # Add alt text(s) and tags - TO DO.
+    # Add URL - Done.
+    # Add alt text(s) and tags - Done.
+    # To do: Add image hash?, finish extact script, compression? How to do that?
+
     # Append information to the dictionary
     row = {'file_name': filename, 'url': url, 'width': width, 'height': height,
             'text': caption, 'alt_text_a': caption1, 'alt_text_b': caption2, 'tags': tags,
