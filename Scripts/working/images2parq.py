@@ -8,7 +8,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-def folder_to_parquet(images, captions, captions1=None, captions2=None, captions3=None, parquet_file=None):
+def folder_to_parquet_row(filename, images, captions, captions1=None, captions2=None, captions3=None):
 
     print('Not implemented yet')
 
@@ -22,12 +22,12 @@ def folder_to_parquet(images, captions, captions1=None, captions2=None, captions
         # Add width and height using Pillow
         # Extract information from caption file
         # Append information to the dictionary
-        row = {'filename': filename, 'url': url, 'width': width, 'height': height,
+        row = {'file_name': filename, 'url': url, 'width': width, 'height': height,
                'text': captions, 'alt_text_a': captions1, 'alt_text_b': captions2, 'alt_text_c': captions3,
                'tags': tags, 'image': image_binary}
         data.append(row)
 
-df = pd.DataFrame.from_dict(data)
+#df = pd.DataFrame.from_dict(data)
 
 
 
