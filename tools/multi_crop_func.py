@@ -133,7 +133,7 @@ def resize_side_size(image, min_size, resize_mode='smallest'):
     if resize_mode == 'smallest':
         # Resize based on the smallest side of the PIL image
         if min_size >= min(width, height):
-            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.')
+            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.', stacklevel=2)
         if width < height:
             new_size = (min_size, int(height * min_size / width))
         else:
@@ -141,21 +141,21 @@ def resize_side_size(image, min_size, resize_mode='smallest'):
 
     elif resize_mode == 'largest':
         # Resize based on the largest side of the PIL image
-        if min_size <= max(width, height):
-            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.')
+        if min_size >= max(width, height):
+            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.', stacklevel=2)
         if width < height:
             new_size = (int(width * min_size / height), min_size)
         else:
             new_size = (min_size, int(height * min_size / width))
     else:
-        raise ValueError('Invalid resize mode, please use "smallest" or "largest')
+        raise ValueError('Beep!, please use "smallest" or "largest')
 
     # return the resized PIL image
     return image.resize(new_size)
 
 if __name__ == '__main__':
-    print('This script needs to be imported')
-    print('It contains the following functions: ')
+    print('\n')
+    print('This function contains the following: ')
     print('\n')
     print('Aspect Crop Function')
     print('for example: ')
@@ -167,11 +167,16 @@ if __name__ == '__main__':
     print('or: ')
     print('image = crop_to_multiple(image_object, 64)')
     print('\n')
-    print ('resize on small side Function)')
+    print ('resize on side size Function)')
     print('for example: ')
-    print('image = resize_small_side(image, min_size)')
+    print('image = resize_side_size(image, min_size)')
     print('or: ')
-    print('image = resize_small_side(image_object, 1024)')
+    print('image = resize_side_size(image_object, 1024)')
+    print('\n')
+    print ('Simple Pad Image Function)')
+    print('for example: ')
+    print('image = pad_to_1_to_1(image_object)')
     print('\n')
     print('from multi_crop_func import *')
     print('\n')
+
