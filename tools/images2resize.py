@@ -78,7 +78,7 @@ for root, dirs, files in os.walk(args.input_dir):
                 print('Image file is: ', file)
                 print('Original Image size: ', image.size)
 
-                # Use the resize_small_side function from multi_crop_func.py
+                # Use the resize_side_size function from multi_crop_func.py
                 # This should be done before any other of my silly resizing functions
 
             if args.resize is True:
@@ -86,7 +86,7 @@ for root, dirs, files in os.walk(args.input_dir):
                 if args.min_size is None:
                     raise Exception('Please select the minimum size, use the following: --min-size')
                 else:
-                    img = resize_small_side(image, args.min_size)
+                    img = resize_side_size(image, args.min_size)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
