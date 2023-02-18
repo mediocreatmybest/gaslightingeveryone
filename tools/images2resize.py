@@ -32,6 +32,9 @@ parser.add_argument('--aspect-ratios', type=str, default='0.56,0.75,0.8,1,1.33,1
                     help='Set desired aspect ratios as a float in comma seperated list e.g 0.56,0.75,0.8,1,1.33,1.5,1.6,1.78')
 parser.add_argument('--resize', action='store_true', default=False,
                     help='Resizes (based on shortest side) to the specified min_size while keeping the aspect ratio')
+parser.add_argument('--resize-mode', type=str, default='smallest',
+                    help='Resize modes: smallest (resizes based on smallest side of image), largest (resizes on largest side of image',
+                    choices=['smallest', 'largest'])
 parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
 parser.add_argument('--pad-image', action='store_true', default=False,
@@ -78,7 +81,7 @@ for root, dirs, files in os.walk(args.input_dir):
                 print('Image file is: ', file)
                 print('Original Image size: ', image.size)
 
-                # Use the resize_small_side function from multi_crop_func.py
+                # Use the resize_side_size function from multi_crop_func.py
                 # This should be done before any other of my silly resizing functions
 
             if args.resize is True:
@@ -86,7 +89,7 @@ for root, dirs, files in os.walk(args.input_dir):
                 if args.min_size is None:
                     raise Exception('Please select the minimum size, use the following: --min-size')
                 else:
-                    img = resize_small_side(image, args.min_size)
+                    img = resize_side_size(image, args.min_size, args.resize_mode)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')

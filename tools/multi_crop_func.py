@@ -1,7 +1,9 @@
 import math
+import warnings
 from typing import List, Tuple
 
 from PIL import Image
+
 
 def ar_xy_to_float(xy):
     """Aspect ratio in X:Y to a float
@@ -111,7 +113,7 @@ def crop_to_multiple(image, multiple=64):
     return image.crop((left, upper, left + new_width, upper + new_height))
 
 
-def resize_small_side(image, min_size):
+def resize_side_size(image, min_size, resize_mode='smallest'):
     """
     Resize an image to a specific size based on the smallest side of the image.
 
@@ -123,24 +125,37 @@ def resize_small_side(image, min_size):
         PIL.Image: The resized image.
 
     Raises:
-        ValueError: If `min_size` is equal or larger than the smallest side of the source image.
+        warnings.warn: If `min_size` is equal or larger than the smallest side of the source image.
     """
+    # Get width and height frm the PIL image.size
     width, height = image.size
-    if min_size >= min(width, height):
-        # Better way to do this? It *should* still resize and keep toddling on
-        try:
-            raise ValueError((f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.'))
-        except ValueError as err:
-            print(err)
-    if width < height:
-        new_size = (min_size, int(height * min_size / width))
+
+    if resize_mode == 'smallest':
+        # Resize based on the smallest side of the PIL image
+        if min_size >= min(width, height):
+            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.', stacklevel=2)
+        if width < height:
+            new_size = (min_size, int(height * min_size / width))
+        else:
+            new_size = (int(width * min_size / height), min_size)
+
+    elif resize_mode == 'largest':
+        # Resize based on the largest side of the PIL image
+        if min_size >= max(width, height):
+            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.', stacklevel=2)
+        if width < height:
+            new_size = (int(width * min_size / height), min_size)
+        else:
+            new_size = (min_size, int(height * min_size / width))
     else:
-        new_size = (int(width * min_size / height), min_size)
+        raise ValueError('Beep!, please use "smallest" or "largest')
+
+    # return the resized PIL image
     return image.resize(new_size)
 
 if __name__ == '__main__':
-    print('This script needs to be imported')
-    print('It contains the following functions: ')
+    print('\n')
+    print('This function contains the following: ')
     print('\n')
     print('Aspect Crop Function')
     print('for example: ')
@@ -152,11 +167,16 @@ if __name__ == '__main__':
     print('or: ')
     print('image = crop_to_multiple(image_object, 64)')
     print('\n')
-    print ('resize on small side Function)')
+    print ('resize on side size Function)')
     print('for example: ')
-    print('image = resize_small_side(image, min_size)')
+    print('image = resize_side_size(image, min_size)')
     print('or: ')
-    print('image = resize_small_side(image_object, 1024)')
+    print('image = resize_side_size(image_object, 1024)')
+    print('\n')
+    print ('Simple Pad Image Function)')
+    print('for example: ')
+    print('image = pad_to_1_to_1(image_object)')
     print('\n')
     print('from multi_crop_func import *')
     print('\n')
+
