@@ -2,3 +2,5 @@ tqdm
 requests
 wordcloud
 Pillow
+pandas
+pyarrow

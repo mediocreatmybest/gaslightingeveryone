@@ -217,7 +217,7 @@ for match in matches:
 
 df = pd.DataFrame(data)
 
-# Use pyarrow to write parquet file out.
-pq.write_table(pa.Table.from_pandas(df), output_folder)
+# Use pyarrow to write parquet file out, added compression. I'm sure this works.
+pq.write_table(pa.Table.from_pandas(df), output_folder, compression='gzip')
 
 print('Done!, maybe..')
