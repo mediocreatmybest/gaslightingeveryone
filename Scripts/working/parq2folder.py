@@ -22,18 +22,22 @@ def save_file(file_path, data, mode='w', encoding='utf-8', debug=False):
         print('Debug mode, file not saved')
 
 # function to allow joining of text, tags, alt_text_a and alt_text_b using key args
-def build_text(**kwargs):
-    """ build text from kwargs in arbitrary order of key """
-    text_string = [kwargs[key] for key in sorted(kwargs)]
-    return ' '.join(text_string)
+def build_text(columns):
+    """ build text from columns in arbitrary order of key """
+    text_string = [columns[key] for key in columns]
+    return ', '.join(text_string)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract images and text from Parquet files to a folder')
-    parser.add_argument('--input-parq-dir', type=str, required=True)
-    parser.add_argument('--output-dir', type=str, required=True)
+    parser.add_argument('--input-parq-dir', type=str,
+                         help='Parquet folder', required=True)
+    parser.add_argument('--output-dir', type=str,
+                         help='Directory to export data', required=True)
     # Create argument to select which caption to save, text or tags
-    parser.add_argument ('--select-caption', type=str, default='text', help='To extract more than one column use comma seperated argument, e.g. "text, tags"', required=False)
+    parser.add_argument ('--select-caption', type=str, default='text',
+                          help='To extract more than one column use comma seperated argument, available options: "text, tags, alt_text_a, alt_text_b"',
+                          required=False)
     # Parse the args arg!
     args = parser.parse_args()
 
@@ -59,6 +63,13 @@ for parquet_file in parquet_files:
         alt_text_b = row['alt_text_b']
         tags = row['tags']
 
+        # Split argument string into list
+        arg_string = args.select_caption.split(', ')
+        # For each column in the argument string, if it exists in the row, add it
+        text_columns = {col: row[col] for col in arg_string if col in row}
+
+        # Build output text from argument and columns
+        built_text = build_text(text_columns)
 
         # Image path and file_name for saving...
         image_file_path = os.path.join(Path(args.output_dir), file_name)
@@ -68,4 +79,4 @@ for parquet_file in parquet_files:
         # Text file path and file_name for saving...
         text_file_path = os.path.join(Path(args.output_dir), f"{os.path.splitext(file_name)[0]}.txt")
         # Call Save function
-        save_file(text_file_path, text, debug=False)
+        save_file(text_file_path, built_text, debug=False)
