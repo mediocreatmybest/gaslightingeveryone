@@ -14,10 +14,11 @@ def save_file(file_path, data, mode='w', encoding='utf-8', debug=False):
         if mode == 'wb':
             with open(file_path, mode) as f:
                 f.write(data)
+            print(f'File saved to {file_path}')
         elif mode == 'w':
             with open(file_path, mode, encoding=encoding) as f:
                 f.write(data)
-        print(f'File saved to {file_path}')
+            print(f'File saved to {file_path}')
     else:
         print('Debug mode, file not saved')
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--output-dir', type=str,
                          help='Directory to export data', required=True)
     # Create argument to select which caption to save, text or tags
-    parser.add_argument ('--select-caption', type=str, default='text',
+    parser.add_argument ('--select-caption', type=str, default='TEXT',
                           help='To extract more than one column use comma seperated argument, available options: "text, tags, alt_text_a, alt_text_b"',
                           required=False)
     # Parse the args arg!
@@ -57,10 +58,10 @@ if __name__ == '__main__':
             # Extract wanted information, need to expand this to include other columns from new arguments
             file_name = row['file_name']
             image_data = row['image']
-            text = row['text']
-            alt_text_a = row['alt_text_a']
-            alt_text_b = row['alt_text_b']
-            tags = row['tags']
+            #text = row['text']
+            #alt_text_a = row['alt_text_a']
+            #alt_text_b = row['alt_text_b']
+            #tags = row['tags']
 
             # Split argument string into list
             arg_string = args.select_caption.split(', ')
