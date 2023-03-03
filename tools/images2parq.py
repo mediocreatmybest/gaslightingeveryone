@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import os
 from pathlib import Path
 
@@ -50,6 +51,9 @@ def create_data_row(filename, image_path, caption_path=None, caption1_path=None,
     else:
         tags = None
 
+    # Calculate image hash
+    image_hash = hashlib.sha256(image_data).hexdigest()
+
     # Create data
     data = []
     # Read image information and convert to binary data - Done.
@@ -61,9 +65,9 @@ def create_data_row(filename, image_path, caption_path=None, caption1_path=None,
     # To do: Add image hash?, finish extact script, compression? How to do that?
 
     # Append information to the dictionary
-    row = {'file_name': filename, 'url': url, 'width': width, 'height': height,
-            'text': caption, 'alt_text_a': caption1, 'alt_text_b': caption2, 'tags': tags,
-            'image': image_data}
+    row = {'file_name': filename, 'URL': url, 'WIDTH': width, 'HEIGHT': height,
+            'TEXT': caption, 'alt_text_a': caption1, 'alt_text_b': caption2, 'tags': tags,
+            'image': image_data, 'hash': image_hash}
     data.append(row)
     return data
 
@@ -115,7 +119,7 @@ def match_image_to_text(image_files=None, text_files=None, alt_text_a_files=None
                     tag = file
                     break
         if text_file or alt_text_a or alt_text_b or url or tag:
-            matches.append({'image': image_file, 'text': text_file, 'alt_text_a': alt_text_a, 'alt_text_b': alt_text_b, 'url': url, 'tags': tag})
+            matches.append({'image': image_file, 'TEXT': text_file, 'alt_text_a': alt_text_a, 'alt_text_b': alt_text_b, 'URL': url, 'tags': tag})
     return matches
 
 
@@ -206,9 +210,9 @@ data = []
 for match in matches:
     row = create_data_row(
         filename=os.path.basename(match['image']),
-        url_path=match['url'],
+        url_path=match['URL'],
         image_path=match['image'],
-        caption_path=match['text'],
+        caption_path=match['TEXT'],
         caption1_path=match['alt_text_a'],
         caption2_path=match['alt_text_b'],
         tags_path=match['tags']
