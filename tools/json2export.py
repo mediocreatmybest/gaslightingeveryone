@@ -29,10 +29,15 @@ def json_extract(obj, key):
     return values
 
 def list2String(convertlist):
-    """initialize a list into seperated string"""
-    seperator = ", "
-    #return string
-    return (seperator.join(convertlist))
+    """initialize a list into separated string"""
+    # Check if tags are separated by comma or space
+    if all("," in tag for tag in convertlist):
+        separator = ", "
+    else:
+        separator = " "
+    # Return string
+    return separator.join(convertlist)
+
 
 def save_file(file_path, data, mode='w', encoding='utf-8', debug=False):
     """ Function to save a file, defaults to write mode """
@@ -77,11 +82,15 @@ if __name__ == '__main__':
 
         if args.export_tags is True:
             if "tags" in jsondata:
-                # Do something here. Maybe save the tags to a file...
-                tags = (jsondata['tags'])
+                tags = jsondata['tags']
+                # Check if tags are a string or list
+                if isinstance(tags, str):
+                    tags = tags.split()
                 tagstr = list2String(tags)
+                # Export tags to file
                 tagsfullpath = os.path.join(parent_folder, basename + '.tags')
                 save_file(tagsfullpath, tagstr, debug=False)
+
 
         if args.export_urls is True:
             if jsonkeys:
