@@ -30,13 +30,16 @@ def process_file(file_path, extension, question):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A command line bot")
-    parser.add_argument("directory", type=str, help="directory to search for files")
-    parser.add_argument("extension", type=str, help="file extension to search for")
-    parser.add_argument("output_extension", type=str, help="file extension for output files")
-    parser.add_argument("question", type=str, help="question to prepend to the response")
+    parser.add_argument("--input", type=str, help="directory to search for files", required=True)
+    parser.add_argument("--input-extension", default=".tags", type=str, help="file extension to search for")
+    parser.add_argument("--output-extension", default=".caption", type=str, help="file extension for output files")
+    parser.add_argument("--question", type=str, help="question to prepend to the response", required=True)
     args = parser.parse_args()
 
     bot = ChatGPT()
 
-    for file_path in search_files(args.directory, args.extension):
+    for file_path in search_files(args.input, args.input_extension):
         process_file(file_path, args.output_extension, args.question)
+        print(f"\nQ: {args.question}\n")
+        print(f"A: {read_file(file_path)}\n")
+
