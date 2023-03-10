@@ -64,13 +64,31 @@ def format_output(results, order_by):
     for result in results:
         line = ''
         for key in order_by:
-            if key in result and result[key]:
+            # check if key is in result and if the value is not empty or None or []
+            if key in result and result[key] not in ['', None, []]:
                 value = result[key]
+                # if the value is a list, check if any of its elements are not empty or None
                 if isinstance(value, list):
-                    value = ', '.join(value)
-                line += f'{key}: {value}, '
+                    values = [v for v in value if v not in ['', None]]
+                    # if there are non-empty values, join them with commas
+                    if values:
+                        value = ', '.join(values)
+                    # if there are no non-empty values, skip this key-value pair
+                    else:
+                        continue
+                # if the value is a dictionary, recursively call format_output with the dictionary's keys as the order_by argument
+                elif isinstance(value, dict):
+                    value = format_output([value], value.keys())
+                # if the value is a string or number, leave it as is
+                if line:
+                    line += ', '
+                # add the key-value pair to the line string
+                line += f'{key}: {value}'
+        # add the line string to the output string
         if line:
-            output += line[:-2] + '\n'
+            if output:
+                output += ', '
+            output += line
     return output
 
 
