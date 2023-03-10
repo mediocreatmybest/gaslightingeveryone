@@ -50,9 +50,11 @@ def extract_keys(json_files, keys, encoding='utf-8'):
             json_data = json.load(f)
             result = read_keys(json_data, keys)
             result['_filename'] = os.path.basename(file)
+            result['_rootpath'] = os.path.abspath(os.path.dirname(file))
+            #print("Debug: ", result['_filename'])
+            #print("Debug: ", result['_rootpath'])
             results.append(result)
-            #print("Debug ", result)
-    #print("Debug: ", results)
+    #print(results)
     return results
 
 
@@ -72,23 +74,14 @@ def format_output(results, order_by):
     return output
 
 
-def save_output(output, output_file, output_folder, output_extension, results_list=None):
+def save_output(output, output_file, output_folder):
     """Saves the output to a file"""
-    if not output_file:
-        #output_file = '_'.join([result['_filename'].split('.')[0] for result in results]) + f'.{output_extension}'
-        #output_file = os.path.splitext(os.path.basename(results[0]))[0] + output_extension
-        #output_file = os.path.splitext(os.path.basename([result['_filename'] for result in results_list][0]))[0] + output_extension
-        #print(os.path.splitext([result['_filename'] for result in results_list][0]) + output_extension)
-        file = ([result['_filename'] for result in results_list][0])
-        output_file = Path(file).with_suffix('').stem + f'.{output_extension}'
-        #print("Debug:", output_file)
+
     # Create the output folder if it doesn't exist
     if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-    # If output_folder then join it to the output_file
-    if output_folder:
-        output_file = os.path.join(output_folder, output_file)
-    with open(output_file, 'w') as f:
+            os.makedirs(output_folder)
+    output_file = os.path.join(output_folder, output_file)
+    with open(output_file, 'w', encoding='utf-8') as f:
         f.write(output)
 
 
@@ -109,16 +102,39 @@ def main():
     # extract specified keys from the JSON files
     keys = [key.strip() for key in args.keys.split(',')] if args.keys else None
     results = extract_keys(json_files, keys)
-
+    print(results)
     # format the output
     order_by = [key.strip() for key in args.order_by.split(',')] if args.order_by else None
     output = format_output(results, order_by)
 
-    # filter the output
-    output = filter_output(output, args.filter)
 
-    # save the output to a file
-    save_output(output, args.output_file, args.output_folder, args.output_extension, results_list=results)
+    # For each result, filter the output and save it to a file
+    for result in results:
+        output = format_output([result], order_by)
+         # filter the output
+        output = filter_output(output, args.filter)
+        # set the output file name if specified and set the output folder
+        if args.output_file:
+            output_file = args.output_file
+            output_folder = args.directory
+            # We need to append the output to itself if we are using the same file name
+            # To do this, we need to check if the file exists and if it does, we need to read it
+            # and append it to the output - I'm sure this works...it doesn't...
+            if os.path.exists(os.path.join(output_folder, output_file)):
+                with open(os.path.join(output_folder, output_file), 'r', encoding='utf-8') as f:
+                    output = f.read() + "\n" + output
+        # If no output file is specified, we need to create one based on the JSON file name
+        else:
+            output_file = os.path.splitext(result['_filename'])[0] + f'.{args.output_extension}'
+        # If no output folder is specified, we need to use the root path of the JSON file
+        # Otherwise, we use the output folder specified
+        if args.output_folder:
+            output_folder = args.output_folder
+        else:
+            output_folder = Path(result['_rootpath'])
+
+        # then save the output to a file
+        save_output(output, output_file, output_folder)
 
     # display output to the screen in verbose mode
     if args.verbose:
