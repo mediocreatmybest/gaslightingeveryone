@@ -33,8 +33,8 @@ parser.add_argument('--aspect-ratios', type=str, default='0.56,0.75,0.8,1,1.33,1
 parser.add_argument('--resize', action='store_true', default=False,
                     help='Resizes (based on shortest side) to the specified min_size while keeping the aspect ratio')
 parser.add_argument('--resize-mode', type=str, default='smallest',
-                    help='Resize modes: smallest (resizes based on smallest side of image), largest (resizes on largest side of image',
-                    choices=['smallest', 'largest'])
+                    help='Resize modes: smallest (resizes based on smallest side of image), largest (resizes on largest side of image)',
+                    choices=['smallest', 'largest'], required=False)
 parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
 parser.add_argument('--pad-image', action='store_true', default=False,
@@ -55,7 +55,7 @@ if args.copy_format is False and args.format is None:
     raise Exception('Please select a format, use one of the following: --format or --copy-format')
 
 # Convert the string to a list of floats
-# Will it be better to use the X:Y function instead?
+# Will it be better to use the X:Y function or keep floating point?
 aspect_ratios_split = [float(x) for x in args.aspect_ratios.split(',')]
 aspect_ratios = [x for x in aspect_ratios_split]
 
@@ -93,8 +93,8 @@ for root, dirs, files in os.walk(args.input_dir):
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize)}')
-                        print('Resize on small side size: ', img.size)
+                        print(f'Resize mod is: {(args.resize)}')
+                        print('Resize size: ', img.size)
                         print('Min_size was set to: ', args.min_size)
 
             # Use the crop_to_multiple function from multi_crop_func.py
@@ -106,14 +106,14 @@ for root, dirs, files in os.walk(args.input_dir):
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize)}')
+                        print(f'Resize mod is: {(args.resize)}')
                         print('Output of multiples_crop size: ', img.size)
                 else:
                     img = crop_to_multiple(image, args.multiples_of)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize)}')
+                        print(f'Resize mod is: {(args.resize)}')
                         print('Output of multiples_crop size: ', img.size)
 
             # Use the crop_to_aspect function from multi_crop_func.py
@@ -124,14 +124,14 @@ for root, dirs, files in os.walk(args.input_dir):
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize)}')
+                        print(f'Resize mod is: {(args.resize)}')
                         print('Output of aspect_crop size: ', img.size)
                 else:
                     img = crop_to_set_aspect_ratio(image, aspect_ratios, debug=args.debug)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
-                        print(f'Resize on small size is: {(args.resize)}')
+                        print(f'Resize mode is: {(args.resize)}')
                         print('Output of aspect_crop size: ', img.size)
 
             # Use Pad function from multi_crop_func.py
@@ -181,15 +181,35 @@ for root, dirs, files in os.walk(args.input_dir):
 
             # Check if the image file as a matching text file and copy to new directory
             text_file = base_file + '.txt'
+            caption_file = base_file + '.caption'
+            tag_file = base_file + '.caption'
 
             if args.keep_relative is True:
                 output_path = (os.path.join(args.output_dir, rel_path))
                 if not os.path.exists(output_path):
                     os.makedirs(output_path)
+                # Check .txt file and copy if it exists
                 if os.path.exists(os.path.join(root, text_file)):
                 # If it exists, copy it
                     shutil.copy2(os.path.join(root, text_file), os.path.join(output_path, text_file))
+                # Check .caption file and copy if it exists
+                if os.path.exists(os.path.join(root, caption_file)):
+                # If it exists, copy it
+                    shutil.copy2(os.path.join(root, caption_file), os.path.join(output_path, caption_file))
+                # Check .tag_file file and copy if it exists
+                if os.path.exists(os.path.join(root, tag_file)):
+                # If it exists, copy it
+                    shutil.copy2(os.path.join(root, tag_file), os.path.join(output_path, tag_file))
             else:
+                # Check .txt file and copy if it exists
                 if os.path.exists(os.path.join(root, text_file)):
                     # If it exists, copy it
                     shutil.copy2(os.path.join(root, text_file), os.path.join(args.output_dir, text_file))
+                # Check .caption file and copy if it exists
+                if os.path.exists(os.path.join(root, caption_file)):
+                    # If it exists, copy it
+                    shutil.copy2(os.path.join(root, caption_file), os.path.join(args.output_dir, caption_file))
+                # Check .tag_file file and copy if it exists
+                if os.path.exists(os.path.join(root, tag_file)):
+                    # If it exists, copy it
+                    shutil.copy2(os.path.join(root, tag_file), os.path.join(args.output_dir, tag_file))
