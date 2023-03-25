@@ -32,6 +32,25 @@ def search_files(directory):
                 json_files.append(os.path.join(root, file))
     return json_files
 
+def json_extract(obj, key):
+    """ Recursively fetch values from nested JSON """
+    arr = []
+
+    def extract(obj, arr, key):
+        """ Recursively search for values of key in JSON tree """
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    return values
 
 def read_keys(json_data, keys):
     """Reads the specified keys from the JSON data"""
@@ -55,17 +74,25 @@ def read_keys(json_data, keys):
     return result
 
 
-def extract_keys(json_files, keys, encoding='utf-8'):
+def extract_keys(json_files, keys, encoding='utf-8', debug=False):
     """Extracts the specified keys from the JSON files"""
     results = []
     for file in json_files:
         with open(file, 'r', encoding=encoding) as f:
             json_data = json.load(f)
+
             result = read_keys(json_data, keys)
             result['_filename'] = os.path.basename(file)
             result['_rootpath'] = os.path.abspath(os.path.dirname(file))
-            #print("Debug: ", result['_filename'])
-            #print("Debug: ", result['_rootpath'])
+            # try to extract the extension from json_data
+            try:
+                result['_extension'] = json_extract(json_data, 'extension')[0]
+            except IndexError:
+                result['_extension'] = None
+            if debug is True:
+                print("Debug: ", result['_filename'])
+                print("Debug: ", result['_rootpath'])
+                print("Debug: ", result['_extension'])
             results.append(result)
     return results
 
@@ -104,7 +131,7 @@ def format_output(results, order_by):
     return output
 
 
-def save_output(output, output_file, output_folder, write_mode='w', prepend_output=False, debug=False):
+def save_output(output, output_file, output_folder, write_mode='w', prepend_output=False, single_file_mode=False, debug=False):
     """
     Saves the output to a file, prepending, appending, or overwriting the file as specified from args.
 
@@ -146,7 +173,11 @@ def save_output(output, output_file, output_folder, write_mode='w', prepend_outp
                 print(f"Appending to file '{output_file}':\n{output}")
             else:
                 with open(output_file, 'a', encoding='utf-8') as f:
-                    f.write(', ' + output)
+                    # If single_file_mode is True, don't add a comma before the output string
+                    if single_file_mode is True:
+                        f.write(output)
+                    else:
+                        f.write(', ' + output)
         # If the file exists and write_mode is 'w', open it in write mode and
         # overwrite the existing content with the output string
         elif write_mode == 'w':
@@ -246,8 +277,9 @@ def main():
 
     # extract specified keys from the JSON files
     keys = [key.strip() for key in args.keys.split(',')] if args.keys else None
+    # get the result of the extraction as a list of dictionaries
     results = extract_keys(json_files, keys)
-    #print(results)
+
     # format the output
     order_by = [key.strip() for key in args.order_by.split(',')] if args.order_by else None
     output = format_output(results, order_by)
@@ -258,13 +290,10 @@ def main():
         # filter the output
         output = filter_output(output, args.filter)
 
+        # Set the output file and folder if needed
         if args.output_file:
             output_file = args.output_file
             output_folder = args.output_folder
-
-            # Ok, I screwed up my logic here. I need to fix this.
-            if not os.path.exists(output_folder):
-                os.makedirs(output_folder)
 
         # If no output file is specified, we need to create one based on the JSON file name
         else:
@@ -312,9 +341,22 @@ def main():
         output = output.replace(',, ',', ')
         output = output.strip(',')
 
-        # save the output to a file
-        save_output(output, output_file, output_folder, write_mode=write_mode, prepend_output=prepend_output, debug=args.debug)
+        if args.output_file:
+            if result['_extension'] is None:
+                # fix this later, assume jpg temporarily, need to create a hunting function to find the extension
+                result['_extension'] = 'jpg'
+            # create image name to append to the output file as faux csv style output for some data loaders
+            append_file_name = os.path.splitext(result['_filename'])[0] + '.' + result['_extension']
+            output = append_file_name + ', ' + output + '\n'
+            # enable single file output for save_output
+            single_file_mode=True
+        else:
+            single_file_mode=False
 
+        # save the output to a file
+        save_output(output, output_file, output_folder, write_mode=write_mode,
+                    prepend_output=prepend_output,single_file_mode=single_file_mode,
+                    debug=args.debug)
 
 if __name__ == '__main__':
 
