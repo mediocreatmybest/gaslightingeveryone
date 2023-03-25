@@ -32,6 +32,19 @@ def search_files(directory):
                 json_files.append(os.path.join(root, file))
     return json_files
 
+
+def image_hunt(root_path, base_name, extensions=('jpg', 'jpeg', 'png', 'bmp', 'webp')):
+    # We are going on a bear, err, image hunt, we are going to catch a big one, we're not scared
+    """Searches for image files in the specified directory"""
+    for root, dirs, files in os.walk(root_path):
+        for file in files:
+            file_base, file_ext = os.path.splitext(file)
+            if file_base == base_name and file_ext.lower().lstrip('.') in extensions:
+                return os.path.join(root, file)
+    return None
+
+
+# from: https://hackersandslackers.com/extract-data-from-complex-json-python/
 def json_extract(obj, key):
     """ Recursively fetch values from nested JSON """
     arr = []
@@ -343,8 +356,18 @@ def main():
 
         if args.output_file:
             if result['_extension'] is None:
-                # fix this later, assume jpg temporarily, need to create a hunting function to find the extension
-                result['_extension'] = 'jpg'
+                basename = os.path.splitext(result['_filename'])[0]
+                # hunt for the image file, if it exists
+                found_image = image_hunt(result['_rootpath'], basename)
+                # if no image is found, set the extension to jpg because why not
+                # this shouldn't happen and I'm tired of thinking of 'what if' scenarios
+                if found_image is None:
+                    result['_extension'] = 'jpg'
+                else:
+                    # split the found image into a name and extension
+                    imagename, extension = os.path.splitext(found_image)
+                    # Set extension to the found image extension
+                    result['_extension'] = extension.lstrip('.')
             # create image name to append to the output file as faux csv style output for some data loaders
             append_file_name = os.path.splitext(result['_filename'])[0] + '.' + result['_extension']
             output = append_file_name + ', ' + output + '\n'
@@ -360,5 +383,5 @@ def main():
 
 if __name__ == '__main__':
 
-# Pew pew! Fire in the hole! Needs additional work with key extraction and subkeys
+# Pew pew! Fire in the hole! Needs additional work with key extraction and subkeys!
     main()
