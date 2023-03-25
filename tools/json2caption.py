@@ -255,19 +255,17 @@ def main():
     # For each result, filter the output and save it to a file
     for result in results:
         output = format_output([result], order_by)
-         # filter the output
+        # filter the output
         output = filter_output(output, args.filter)
 
-        # set the output file name if specified and set the output folder
         if args.output_file:
             output_file = args.output_file
-            output_folder = args.directory
-            # We need to append the output to itself if we are using the same file name
-            # To do this, we need to check if the file exists and if it does, we need to read it
-            # and append it to the output - I'm sure this works...it doesn't...
-            if os.path.exists(os.path.join(output_folder, output_file)):
-                with open(os.path.join(output_folder, output_file), 'r', encoding='utf-8') as f:
-                    output = f.read() + "\n" + output
+            output_folder = args.output_folder
+
+            # Ok, I screwed up my logic here. I need to fix this.
+            if not os.path.exists(output_folder):
+                os.makedirs(output_folder)
+
         # If no output file is specified, we need to create one based on the JSON file name
         else:
             output_file = os.path.splitext(result['_filename'])[0] + f'.{args.output_extension}'
@@ -302,7 +300,6 @@ def main():
             output = regex_filter_file(output, args.regex_filter_file)
             output = output.strip()
             output = output.strip(',')
-
 
         # Check if we need to replace underscores with spaces
         if args.underscore_to_space == 'yes':
