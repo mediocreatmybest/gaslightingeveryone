@@ -159,11 +159,24 @@ def walk_path(path, ext_filter, recursive_level='full'):
 def walk_path_plus(path, ext_filter, recursive=True):
     """ Walks through a folder and returns a list of files with a specific extension, supports disabling recursive.
 
-    Returns:
-        list: list with full path
+    Returns: list: list with full path
 
     """
     return [os.path.join(root, name)
             for root, dirs, files in oswalk_plus(path, recursive)
             for name in files
             if name.endswith(tuple(ext_filter))]
+
+
+def concat_str(*args):
+    """
+    concatenates random number strings with a comma separator.
+
+    args: *args: strings to be concatenated.
+
+    returns: A single string with all input strings concatenated together, separated by commas.
+
+    example: concat_str('abc', 'def', 'ghi') returns 'abc, def, ghi'
+    """
+    return ', '.join(args)
+

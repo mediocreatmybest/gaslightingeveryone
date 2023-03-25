@@ -1,0 +1,9 @@
+characterdesign:character design
+digitaldrawing:digital drawing
+fantasycharacter:fantasy character
+originalcharacter:original character design
+dailydrawing:illustration
+clipstudiopaint:digital painting with clipstudiopaint
+photoshop:digital painting with photoshop
+procreate:digital painting with procreate
+a cartoon drawing:a drawing
