@@ -10,6 +10,16 @@ These scripts/tools have been made to assist in the creation of captions for pro
 
 See the docs folder for more information.
 
+## Image manipulation scripts
+
+### Available in the tools folder
+
+These scripts/tools can assist in resizing or changing the aspect ratio of images in folders.
+These scripts will create a copy of the original master folder so you can maintain an original with captions intact.
+
+See the [docs folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/docs) for more information.
+
+
 ## Docker
 
 ### Sitting in the Containers folder
