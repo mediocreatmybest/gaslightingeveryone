@@ -31,7 +31,7 @@ def save_file_prepend(file_path, data, mode='r+', encoding='utf-8', debug=False)
 # Create the arg parser
 parser = argparse.ArgumentParser(description='Allows you to selection root folders and recursivly modify plain text files')
 # Add an argument
-parser.add_argument('--captiondir', type=str, help='Directory with captions', metavar='c:\images', required=True)
+parser.add_argument('--input-dir', type=str, help='Directory with captions', metavar='c:\images', required=True)
 parser.add_argument('--caption-find', type=str, help='Text to find and remove', metavar='"Monkey Magic is great!"', required=False)
 parser.add_argument('--caption-replace', type=str, help='Caption to change', metavar='"Tripitaka is the best!"', required=False)
 parser.add_argument('--caption-prepend', type=str, help='Insert text at the start of the caption', metavar='"Wow text at the start? say it aint so!"', required=False)
@@ -44,7 +44,7 @@ parser.add_argument('--debug', action='store_true', default=False, help='Disable
 cmd_args = parser.parse_args()
 
 # Path to caption files.
-captions_path = Path(rf"{cmd_args.captiondir}")
+captions_path = Path(rf"{cmd_args.input_dir}")
 
 for root, dirs, files in os.walk(captions_path):
     for file in tqdm(files, desc="processing files", unit="regex2sub"):
