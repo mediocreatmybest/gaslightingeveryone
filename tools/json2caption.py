@@ -65,6 +65,7 @@ def json_extract(obj, key):
     values = extract(obj, arr, key)
     return values
 
+# Need to fix this to read subkeys correctly.
 def read_keys(json_data, keys):
     """Reads the specified keys from the JSON data"""
     result = {}
