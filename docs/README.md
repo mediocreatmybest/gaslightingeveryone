@@ -45,7 +45,21 @@ There are quite a few options available for the script, including filters and wo
 This script has been made to fix some issues with the initial json2txt.py script. While it may be elaborate for something that could have been done in a simpler way, it aims to provide a more comprehensive way to help create captions for images from existing data, or not.
 See the example folder with filter_files for some of the basic filtering options.
 
-### caption2remove.py
+### captions2merge.py
+
+captions2merge.py can be used to merge captions from image files into a single plain text file.
+
+To use the script, specify the input directory containing the image files using the --input-dir option. By default, the script will merge .caption and .tags files together to create image1.txt. You can also select any plain text file to merge.
+
+e.g.
+
+captions2merge.py --input-dir "/images/ or C:\images"
+
+Note:
+
+The script currently does not check for random or misplaced commas. It is recommended to copy a few files to test or check the data first.
+
+### captions2remove.py
 
 This script can aid in replacing specific words within your captions recursively if they are stored in plain text files.
 ".txt" files are the default file extension but this can be set to any file extension with the extension argument. e.g. captions2remove.py --extension ".json"

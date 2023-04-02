@@ -4,7 +4,7 @@ This repository contains strong traces of gaslighting, along with a few files fo
 
 ## Caption creation tools
 
-### Now available in tools folder
+### Files available in the tools folder
 
 These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, and utilising existing metadata (from gallery-dl --write-metadata) or just simply editing text files in bulk.
 
@@ -15,10 +15,11 @@ See the docs folder for more information.
 ### Available in the tools folder
 
 These scripts/tools can assist in resizing or changing the aspect ratio of images in folders.
-These scripts will create a copy of the original master folder so you can maintain an original with captions intact.
+They are written to create a copy of the original master image folder so you can maintain an the originals with captions and files intact.
 
 See the [docs folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/docs) for more information.
 
+#### Feel free to fix by pulling or log issues, I can't promise I will do anything but I'll try
 
 ## Docker
 
