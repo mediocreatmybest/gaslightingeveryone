@@ -84,7 +84,6 @@ def concatenate_files(root_dir, output_file):
 # Partially from https://stackoverflow.com/questions/229186/os-walk-without-digging-into-directories-below
 # https://gist.github.com/TheMatt2/faf5ca760c61a267412c46bb977718fa
 
-import os
 
 def walklevel(path, depth = 1):
     """It works just like os.walk, but you can pass it a level parameter
@@ -156,6 +155,7 @@ def walk_path(path, ext_filter, recursive_level='full'):
             for name in files
             if name.endswith(tuple(ext_filter))]
 
+
 def walk_path_plus(path, ext_filter, recursive=True):
     """ Walks through a folder and returns a list of files with a specific extension, supports disabling recursive.
 
@@ -168,6 +168,7 @@ def walk_path_plus(path, ext_filter, recursive=True):
             for name in files
             if name.endswith(tuple(ext_filter))]
 
+
 def concat_str(*args):
     """
     concatenates random number strings with a comma separator.
@@ -179,3 +180,24 @@ def concat_str(*args):
     example: concat_str('abc', 'def', 'ghi') returns 'abc, def, ghi'
     """
     return ', '.join(args)
+
+
+def concat_files(input_dir, output_dir=None, extensions=[], output_ext='txt'):
+    """
+    Finds and joins text files
+    args:   input_dir, input directory
+            output_dir, output directory, defaults to the same directory as the input files
+            extensions, extensions of files to find, txt, tags, etc.
+            output_ext, extension of file to save
+    """
+    files = walk_path(input_dir, extensions)
+    for file in files:
+        with open(file, 'r', encoding="utf-8") as input_file:
+            contents = input_file.read()
+            if output_dir is None:
+                output_dir = os.path.dirname(file)
+            output_file_path = os.path.join(output_dir, os.path.splitext(os.path.basename(file))[0] + '.' + output_ext)
+            with open(output_file_path, 'a', encoding="utf-8") as output_file:
+                if os.stat(output_file_path).st_size > 0:
+                    output_file.write(', ')
+                output_file.write(contents)

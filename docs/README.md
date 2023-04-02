@@ -4,7 +4,7 @@
 
 These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, utilising existing metadata (from gallery-dl downloads) or editing text files in bulk.
 
-### Now available in tools folder
+### Main tools are located in the tools folder
 
 ### json2txt.py
 
@@ -17,6 +17,33 @@ As an example: *The Fat Cat Barnaby, Barnaby is always very sleepy and looks dru
 The text file will only include elements present in the JSON file, if the JSON is missing any of the following information: title, description, Alt_Description, EXIF, or tags, they will not be included in the text file.
 
 Command line options available with "json2txt.py --help"
+
+### json2caption.py
+
+json2caption.py is a script that can help create captions for your images by collecting all the values from the json metadata that was downloaded or created with the images, including headings, and creating a plain text file (txt, tags, caption). It also includes a word swap feature to replace certain words with others using a basic text file.
+
+#### Usage
+
+To use the script on simple json files, you can use the following command:
+
+json2caption.py "/image/directory or c:\images\images" --filter "tags: " --keys "tags"
+
+This will create a file in the same directory with .tags by default.
+
+For json files with a less than standard structure, you can use additional filter files:
+
+json2caption.py "/image/directory or c:\images\images" --filter-file "filter_file.txt" --word-swap "word_swap_dictionary.txt" --keys "tags"
+
+The filter_file.txt is a Python regex and each new line is a new filter. The word_swap_dictionary is a simple dictionary file with words separated by a colon. Each new line is a new word swap filter.
+
+#### Options
+
+There are quite a few options available for the script, including filters and word swaps. Please use the --help option for more information.
+
+#### Note
+
+This script has been made to fix some issues with the initial json2txt.py script. While it may be elaborate for something that could have been done in a simpler way, it aims to provide a more comprehensive way to help create captions for images from existing data, or not.
+See the example folder with filter_files for some of the basic filtering options.
 
 ### caption2remove.py
 
