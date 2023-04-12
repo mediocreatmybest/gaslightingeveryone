@@ -19,16 +19,26 @@ They are written to create a copy of the original master image folder so you can
 
 See the [docs folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/docs) for more information.
 
+### Misc. Scripts
+
+Some random scripts.
+
+#### [Misc. Scripts](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Scripts/)
+
+### GIT Scripts
+
+#### Located in [git folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Scripts/git)
+
 #### Feel free to fix by pulling or log issues, I can't promise I will do anything but I'll try
 
-## Docker
+## Docker (Unmaintained)
 
 ### Sitting in the Containers folder
 
 Docker files that have been created for testing, these are old and out of date.
 At some stage I do need to go back and update these.
 
-## Google Colab
+## Google Colab (No doubt broken, needs to be updated)
 
 Slow Stable Diffusion is just a modified Colab file located in the Colab folder, it is a modified colab from TheLastBens Fast_Stable_Diffusion_AUTOMATIC1111.
 Testing only but seem to work well enough.

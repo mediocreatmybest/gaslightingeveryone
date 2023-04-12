@@ -117,6 +117,32 @@ def walklevel(path, depth = 1):
             del dirs[:]
 
 
+def walk_path(path, ext_filter=None, recursive_level='full'):
+    """ Walks through a folder and returns a list of files with a specific extension.
+
+    Args:
+        path (str): path to the folder to search.
+        ext_filter (list): list of extensions to filter for. If set to None, all files will be returned.
+        recursive_level (str or int): specifies the depth of the directory tree to search. If set to 'full', the entire directory tree will be searched. If set to a non-negative integer, the search will be limited to that many levels deep.
+
+    Returns:
+        list: a list of full file paths.
+    """
+    if recursive_level == 'full':
+        depth = -1
+    else:
+        # should force string to int if string is a number
+        depth = int(recursive_level)
+
+    if ext_filter is None:
+        ext_filter = []
+
+    return [os.path.join(root, name)
+            for root, dirs, files in walklevel(path, depth)
+            for name in files
+            if len(ext_filter) == 0 or name.endswith(tuple(ext_filter))]
+
+
 def oswalk_plus(top, recursive=False):
     """ It works just like os.walk, but you can pass it a recursive parameter
         that indicates if you want to curse at subdirectories. """
@@ -133,28 +159,6 @@ def oswalk_plus(top, recursive=False):
             path = os.path.join(top, name)
             yield from oswalk_plus(path, recursive)
 
-
-def walk_path(path, ext_filter, recursive_level='full'):
-    """ Walks through a folder and returns a list of files with a specific extension.
-
-    Args:
-        folder (path)
-        ext (list): list of extensions to filter for
-
-    Returns:
-        list: list with full path
-    """
-    # Set this based on function input but easier to read (for me)
-    if recursive_level == 'full':
-        depth = int('-1')
-    else:
-        # Assume it will be an integer
-        depth = int(recursive_level)
-
-    return [os.path.join(root, name)
-            for root, dirs, files in walklevel(path, depth)
-            for name in files
-            if name.endswith(tuple(ext_filter))]
 
 def walk_path_plus(path, ext_filter, recursive=True):
     """ Walks through a folder and returns a list of files with a specific extension, supports disabling recursive.
