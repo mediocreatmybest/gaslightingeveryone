@@ -5,25 +5,37 @@ import re
 from pathlib import Path
 
 # Create the parser options
-parser = argparse.ArgumentParser(description='Process JSON files.')
-parser.add_argument('directory', type=str, help='the directory to search for JSON files')
-parser.add_argument('--write-mode', type=str, help='how to treat existing data if found', choices=['append', 'write', 'prepend'], default='write')
-parser.add_argument('--keys', type=str, help='the keys to extract (comma-separated)', default='tags')
-parser.add_argument('--order-by', type=str, help='the order to output keys (comma-separated)')
-parser.add_argument('--output-file', type=str, help='the name of the output file')
-parser.add_argument('--output-folder', type=str, help='the folder to save the output file')
-parser.add_argument('--output-extension', type=str, help='the extension of the output file', choices=['txt', 'tags', 'caption'], default='tags')
-parser.add_argument('--filter', type=str, help='simple list of text to remove from output, accepts regex pattern, (comma-separated)')
+parser = argparse.ArgumentParser(description='Process JSON files and build a caption file')
+parser.add_argument('directory', type=str,
+                    help='the directory to search for JSON files')
+parser.add_argument('--write-mode', type=str,
+                    help='how to treat existing data if found', choices=['append', 'write', 'prepend'], default='write')
+parser.add_argument('--keys', type=str,
+                    help='the keys to extract (comma-separated)', default='tags')
+parser.add_argument('--tag-keys', type=str,
+                    help='values that should be comma seperated, e.g. tags (only useful if original data is separated by spaces)')
+parser.add_argument('--order-by', type=str,
+                    help='the order to output keys (comma-separated)')
+parser.add_argument('--output-file', type=str,
+                    help='the name of the output file')
+parser.add_argument('--output-folder', type=str,
+                    help='the folder to save the output file')
+parser.add_argument('--output-extension', type=str,
+                    help='the extension of the output file', choices=['txt', 'tags', 'caption'], default='tags')
+parser.add_argument('--filter', type=str,
+                    help='simple list of text to remove from output, accepts regex pattern, (comma-separated)')
 parser.add_argument('--filter-file', type=str,
                     help='alternative list of text to remove from output, (each new line is a separate filter), this option only filters json values')
 parser.add_argument('--regex-filter-file', type=str,
                     help='alternative regex list of text to remove from output, (each new line is a separate filter), this option only filters json values')
 parser.add_argument('--word-swap', type=str,
                     help='text file with word swap pairs, useful for unwanted key values, (each new line is a colon separate pair), this option only swaps json values')
-parser.add_argument('--underscore-to-space', type=str, help='converts underscores to spaces in output', choices=['yes', 'no'], default='yes')
-parser.add_argument('--debug', action='store_true', help='disables saving files, prints output and save location')
+parser.add_argument('--underscore-to-space', type=str,
+                    help='converts underscores to spaces in output', choices=['yes', 'no'], default='yes')
+parser.add_argument('--debug', action='store_true',
+                    help='disables saving files, prints output and save location')
 
-def search_files(directory):
+def search_files(directory, debug=None):
     """Searches for JSON files in the specified directory"""
     json_files = []
     for root, dirs, files in os.walk(directory):
@@ -33,7 +45,7 @@ def search_files(directory):
     return json_files
 
 
-def image_hunt(root_path, base_name, extensions=('jpg', 'jpeg', 'png', 'bmp', 'webp')):
+def image_hunt(root_path, base_name, extensions=('jpg', 'jpeg', 'png', 'bmp', 'webp'), debug=None):
     # We are going on a bear, err, image hunt, we are going to catch a big one, we're not scared
     """Searches for image files in the specified directory"""
     for root, dirs, files in os.walk(root_path):
@@ -45,7 +57,7 @@ def image_hunt(root_path, base_name, extensions=('jpg', 'jpeg', 'png', 'bmp', 'w
 
 
 # from: https://hackersandslackers.com/extract-data-from-complex-json-python/
-def json_extract(obj, key):
+def json_extract(obj, key, debug=None):
     """ Recursively fetch values from nested JSON """
     arr = []
 
@@ -66,7 +78,7 @@ def json_extract(obj, key):
     return values
 
 # Need to fix this to read subkeys correctly.
-def read_keys(json_data, keys):
+def read_keys(json_data, keys, debug=None):
     """Reads the specified keys from the JSON data"""
     result = {}
     for key in keys:
@@ -111,15 +123,28 @@ def extract_keys(json_files, keys, encoding='utf-8', debug=False):
     return results
 
 
-def format_output(results, order_by):
-    """Formats the output in the specified order"""
+def format_output(results, order_by, tag_keys=None, debug=None):
+    """Formats the output in the specified order and convert string to comma separated with tag_keys"""
     output = ''
     for result in results:
         line = ''
         for key in order_by:
             # check if key is in result and if the value is not empty or None or []
             if key in result and result[key] not in ['', None, []]:
+                # Main value to check
                 value = result[key]
+                # if the value is a string and is set in tag_keys, seperate by commas
+                if isinstance(value, str):
+                    # if tag_keys match, split the string into individual words
+                    if tag_keys and (key in tag_keys or any(key.startswith(tag_key + '.') for tag_key in tag_keys)):
+                        # String is separated by spaces and split
+                        words = [word.strip() for word in value.split(' ')]
+                        # if there are non-empty words, join them with commas
+                        if any(words):
+                            value = ', '.join(words)
+                        # if there are no non-empty words, skip this key-value pair
+                        else:
+                            continue
                 # if the value is a list, check if any of its elements are not empty or None
                 if isinstance(value, list):
                     values = [v for v in value if v not in ['', None]]
@@ -238,25 +263,31 @@ def filter_file(output, filter_file):
     return output
 
 
-def word_swap(output, replacements_file):
+def word_swap(output, replacements_file, whole_words_only=False, debug=True):
     """
     Word swap function, reads a text file containing pairs of words to be replaced in the output string.
-    Word pairs are seperated by a colon and on each new line.
-    e.g.    'cat:Super cat'
-            'bob:Super bob'
+    Word pairs are separated by pipe colon pipe |-| and on each new line.
+
+    e.g.    'cat|-|Super cat'
+            'bob|-|Super bob'
     args:   output (str): The string to be filtered.
             replacements_file (str): The path to the text file containing filters to be removed from the string.
-    returns: str: The word swaped string.
+    returns: str: The word swapped string.
     """
-    # Read the replacement pairs from the file
+     # Read the replacement pairs from the file
     with open(replacements_file, 'r') as f:
         replacement_lines = f.readlines()
-        replacements = {line.split(':')[0].strip(): line.split(':')[1].strip() for line in replacement_lines}
+        replacements = {line.split('|-|')[0].strip(): line.split('|-|')[1].strip() for line in replacement_lines}
 
     # Replace specific lines of text
     for line, replacement in replacements.items():
-        # Match only whole words in the line
-        pattern = r'\b{}\b'.format(line)
+        # Escape any special characters in the line
+        pattern = re.escape(line)
+
+        # Add word boundaries if whole_words_only is True (might not need this with re.escape)
+        if whole_words_only:
+            pattern = r'\b{}\b'.format(pattern)
+
         output = re.sub(pattern, replacement, output)
 
     return output
@@ -296,11 +327,16 @@ def main():
 
     # format the output
     order_by = [key.strip() for key in args.order_by.split(',')] if args.order_by else None
-    output = format_output(results, order_by)
+    # I can't remember if this line is still needed. Todo: Test it...
+    #output = format_output(results, order_by)
+
+    # Set keys that should be comma separated for format_by function,gotta catch 'em all
+    # tag_keys I chooooosee youu!
+    tag_keys = [keytag.strip() for keytag in args.tag_keys.split(',')] if args.tag_keys else None
 
     # For each result, filter the output and save it to a file
     for result in results:
-        output = format_output([result], order_by)
+        output = format_output([result], order_by, tag_keys)
         # filter the output
         output = filter_output(output, args.filter)
 
@@ -354,6 +390,7 @@ def main():
         # final cleanup of the output string, maybe...
         output = output.replace(',, ',', ')
         output = output.strip(',')
+        output = output.strip(', ')
 
         if args.output_file:
             if result['_extension'] is None:
