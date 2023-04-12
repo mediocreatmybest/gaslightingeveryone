@@ -1,21 +1,21 @@
-characterdesign:character design
-digitaldrawing:digital drawing
-digitalpainting:digital painting
-fantasyillustration:fantasy illustration
-fantasycharacter:fantasy character
-originalcharacter:original character design
-OC Portrait:original character portrait
-dailydrawing:illustration
-clipstudiopaint:digital painting with clipstudiopaint
-photoshop:digital painting with photoshop
-procreate:digital painting with procreate
-anatomystudy:anatomy study
-femalecharacter:female character
-malecharacter:male character
-stylizedart:stylized art
-fanartdigital:digital fanart
-digitalfanart:digital fanart
-gamefanart:game fanart
-fanartdrawing:fanart drawing
-a cartoon drawing:a drawing
-a cartoon:a drawing
+characterdesign|-|character design
+digitaldrawing|-|digital drawing
+digitalpainting|-|digital painting
+fantasyillustration|-|fantasy illustration
+fantasycharacter|-|fantasy character
+originalcharacter|-|original character design
+OC Portrait|-|original character portrait
+dailydrawing|-|illustration
+clipstudiopaint|-|digital painting with clipstudiopaint
+photoshop|-|digital painting with photoshop
+procreate|-|digital painting with procreate
+anatomystudy|-|anatomy study
+femalecharacter|-|female character
+malecharacter|-|male character
+stylizedart|-|stylized art
+fanartdigital|-|digital fanart
+digitalfanart|-|digital fanart
+gamefanart|-|game fanart
+fanartdrawing|-|fanart drawing
+a cartoon drawing|-|a drawing
+a cartoon|-|a drawing
