@@ -1,3 +1,5 @@
+# Based on the powershell idea from:
+# https://gist.github.com/samiru/80a80916a1d1ebabf7b472f3aecca1b0
 $initpath = Get-Location
 
 # Check each folder in current working directory
