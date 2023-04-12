@@ -19,6 +19,16 @@ They are written to create a copy of the original master image folder so you can
 
 See the [docs folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/docs) for more information.
 
+### Misc. Scripts
+
+Some random scripts.
+
+#### [Misc. Scripts](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Scripts/)
+
+### GIT Scripts
+
+#### Located in [git folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Scripts/git)
+
 #### Feel free to fix by pulling or log issues, I can't promise I will do anything but I'll try
 
 ## Docker
