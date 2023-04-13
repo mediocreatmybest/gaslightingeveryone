@@ -274,7 +274,7 @@ def word_swap(output, replacements_file, whole_words_only=False, debug=True):
             replacements_file (str): The path to the text file containing filters to be removed from the string.
     returns: str: The word swapped string.
     """
-     # Read the replacement pairs from the file
+    # Read the replacement pairs from the file
     with open(replacements_file, 'r') as f:
         replacement_lines = f.readlines()
         replacements = {line.split('|-|')[0].strip(): line.split('|-|')[1].strip() for line in replacement_lines}
