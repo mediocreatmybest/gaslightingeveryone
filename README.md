@@ -1,6 +1,7 @@
 # Gaslightingeveryone
 
-This repository contains strong traces of gaslighting, along with a few files for; machine learning, containers, and ultimately some poorly written scripts.
+This repository contains strong traces of gaslighting, along with a few files for; machine learning, containers, and ultimately some poorly written scripts.  
+*Feel free to fix by pulling or log issues, I can't promise I will do anything but I'll try*
 
 ## Caption creation tools
 
@@ -25,7 +26,6 @@ Some random scripts located in [Misc. Scripts](https://github.com/mediocreatmybe
 
 Located in [git folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Scripts/git)
 Some handy options to bulk git pull folders in Linux and Windows. Just copy one into base directory of git repository.
-*Feel free to fix by pulling or log issues, I can't promise I will do anything but I'll try*
 
 ## Docker (Unmaintained)
 
