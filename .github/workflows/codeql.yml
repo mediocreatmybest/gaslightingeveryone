@@ -14,9 +14,17 @@ name: "CodeQL"
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'Scripts/working'
+      - '**/test/**'
+      - '**/StableDiffusion-misc/**'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "main" ]
+    paths-ignore:
+      - 'Scripts/working'
+      - '**/test/**'
+      - '**/StableDiffusion-misc/**'
   schedule:
     - cron: '15 10 * * 1'
 
@@ -39,9 +47,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        # Exclude folders
-        path-ignore: 'Scripts/working,**/test/**,**/StableDiffusion-misc/**'
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
