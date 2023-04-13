@@ -4,7 +4,6 @@ import argparse
 
 from pathlib import Path
 from func import json_extract, list2String # Local function script
-from filter_func import filter_spacing, filter_urls # Local function script
 from tqdm import tqdm
 
 # Create the arg parser

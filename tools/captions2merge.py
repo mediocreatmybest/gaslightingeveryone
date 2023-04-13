@@ -1,5 +1,5 @@
 import argparse
-from func import walk_path, concat_files
+from func import concat_files
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Merge text files together')
