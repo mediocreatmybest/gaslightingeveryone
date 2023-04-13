@@ -15,6 +15,10 @@ name: Codacy Security Scan
 
 on:
   push:
+    paths-ignore:
+      - 'Scripts/working'
+      - '**/test/**'
+      - '**/StableDiffusion-misc/**'
     branches: [ "main" ]
   pull_request:
     # The branches below must be a subset of the branches above
@@ -37,9 +41,9 @@ jobs:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          # Exclude folders
-          path: '!Scripts/working,!**/test/**,!**/StableDiffusion-misc/**'
+        #with:
+          # Exclude folders, seems not the right way.
+          #path: '!Scripts/working,!**/test/**,!**/StableDiffusion-misc/**'
 
       # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
       - name: Run Codacy Analysis CLI
