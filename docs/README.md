@@ -16,34 +16,50 @@ As an example: *The Fat Cat Barnaby, Barnaby is always very sleepy and looks dru
 
 The text file will only include elements present in the JSON file, if the JSON is missing any of the following information: title, description, Alt_Description, EXIF, or tags, they will not be included in the text file.
 
-Command line options available with "json2txt.py --help"
+Command line options available with ```"json2txt.py --help"```
 
 ### json2caption.py
 
 json2caption.py is a script that can help create captions for your images by collecting all the values from the json metadata that was downloaded or created with the images, including headings, and creating a plain text file (txt, tags, caption). It also includes a word swap feature to replace certain words with others using a basic text file.
 
-#### Usage
+#### Usage is more complex than I'd have liked but here we are
 
-To use the script on simple json files, you can use the following command:
+Use the script on json files that contain image metadata *(from programs such as gallery-dl)*, a simple example command:
 
-json2caption.py "/image/directory or c:\images\images" --filter "tags: " --keys "tags"
+```json2caption.py "/image/directory or c:\images\images" --filter "tags: " --keys "tags"* *(Note the spaces you wish to filter)```
 
 This will create a file in the same directory with .tags by default.
 
-For json files with a less than standard structure, you can use additional filter files:
+For json files with a less standard structure, you can use additional filter files, you have the option of simple replacement filter or regex.
 
-json2caption.py "/image/directory or c:\images\images" --filter-file "filter_file.txt" --word-swap "word_swap_dictionary.txt" --keys "tags"
+```json2caption.py "/image/directory or c:\images\images" --filter-file "filter_file.txt" --word-swap "word_swap_dictionary.txt" --keys "tags"```
 
-The filter_file.txt is a Python regex and each new line is a new filter. The word_swap_dictionary is a simple dictionary file with words separated by a colon. Each new line is a new word swap filter.
+The filter_file.txt is a Python regex and each new line is a new filter. The word_swap_dictionary is a simple dictionary file with words separated by a |-|
+Each new line is a new word swap filter. See the examples in the [filter_files folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/examples/filter_files)
 
-#### Options
+The only required argument is the directory, but more than likely you would want to filter the results.
+The current arguments available are:
 
-There are quite a few options available for the script, including filters and word swaps. Please use the --help option for more information.
+*--write-mode: how to treat existing data if found. The default value is 'write' (this will overwrite existing files), but it can be set to 'append' or 'prepend'.*
+*--keys: A comma-separated list of keys or values to collect. The default value is 'tags'.*
+*--tag-keys: If the original data is separated by spaces, this argument specifies the values that should be treated as separate tags.*
+*--order-by: A comma-separated list of keys that allows you to change the order of the output.*
+*--output-file: The name of the output file. Useful if you wish to save a single file*
+*--output-folder: The folder to save the output file in. Useful if you wish to save in an alternative folder or for testing*
+*--output-extension: The extension of the output file. The default value is 'tags', but it can also be set to 'txt' or 'caption'.*
+*--filter: A comma-separated list of text patterns to remove from the output. This argument accepts regex.*
+*--filter-file: An alternative list of text patterns to remove from the output. Each new line is a separate filter. This argument only filters JSON values.*
+*--regex-filter-file: An alternative regex list of text patterns to remove from the output. Each new line is a separate filter. This argument only filters JSON values.*
+*--word-swap: A text file with a pipe dash pipe |-| separated word swap pairs. This argument is useful for unwanted key values, and it only swaps JSON values.*
+*--underscore-to-space: Converts underscores to spaces in the output. The default value is 'yes', but it can be set to 'no'.*
+*--debug: Disables saving files, prints output, and shows the save location.*
+
+feel free to fix, pull, or otherwise make suggestions.
 
 #### Note
 
-This script has been made to fix some issues with the initial json2txt.py script. While it may be elaborate for something that could have been done in a simpler way, it aims to provide a more comprehensive way to help create captions for images from existing data, or not.
-See the example folder with filter_files for some of the basic filtering options.
+This script has been made to fix some issues with the initial json2txt.py script. While it may be elaborate for something that could have been done in a simpler way, it aims to provide a more comprehensive way to help create captions for images from existing data, or break at the drop of a hat.
+Does anyone read this? Am I so out of touch? No...it's the others who are wrong.
 
 ### captions2merge.py
 
