@@ -3,8 +3,8 @@
 ## Caption creation tools
 
 These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, utilising existing metadata (from gallery-dl downloads) or editing text files in bulk.
-
-### Main tools are located in the tools folder
+All the ain tools are located in the tools folder.
+Sp feel free to fix, pull, or otherwise make suggestions.
 
 ### json2txt.py
 
@@ -40,21 +40,21 @@ Each new line is a new word swap filter. See the examples in the [filter_files f
 The only required argument is the directory, but more than likely you would want to filter the results.
 The current arguments available are:
 
-*--write-mode: how to treat existing data if found. The default value is 'write' (this will overwrite existing files), but it can be set to 'append' or 'prepend'.*
-*--keys: A comma-separated list of keys or values to collect. The default value is 'tags'.*
-*--tag-keys: If the original data is separated by spaces, this argument specifies the values that should be treated as separate tags.*
-*--order-by: A comma-separated list of keys that allows you to change the order of the output.*
-*--output-file: The name of the output file. Useful if you wish to save a single file*
-*--output-folder: The folder to save the output file in. Useful if you wish to save in an alternative folder or for testing*
-*--output-extension: The extension of the output file. The default value is 'tags', but it can also be set to 'txt' or 'caption'.*
-*--filter: A comma-separated list of text patterns to remove from the output. This argument accepts regex.*
-*--filter-file: An alternative list of text patterns to remove from the output. Each new line is a separate filter. This argument only filters JSON values.*
-*--regex-filter-file: An alternative regex list of text patterns to remove from the output. Each new line is a separate filter. This argument only filters JSON values.*
-*--word-swap: A text file with a pipe dash pipe |-| separated word swap pairs. This argument is useful for unwanted key values, and it only swaps JSON values.*
-*--underscore-to-space: Converts underscores to spaces in the output. The default value is 'yes', but it can be set to 'no'.*
-*--debug: Disables saving files, prints output, and shows the save location.*
-
-feel free to fix, pull, or otherwise make suggestions.
+```bash
+--write-mode: how to treat existing data if found. The default value is 'write' this will overwrite existing files, but it can be set to 'append' or 'prepend'.
+--keys: A comma-separated list of keys or values to collect. The default value is 'tags'.
+--tag-keys: If the original data is separated by spaces, this argument specifies the values that should be treated as separate tags.
+--order-by: A comma-separated list of keys that allows you to change the order of the output.
+--output-file: The name of the output file. Useful if you wish to save a single file
+--output-folder: The folder to save the output file in. Useful if you wish to save in an alternative folder or for testing.
+--output-extension: The extension of the output file. The default value is 'tags', but it can also be set to 'txt' or 'caption'.
+--filter: A comma-separated list of text patterns to remove from the output. This argument accepts regex.
+--filter-file: An alternative list of text patterns to remove from the output. Each new line is a separate filter. This argument only filters JSON values.
+--regex-filter-file: An alternative regex list of text patterns to remove from the output. Each new line is a separate filter. This argument only filters JSON values.
+--word-swap: A text file with a pipe dash pipe |-| separated word swap pairs. This argument is useful for unwanted key values, and it only swaps JSON values.
+--underscore-to-space: Converts underscores to spaces in the output. The default value is 'yes', but it can be set to 'no'.
+--debug: Disables saving files, prints output, and shows the save location.
+```
 
 #### Note
 
@@ -69,7 +69,7 @@ To use the script, specify the input directory containing the image files using 
 
 e.g.
 
-captions2merge.py --input-dir "/images/ or C:\images"
+'''captions2merge.py --input-dir "/images/ or C:\images"'''
 
 Note:
 
