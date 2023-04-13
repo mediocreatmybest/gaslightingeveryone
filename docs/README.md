@@ -61,7 +61,10 @@ The current arguments available are:
 Subkeys can be selected independently of the primary key. This is particularly useful when the primary key contains additional subkeys that are not relevant or contain unwanted values.
 
 To select a subkey on its own, use the following command:
-'''--keys primarykey.subkey'''
+
+```bash
+--keys primarykey.subkey
+```
 
 If you need to filter subkeys, you must use its full key name.
 The filtering process works in the same way as with primary keys, including the ability to swap words.
