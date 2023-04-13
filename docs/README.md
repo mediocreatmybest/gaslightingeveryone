@@ -56,7 +56,17 @@ The current arguments available are:
 --debug: Disables saving files, prints output, and shows the save location.
 ```
 
-#### Note
+#### Subkeys in JSON file
+
+Subkeys can be selected independently of the primary key. This is particularly useful when the primary key contains additional subkeys that are not relevant or contain unwanted values.
+
+To select a subkey on its own, use the following command:
+'''--keys primarykey.subkey'''
+
+If you need to filter subkeys, you must use its full key name.
+The filtering process works in the same way as with primary keys, including the ability to swap words.
+
+#### Notes
 
 This script has been made to fix some issues with the initial json2txt.py script. While it may be elaborate for something that could have been done in a simpler way, it aims to provide a more comprehensive way to help create captions for images from existing data, or break at the drop of a hat.
 Does anyone read this? Am I so out of touch? No...it's the others who are wrong.
