@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from multi_crop_func import *
+from multi_crop_func import resize_side_size, crop_to_multiple, crop_to_set_aspect_ratio, pad_to_1_to_1
 
 from PIL import Image
 
