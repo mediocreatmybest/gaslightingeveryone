@@ -182,37 +182,24 @@ for root, dirs, files in os.walk(args.input_dir):
                 else:
                     img.save(os.path.join(args.output_dir, file), format, quality=quality)
 
-            # Check if the image file as a matching text file and copy to new directory
-            text_file = base_file + '.txt'
-            caption_file = base_file + '.caption'
-            tag_file = base_file + '.tags'
+            # Try clean this up a little with a list of extensions
+            file_extensions = ['.txt', '.caption', '.tags']
+            # Loop each extension
+            for ext in file_extensions:
+                file_to_copy = base_file + ext
 
-            if args.keep_relative is True:
-                output_path = (os.path.join(args.output_dir, rel_path))
-                if not os.path.exists(output_path):
-                    os.makedirs(output_path)
-                # Check .txt file and copy if it exists
-                if os.path.exists(os.path.join(root, text_file)):
-                # If it exists, copy it
-                    shutil.copy2(os.path.join(root, text_file), os.path.join(output_path, text_file))
-                # Check .caption file and copy if it exists
-                if os.path.exists(os.path.join(root, caption_file)):
-                # If it exists, copy it
-                    shutil.copy2(os.path.join(root, caption_file), os.path.join(output_path, caption_file))
-                # Check .tag_file file and copy if it exists
-                if os.path.exists(os.path.join(root, tag_file)):
-                # If it exists, copy it
-                    shutil.copy2(os.path.join(root, tag_file), os.path.join(output_path, tag_file))
-            else:
-                # Check .txt file and copy if it exists
-                if os.path.exists(os.path.join(root, text_file)):
+                if args.keep_relative:
+                    output_path = os.path.join(args.output_dir, rel_path)
+                    if not os.path.exists(output_path):
+                        os.makedirs(output_path)
+                    file_src = os.path.join(root, file_to_copy)
+                    file_dst = os.path.join(output_path, file_to_copy)
+                else:
+                    file_src = os.path.join(root, file_to_copy)
+                    file_dst = os.path.join(args.output_dir, file_to_copy)
+
+                # Check if the file with the current extension exists and copy if it does
+                if os.path.exists(file_src):
                     # If it exists, copy it
-                    shutil.copy2(os.path.join(root, text_file), os.path.join(args.output_dir, text_file))
-                # Check .caption file and copy if it exists
-                if os.path.exists(os.path.join(root, caption_file)):
-                    # If it exists, copy it
-                    shutil.copy2(os.path.join(root, caption_file), os.path.join(args.output_dir, caption_file))
-                # Check .tag_file file and copy if it exists
-                if os.path.exists(os.path.join(root, tag_file)):
-                    # If it exists, copy it
-                    shutil.copy2(os.path.join(root, tag_file), os.path.join(args.output_dir, tag_file))
+                    shutil.copy2(file_src, file_dst)
+                    # Let's keep those witty comments coming!
