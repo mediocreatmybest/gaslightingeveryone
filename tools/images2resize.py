@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from multi_crop_func import resize_side_size, crop_to_multiple, crop_to_set_aspect_ratio, pad_to_1_to_1
+from func_multi_crop import resize_side_size, crop_to_multiple, crop_to_set_aspect_ratio, pad_to_1_to_1
 
 from PIL import Image
 
@@ -149,6 +149,9 @@ for root, dirs, files in os.walk(args.input_dir):
             else:
                 format = args.format
 
+            # Set default quality for jpg and webp (95), add to argparse later
+            quality = 95
+
             # Save the resized image recursively while checking for jpeg vs jpg with its silly extension arguments
             if format == 'jpg':
                 if args.keep_relative is True:
@@ -156,18 +159,18 @@ for root, dirs, files in os.walk(args.input_dir):
                         output_path = (os.path.join(args.output_dir, rel_path))
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
-                    img.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg')
+                    img.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg', quality=quality)
                 else:
-                    img.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg')
+                    img.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg', quality=quality)
 
             if args.copy_format is False and format != 'jpg':
                 if args.keep_relative is True:
                     output_path = (os.path.join(args.output_dir, rel_path))
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
-                    img.save(os.path.join(output_path, base_file + '.'+format), format)
+                    img.save(os.path.join(output_path, base_file + '.'+format), format, quality=quality)
                 else:
-                    img.save(os.path.join(args.output_dir, base_file + '.'+format), format)
+                    img.save(os.path.join(args.output_dir, base_file + '.'+format), format, quality=quality)
 
             if args.copy_format:
                 if args.keep_relative is True:
@@ -175,9 +178,9 @@ for root, dirs, files in os.walk(args.input_dir):
                         output_path = (os.path.join(args.output_dir, rel_path))
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
-                    img.save(os.path.join(output_path, file), format)
+                    img.save(os.path.join(output_path, file), format, quality=quality)
                 else:
-                    img.save(os.path.join(args.output_dir, file), format)
+                    img.save(os.path.join(args.output_dir, file), format, quality=quality)
 
             # Check if the image file as a matching text file and copy to new directory
             text_file = base_file + '.txt'
