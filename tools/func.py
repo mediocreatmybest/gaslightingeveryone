@@ -133,12 +133,12 @@ def oswalk_plus(top, recursive=False):
             yield from oswalk_plus(path, recursive)
 
 
-def walk_path(path, ext_filter, recursive_level='full'):
+def walk_path(path, ext_filter=None, recursive_level='full'):
     """ Walks through a folder and returns a list of files with a specific extension.
 
     Args:
         folder (path)
-        ext (list): list of extensions to filter for
+        ext (list, optional): list of extensions to filter for, default is None
 
     Returns:
         list: list with full path
@@ -150,10 +150,15 @@ def walk_path(path, ext_filter, recursive_level='full'):
         # Assume it will be an integer
         depth = int(recursive_level)
 
-    return [os.path.join(root, name)
-            for root, dirs, files in walklevel(path, depth)
-            for name in files
-            if name.endswith(tuple(ext_filter))]
+    if ext_filter is None:
+        return [os.path.join(root, name)
+                for root, dirs, files in walklevel(path, depth)
+                for name in files]
+    else:
+        return [os.path.join(root, name)
+                for root, dirs, files in walklevel(path, depth)
+                for name in files
+                if name.endswith(tuple(ext_filter))]
 
 
 def walk_path_plus(path, ext_filter, recursive=True):
