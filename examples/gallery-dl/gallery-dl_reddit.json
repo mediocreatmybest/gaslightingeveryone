@@ -1,5 +1,6 @@
 {
   "extractor": {
+    "parent-skip": true,
     "reddit": {
       "parent-directory": false,
       "parent-metadata": true,
