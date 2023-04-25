@@ -1,0 +1,13 @@
+{
+  "extractor": {
+    "reddit": {
+      "parent-directory": false,
+      "parent-metadata": true,
+      "category-transfer": true,
+      "directory": [
+        "{category}",
+        "{subreddit}"
+      ]
+    }
+  }
+}
