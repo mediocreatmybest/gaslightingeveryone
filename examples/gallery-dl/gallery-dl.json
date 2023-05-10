@@ -1,0 +1,31 @@
+{
+  "extractor": {
+    "parent-skip": true,
+    "skip": true,
+    "user-agent": "gdl/1.25.2",
+    "extension-map": {
+      "jpeg": "jpg",
+      "jpe": "jpg",
+      "jfif": "jpg",
+      "jif": "jpg",
+      "jfi": "jpg"
+    },
+    "artstation": {
+      "external": false,
+      "filename": "{id}_{asset[id]}_{title:R /_/R-/_/R__/_/R  /_/R.././R'//R://R _ /_/R_ _/_/}.{extension}",
+      "pro-first": true
+    },
+    "reddit": {
+      "parent-directory": false,
+      "parent-metadata": true,
+      "category-transfer": true,
+      "directory": [
+        "{category}",
+        "{subreddit}"
+      ]
+    },
+    "wallhaven": {
+      "metadata": true
+    }
+  }
+}

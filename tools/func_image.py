@@ -1,4 +1,5 @@
 import math
+import random
 import warnings
 from typing import List, Tuple
 
@@ -113,7 +114,7 @@ def crop_to_multiple(image, multiple=64):
     return image.crop((left, upper, left + new_width, upper + new_height))
 
 
-def resize_side_size(image, min_size, resize_mode='smallest'):
+def resize_side_size(image, min_size, resize_mode='smallest', resample=Image.ANTIALIAS):
     """
     Resize an image to a specific size based on the smallest side of the image.
 
@@ -150,33 +151,87 @@ def resize_side_size(image, min_size, resize_mode='smallest'):
     else:
         raise ValueError('Beep!, please use "smallest" or "largest')
 
+    # Set resameple method, defaults to antialias
+    resized_image = image.resize(new_size, resample=resample)
     # return the resized PIL image
-    return image.resize(new_size)
+    return resized_image
+
+
+def random_color(common_colors=False):
+    """
+    Generates a random color in R, G, B. If common_colors is True, a random color from a list of common
+    and neutral colors; otherwise, it returns a random color.
+
+    args: common_colors (bool): use a list of common and neutral colors. Default is False.
+
+    returns: A color tuple in R, G, B
+    """
+    if common_colors:
+        common_color_list = [
+            # A list of common and neutral colours, maybe we can get a better list, so far this will do.
+            (255, 255, 255),  # White
+            (242, 242, 242),  # Light Gray
+            (245, 245, 245),  # White Smoke
+            (224, 224, 224),  # Gainsboro
+            (220, 220, 220),  # Silver
+            (211, 211, 211),  # Light Steel Blue
+            (192, 192, 192),  # Gray
+            (176, 196, 222),  # Steel Blue
+            (135, 206, 250),  # Light Sky Blue
+            (240, 230, 140),  # Khaki
+            (238, 232, 170),  # Pale Goldenrod
+        ]
+        # Roll the dice.
+        return random.choice(common_color_list)
+    else:
+        # Unleash the rainbow! Some how it still kinda sucks, maybe we should look at gradients?
+        return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+def replace_trans_background(image, specified_color=None, common_colors=False):
+    """
+    Replaces a transparent background of a PIL image with a specified colour or a random color.
+
+    args:   image (PIL.Image.Image): a PIL image.
+            specified_color (tuple, optional): The colour for the transparent background with. Default is None.
+            common_colors (bool, optional): Use a random colour from a list of common and neutral colours.
+                                            This parameter is ignored if specified_color is provided. Default is False.
+
+    Returns: PIL.Image.Image: the PIL image with the transparent background replaced.
+    """
+    if not isinstance(image, Image.Image):
+        raise ValueError("Input should be a PIL Image object")
+
+    image = image.convert("RGBA")
+    width, height = image.size
+
+    if specified_color is None:
+        # Let's get a background color that stands out, or not?
+        background_color = random_color(common_colors)
+    else:
+        # Otherwise we do what the user wants, a specific colour. Pew Pew!
+        background_color = specified_color
+
+    # Create the new image with the selected background colour
+    background = Image.new("RGBA", (width, height), background_color)
+    # Paste paste paste! the original image onto the background
+    background.paste(image, (0, 0), image)
+    # Convert the image back to RGB mode (alpha channel shoo away)
+    background = background.convert("RGB")
+
+    return background
+
+def check_trans_background(image):
+    """
+    Checks if an input image (in RGBA mode) has a transparent background.
+
+    Args: image (PIL.Image.Image): The input PIL image in RGBA mode.
+
+    Returns: bool: True if the image has a transparent background, or False maybe.
+    """
+    alpha_channel = image.split()[-1]
+    # If the alpha channel is black and white or not completely opaque, then we have a transparent background, I think.
+    # I'm sure this totally works as intended.
+    return alpha_channel.mode == "1" or alpha_channel.getextrema() != (255, 255)
 
 if __name__ == '__main__':
-    print('\n')
-    print('This function contains the following: ')
-    print('\n')
-    print('Aspect Crop Function')
-    print('for example: ')
-    print('image = crop_to_set_aspect_ratio(image, aspect_ratios)')
-    print('\n')
-    print('Crop to Multiple Function')
-    print('for example: ')
-    print('image = crop_to_multiple(image, multiple)')
-    print('or: ')
-    print('image = crop_to_multiple(image_object, 64)')
-    print('\n')
-    print ('resize on side size function')
-    print('for example: ')
-    print('image = resize_side_size(image, min_size)')
-    print('or: ')
-    print('image = resize_side_size(image_object, 1024)')
-    print('\n')
-    print ('Simple Pad Image function)')
-    print('for example: ')
-    print('image = pad_to_1_to_1(image_object)')
-    print('\n')
-    print('from multi_crop_func import *')
-    print('\n')
-
+    print("Import Functions")

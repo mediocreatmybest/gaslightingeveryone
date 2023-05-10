@@ -1,9 +1,12 @@
 import argparse
 import os
 import shutil
-from func_multi_crop import resize_side_size, crop_to_multiple, crop_to_set_aspect_ratio, pad_to_1_to_1
 
 from PIL import Image
+
+from func_image import (check_trans_background, crop_to_multiple,
+                             crop_to_set_aspect_ratio, pad_to_1_to_1,
+                             replace_trans_background, resize_side_size)
 
 # Create the parser
 parser = argparse.ArgumentParser(description='Copy, crop, and resize all images in a directory recursively')
@@ -39,6 +42,10 @@ parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
 parser.add_argument('--pad-image', action='store_true', default=False,
                     help='Pads the image to a 1:1 ratio')
+parser.add_argument("-c", "--color", type=str,
+                    help="Manually specify a colour for transparent background replacement (format: R,G,B).")
+parser.add_argument("--common-colors", action="store_true",
+                    help="Use a limited number of simple background colours for transparent ground replacement")
 parser.add_argument('--debug', action='store_true', default=False,
                     help='Print debug messages of output images', required=False)
 
@@ -143,6 +150,17 @@ for root, dirs, files in os.walk(args.input_dir):
                 else:
                     img = pad_to_1_to_1(image)
 
+            # Add some options to check and remove alpha or transparent backgrounds with PIL
+            # If replace transparent background with common colors is selected, replace with basic 9 colours
+            if args.common_colors is True:
+                if check_trans_background(img) is True:
+                    img = replace_trans_background(img, common_colors=args.common_colors)
+
+            if args.color:
+                specified_color = tuple(map(int, args.color.split(",")))
+                if check_trans_background(img) is True:
+                    img = replace_trans_background(img, specified_color=specified_color)
+
             # Check for copy input format (I think this works)
             if args.copy_format:
                 format = img.format
@@ -182,37 +200,24 @@ for root, dirs, files in os.walk(args.input_dir):
                 else:
                     img.save(os.path.join(args.output_dir, file), format, quality=quality)
 
-            # Check if the image file as a matching text file and copy to new directory
-            text_file = base_file + '.txt'
-            caption_file = base_file + '.caption'
-            tag_file = base_file + '.tags'
+            # Try clean this up a little with a list of extensions
+            file_extensions = ['.txt', '.caption', '.tags', '.exiftxt']
+            # Loop each extension
+            for ext in file_extensions:
+                file_to_copy = base_file + ext
 
-            if args.keep_relative is True:
-                output_path = (os.path.join(args.output_dir, rel_path))
-                if not os.path.exists(output_path):
-                    os.makedirs(output_path)
-                # Check .txt file and copy if it exists
-                if os.path.exists(os.path.join(root, text_file)):
-                # If it exists, copy it
-                    shutil.copy2(os.path.join(root, text_file), os.path.join(output_path, text_file))
-                # Check .caption file and copy if it exists
-                if os.path.exists(os.path.join(root, caption_file)):
-                # If it exists, copy it
-                    shutil.copy2(os.path.join(root, caption_file), os.path.join(output_path, caption_file))
-                # Check .tag_file file and copy if it exists
-                if os.path.exists(os.path.join(root, tag_file)):
-                # If it exists, copy it
-                    shutil.copy2(os.path.join(root, tag_file), os.path.join(output_path, tag_file))
-            else:
-                # Check .txt file and copy if it exists
-                if os.path.exists(os.path.join(root, text_file)):
+                if args.keep_relative:
+                    output_path = os.path.join(args.output_dir, rel_path)
+                    if not os.path.exists(output_path):
+                        os.makedirs(output_path)
+                    file_src = os.path.join(root, file_to_copy)
+                    file_dst = os.path.join(output_path, file_to_copy)
+                else:
+                    file_src = os.path.join(root, file_to_copy)
+                    file_dst = os.path.join(args.output_dir, file_to_copy)
+
+                # Check if the file with the current extension exists and copy if it does
+                if os.path.exists(file_src):
                     # If it exists, copy it
-                    shutil.copy2(os.path.join(root, text_file), os.path.join(args.output_dir, text_file))
-                # Check .caption file and copy if it exists
-                if os.path.exists(os.path.join(root, caption_file)):
-                    # If it exists, copy it
-                    shutil.copy2(os.path.join(root, caption_file), os.path.join(args.output_dir, caption_file))
-                # Check .tag_file file and copy if it exists
-                if os.path.exists(os.path.join(root, tag_file)):
-                    # If it exists, copy it
-                    shutil.copy2(os.path.join(root, tag_file), os.path.join(args.output_dir, tag_file))
+                    shutil.copy2(file_src, file_dst)
+                    # Let's keep those witty comments coming!
