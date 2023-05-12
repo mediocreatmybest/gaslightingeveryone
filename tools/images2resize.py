@@ -9,6 +9,9 @@ from PIL.Image import Resampling
 from func_image import (check_trans_background, crop_to_multiple,
                         crop_to_set_aspect_ratio, pad_to_1_to_1,
                         replace_trans_background, resize_side_size)
+# Time to test OS Walk Plus function to add file filtering and depth control.
+# I'm totally sure this doesn't have any bugs and works on every OS.
+#from func_os_walk_plus import os_walk_plus
 
 # Create the parser --> I think I should create a config version to make this a little easier.
 parser = argparse.ArgumentParser(description='Copy, crop, and resize all images in a directory recursively')
@@ -35,10 +38,8 @@ parser.add_argument('--output-dir', metavar='c:\images_resize', type=str,
                     help='the image output directory path', required=True)
 parser.add_argument('--keep-relative', action='store_true', default=True,
                     help='Keep relative folder structure with output directory, on by default')
-parser.add_argument('--copy-format', action='store_true', default=False,
-                    help='Keeps the same file format from the input image')
-parser.add_argument('--format', metavar='jpg', type=str,
-                    help=f'Change the image format {image_filter}')
+parser.add_argument('--format', metavar='jpg', type=str, default='copy',
+                    help=f'Change the image format {image_filter} or use "copy" to keep the current format')
 parser.add_argument('--multiples-crop', action='store_true', default=False,
                     help='Crops the image to the closest specified multiple')
 parser.add_argument('--multiples-of', metavar='64', default=64, type=int,
@@ -76,12 +77,7 @@ set_resampling_method = resampling_methods[args.resample_mode]
 
 # Create error if resize and crop options are all False aka not used
 if args.aspect_crop is False and args.resize is False and args.multiples_crop is False and args.pad_image is False:
-    raise Exception('Please select a resize method, use one of the following: --aspect-crop, --resize-mode, --multiples-crop --pad-image')
-
-# Create error if copy-format is False and the format argument is None
-# I suspect this should just be removed and --copy-format should be enabled by default?
-if args.copy_format is False and args.format is None:
-    raise Exception('Please select a format, use one of the following: --format or --copy-format')
+    raise Exception('Please select a resize method, use one of the following: --aspect-crop, --resize --resize-mode, --multiples-crop --pad-image')
 
 # Convert the string to a list of floats
 # Will it be better to use the X:Y function or keep floating point?
@@ -186,11 +182,8 @@ for root, dirs, files in os.walk(args.input_dir):
                 if check_trans_background(img) is True:
                     img = replace_trans_background(img, specified_color=specified_color)
 
-            # Check for copy input format (I think this works)
-            if args.copy_format:
-                format = img.format
-            else:
-                format = args.format
+            # Check for copy input format (I think this works) maybe
+            format = img.format if args.format == 'copy' else args.format
 
             # Set default quality for jpg and webp (95)
             quality = 95
@@ -207,12 +200,11 @@ for root, dirs, files in os.walk(args.input_dir):
             # Save the resized image recursively while checking for jpeg vs jpg with its silly extension arguments
             if format == 'jpg':
                 img.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg', quality=quality)
-            elif not args.copy_format:
+            elif not args.format == 'copy':
                 img.save(os.path.join(output_path, base_file + '.' + format), format, quality=quality)
             # Back to copy existing format
-            if args.copy_format:
+            if args.format == 'copy':
                 img.save(os.path.join(output_path, file), format, quality=quality)
-
 
             # Try clean this up a little with a list of extensions
             file_extensions = ['.txt', '.caption', '.tags', '.exiftxt']
