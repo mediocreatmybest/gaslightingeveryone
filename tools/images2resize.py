@@ -192,57 +192,36 @@ for root, dirs, files in os.walk(args.input_dir):
             else:
                 format = args.format
 
-            # Set default quality for jpg and webp (95), add to argparse later
+            # Set default quality for jpg and webp (95)
             quality = 95
+
+            # Need to make this easier to read, so lets break it up.
+            if args.keep_relative:
+                output_path = os.path.join(args.output_dir, rel_path)
+            else:
+                output_path = args.output_dir
+            # Create the folders if they don't exist
+            if not os.path.exists(output_path):
+                os.makedirs(output_path)
 
             # Save the resized image recursively while checking for jpeg vs jpg with its silly extension arguments
             if format == 'jpg':
-                if args.keep_relative is True:
-                    if args.keep_relative is True:
-                        output_path = (os.path.join(args.output_dir, rel_path))
-                    if not os.path.exists(output_path):
-                        os.makedirs(output_path)
-                    img.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg', quality=quality)
-                else:
-                    img.save(os.path.join(args.output_dir, base_file + '.jpg'), 'jpeg', quality=quality)
-
-            if args.copy_format is False and format != 'jpg':
-                if args.keep_relative is True:
-                    output_path = (os.path.join(args.output_dir, rel_path))
-                    if not os.path.exists(output_path):
-                        os.makedirs(output_path)
-                    img.save(os.path.join(output_path, base_file + '.'+format), format, quality=quality)
-                else:
-                    img.save(os.path.join(args.output_dir, base_file + '.'+format), format, quality=quality)
-
+                img.save(os.path.join(output_path, base_file + '.jpg'), 'jpeg', quality=quality)
+            elif not args.copy_format:
+                img.save(os.path.join(output_path, base_file + '.' + format), format, quality=quality)
+            # Back to copy existing format
             if args.copy_format:
-                if args.keep_relative is True:
-                    if args.keep_relative is True:
-                        output_path = (os.path.join(args.output_dir, rel_path))
-                    if not os.path.exists(output_path):
-                        os.makedirs(output_path)
-                    img.save(os.path.join(output_path, file), format, quality=quality)
-                else:
-                    img.save(os.path.join(args.output_dir, file), format, quality=quality)
+                img.save(os.path.join(output_path, file), format, quality=quality)
+
 
             # Try clean this up a little with a list of extensions
             file_extensions = ['.txt', '.caption', '.tags', '.exiftxt']
             # Loop each extension
             for ext in file_extensions:
                 file_to_copy = base_file + ext
-
-                if args.keep_relative:
-                    output_path = os.path.join(args.output_dir, rel_path)
-                    if not os.path.exists(output_path):
-                        os.makedirs(output_path)
-                    file_src = os.path.join(root, file_to_copy)
-                    file_dst = os.path.join(output_path, file_to_copy)
-                else:
-                    file_src = os.path.join(root, file_to_copy)
-                    file_dst = os.path.join(args.output_dir, file_to_copy)
-
+                file_src = os.path.join(root, file_to_copy)
+                file_dst = os.path.join(output_path, file_to_copy)
                 # Check if the file with the current extension exists and copy if it does
                 if os.path.exists(file_src):
                     # If it exists, copy it
                     shutil.copy2(file_src, file_dst)
-                    # Let's keep those witty comments coming!
