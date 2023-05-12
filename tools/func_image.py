@@ -4,6 +4,7 @@ import warnings
 from typing import List, Tuple
 
 from PIL import Image
+from PIL.Image import Resampling
 
 
 def ar_xy_to_float(xy):
@@ -114,7 +115,7 @@ def crop_to_multiple(image, multiple=64):
     return image.crop((left, upper, left + new_width, upper + new_height))
 
 
-def resize_side_size(image, min_size, resize_mode='smallest', resample=Image.ANTIALIAS):
+def resize_side_size(image, min_size, resize_mode='smallest', resample=Resampling.LANCZOS, skip_smaller=False):
     """
     Resize an image to a specific size based on the smallest side of the image.
 
@@ -128,8 +129,12 @@ def resize_side_size(image, min_size, resize_mode='smallest', resample=Image.ANT
     Raises:
         warnings.warn: If `min_size` is equal or larger than the smallest side of the source image.
     """
-    # Get width and height frm the PIL image.size
+    # Get width and height from the PIL image.size
     width, height = image.size
+
+    if skip_smaller and min(width, height) < min_size:
+        warnings.warn(f'Skipping image as it is already smaller than the min_size: {min_size}', stacklevel=2)
+        return image
 
     if resize_mode == 'smallest':
         # Resize based on the smallest side of the PIL image
@@ -151,10 +156,11 @@ def resize_side_size(image, min_size, resize_mode='smallest', resample=Image.ANT
     else:
         raise ValueError('Beep!, please use "smallest" or "largest')
 
-    # Set resameple method, defaults to antialias
+    # Set resample method, defaults to antialias
     resized_image = image.resize(new_size, resample=resample)
     # return the resized PIL image
     return resized_image
+
 
 
 def random_color(common_colors=False):

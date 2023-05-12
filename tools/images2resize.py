@@ -3,16 +3,30 @@ import os
 import shutil
 
 from PIL import Image
+from PIL.Image import Resampling
 
+# Sort imports is super handy! Thanks VS Code!
 from func_image import (check_trans_background, crop_to_multiple,
-                             crop_to_set_aspect_ratio, pad_to_1_to_1,
-                             replace_trans_background, resize_side_size)
+                        crop_to_set_aspect_ratio, pad_to_1_to_1,
+                        replace_trans_background, resize_side_size)
 
-# Create the parser
+# Create the parser --> I think I should create a config version to make this a little easier.
 parser = argparse.ArgumentParser(description='Copy, crop, and resize all images in a directory recursively')
 
 # Set allowed images for directory scan (Sorry GIF)
 image_filter = ('jpeg','jpg','png','bmp','webp')
+
+# Set our dictionary mapping with resampling method names for PIL
+# Switch to resampling module due to DeprecationWarning for Image.xyz
+resampling_methods = {
+    'antialias': Resampling.LANCZOS,  # ANTIALIAS is LANCZOS
+    'nearest': Resampling.NEAREST,
+    'box': Resampling.BOX,
+    'bilinear': Resampling.BILINEAR,
+    'hamming': Resampling.HAMMING,
+    'bicubic': Resampling.BICUBIC,
+    'lanczos': Resampling.LANCZOS
+}
 
 # Add the arguments
 parser.add_argument('--input-dir', metavar='c:\images', type=str,
@@ -30,20 +44,25 @@ parser.add_argument('--multiples-crop', action='store_true', default=False,
 parser.add_argument('--multiples-of', metavar='64', default=64, type=int,
                     help='Desired image size in multiples of pixel count e.g 64', required=False)
 parser.add_argument('--aspect-crop', action='store_true', default=False,
-                    help='Desired aspect ratios for the closest crop')
+                    help='Crops the image to the closest aspect ratio')
 parser.add_argument('--aspect-ratios', type=str, default='0.56,0.75,0.8,1,1.33,1.5,1.6,1.78', # What are the most reliable and needed ratios?
                     help='Set desired aspect ratios as a float in comma seperated list e.g 0.56,0.75,0.8,1,1.33,1.5,1.6,1.78')
 parser.add_argument('--resize', action='store_true', default=False,
-                    help='Resizes (based on shortest side) to the specified min_size while keeping the aspect ratio')
+                    help='Flags to resize to the specified min_size while maintaining current or set aspect ratio')
 parser.add_argument('--resize-mode', type=str, default='smallest',
                     help='Resize modes: smallest (resizes based on smallest side of image), largest (resizes on largest side of image)',
                     choices=['smallest', 'largest'], required=False)
+parser.add_argument('--resample-mode', type=str,  default='antialias',
+                    help='Resize modes: smallest (resizes based on short side of image), largest (resizes on long side of image)',
+                    choices=resampling_methods.keys(), required=False)
 parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
+parser.add_argument('--skip-smaller', action='store_true',
+                    help='Skips resizing images that are smaller than the minimum size (This avoids enlarging images)')
 parser.add_argument('--pad-image', action='store_true', default=False,
                     help='Pads the image to a 1:1 ratio')
-parser.add_argument("-c", "--color", type=str,
-                    help="Manually specify a colour for transparent background replacement (format: R,G,B).")
+parser.add_argument("--color", type=str,
+                    help="Manually specify a colour for transparent background replacement (format: R,G,B)")
 parser.add_argument("--common-colors", action="store_true",
                     help="Use a limited number of simple background colours for transparent ground replacement")
 parser.add_argument('--debug', action='store_true', default=False,
@@ -52,9 +71,12 @@ parser.add_argument('--debug', action='store_true', default=False,
 # Parse the arguments
 args = parser.parse_args()
 
+# Set resampling method from dictionary
+set_resampling_method = resampling_methods[args.resample_mode]
+
 # Create error if resize and crop options are all False aka not used
 if args.aspect_crop is False and args.resize is False and args.multiples_crop is False and args.pad_image is False:
-    raise Exception('Please select a resize method, use one of the following: --aspect-crop, --resize-small-side, --multiples-crop --pad-image')
+    raise Exception('Please select a resize method, use one of the following: --aspect-crop, --resize-mode, --multiples-crop --pad-image')
 
 # Create error if copy-format is False and the format argument is None
 # I suspect this should just be removed and --copy-format should be enabled by default?
@@ -96,7 +118,10 @@ for root, dirs, files in os.walk(args.input_dir):
                 if args.min_size is None:
                     raise Exception('Please select the minimum size, use the following: --min-size')
                 else:
-                    img = resize_side_size(image, args.min_size, args.resize_mode)
+                    img = resize_side_size(image, min_size=args.min_size,
+                                           resize_mode=args.resize_mode,
+                                           resample=set_resampling_method,
+                                           skip_smaller=args.skip_smaller)
                     if args.debug is True:
                         print(f'Multiple Crop is: {(args.multiples_crop)}')
                         print(f'Aspect Crop is: {(args.aspect_crop)}')
