@@ -118,7 +118,7 @@ output_format = args.format if args.format else config.get('config', 'format', f
 multiples_crop = args.multiples_crop if args.multiples_crop is not False else config.getboolean('config', 'multiples_crop', fallback=fallback_false)
 
 # Get multiples_of pixels for cropping
-multiples_of = args.multiples_of if args.multiples_crop else config.get('config', 'multiples_of', fallback='64')
+multiples_of = args.multiples_of if args.multiples_crop else config.getint('config', 'multiples_of', fallback=64)
 
 # Aspect ratio cropping, the most exciting feature! Well, not really... Maybe you need to crop something?!
 # If I could offer you only one tip for the future, Aspect ratio cropping would be, "it".
@@ -142,7 +142,7 @@ resize_mode = args.resize_mode if args.resize_mode else config.get('config', 're
 resample_mode = args.resample_mode if args.resample_mode else config.get('config', 'resample_mode', fallback='antialias')
 
 # The minimum size in pixels for the smallest or largest side based on the selected resize mode.
-min_size = args.min_size if args.min_size else config.get('config', 'min_size', fallback='1280')
+min_size = args.min_size if args.min_size else config.getint('config', 'min_size', fallback=1280)
 
 # Skips resizing images that are smaller than the minimum size (min_size). This avoids enlarging images
 skip_smaller = args.skip_smaller if args.skip_smaller is not False else config.getboolean('config', 'skip_smaller', fallback=fallback_false)
