@@ -37,6 +37,33 @@ def read_config_file(config_file):
     config.read(config_file)
     return config
 
+def debug_print(variables, debug_mode):
+    if debug_mode:
+        # Start of loop
+        print('############ Start Loop ############ -->')
+        for variable_name, variable_value in variables.items():
+            if variable_name == 'keep_relative':
+                print(f'keep_relative: {variable_value}')
+            elif variable_name == 'file':
+                print(f'file: {variable_value}')
+            elif variable_name == 'multiples_crop':
+                print(f'multiples_crop: {variable_value}')
+            elif variable_name == 'aspect_crop':
+                print(f'aspect_crop: {variable_value}')
+            elif variable_name == 'resize':
+                print(f'resize: {variable_value}')
+            elif variable_name == 'resize_mode':
+                print(f'resize_mode: {variable_value}')
+            elif variable_name == 'image':
+                print(f'Original image size: {variable_name}.size: {variable_value.size}')
+            elif variable_name == 'img':
+                print(f'New image size: {variable_name}.size: {variable_value.size}')
+            elif variable_name == 'min_size':
+                print(f'min_size: {variable_value}')
+        # End of loop
+        print('<-- ############ End Loop ############\n')
+
+
 # Add the arguments
 parser.add_argument('--input-dir', metavar='c:\images', type=str,
                     help='the input image directory path', required=False)
@@ -171,7 +198,8 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 # Quick jog through all files in the input directory recursively
-for root, dirs, files in os.walk(input_dir):
+for root, dirs, files in os_walk_plus(input_dir):
+#for root, dirs, files in os.walk(input_dir):
     for file in files:
         # Find the base name for all files
         base_file = (os.path.splitext(file)[0])
@@ -188,11 +216,10 @@ for root, dirs, files in os.walk(input_dir):
             #fullpath = os.path.join(root, file)
 
             if debug is True:
-                print('Image file is: ', file)
-                print('Original Image size: ', image.size)
+                debug_print(locals(), debug_mode=debug)
 
-                # Use the resize_side_size function from multi_crop_func.py
-                # This should be done before any other of my silly resizing functions
+            # Use the resize_side_size function from multi_crop_func.py
+            # This should be done before any other of my silly resizing functions
 
             if resize is True:
             # As we didn't set a default for min_size we need to check for it
@@ -201,11 +228,7 @@ for root, dirs, files in os.walk(input_dir):
                                         resample=set_resampling_method,
                                         skip_smaller=skip_smaller)
                 if debug is True:
-                    print(f'Multiple Crop is: {(multiples_crop)}')
-                    print(f'Aspect Crop is: {(aspect_crop)}')
-                    print(f'Resize mod is: {(resize)}')
-                    print('Resize size: ', img.size)
-                    print('Min_size was set to: ', min_size)
+                    debug_print(locals(), debug_mode=debug)
 
             # Use the crop_to_multiple function from multi_crop_func.py
             # As we need to strip the image of these pixels first to maintain a useful image
@@ -214,17 +237,11 @@ for root, dirs, files in os.walk(input_dir):
                 if resize is True:
                     img = crop_to_multiple(img, multiples_of)
                     if debug is True:
-                        print(f'Multiple Crop is: {(multiples_crop)}')
-                        print(f'Aspect Crop is: {(aspect_crop)}')
-                        print(f'Resize mod is: {(resize)}')
-                        print('Output of multiples_crop size: ', img.size)
+                        debug_print(locals(), debug_mode=debug)
                 else:
                     img = crop_to_multiple(image, multiples_of)
                     if debug is True:
-                        print(f'Multiple Crop is: {(multiples_crop)}')
-                        print(f'Aspect Crop is: {(aspect_crop)}')
-                        print(f'Resize mod is: {(resize)}')
-                        print('Output of multiples_crop size: ', img.size)
+                        debug_print(locals(), debug_mode=debug)
 
             # Use the crop_to_aspect function from multi_crop_func.py
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
@@ -232,17 +249,11 @@ for root, dirs, files in os.walk(input_dir):
                 if multiples_crop is True or resize is True:
                     img = crop_to_set_aspect_ratio(img, aspect_ratios, debug=debug)
                     if debug is True:
-                        print(f'Multiple Crop is: {(multiples_crop)}')
-                        print(f'Aspect Crop is: {(aspect_crop)}')
-                        print(f'Resize mod is: {(resize)}')
-                        print('Output of aspect_crop size: ', img.size)
+                        debug_print(locals(), debug_mode=debug)
                 else:
                     img = crop_to_set_aspect_ratio(image, aspect_ratios, debug=debug)
                     if debug is True:
-                        print(f'Multiple Crop is: {(multiples_crop)}')
-                        print(f'Aspect Crop is: {(aspect_crop)}')
-                        print(f'Resize mode is: {(resize)}')
-                        print('Output of aspect_crop size: ', img.size)
+                        debug_print(locals(), debug_mode=debug)
 
             # Use Pad function from multi_crop_func.py
             # Basic padding to move an image to a 1:1 aspect ratio
