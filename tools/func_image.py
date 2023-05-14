@@ -139,7 +139,11 @@ def resize_side_size(image, min_size, resize_mode='smallest', resample=Resamplin
     if resize_mode == 'smallest':
         # Resize based on the smallest side of the PIL image
         if min_size >= min(width, height):
-            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.', stacklevel=2)
+            warnings.warn(
+            f'Beep boop! The size you specified: {min_size} is equal or larger than '
+            f'the source image: {image.size}, enlarging instead, use skip_smaller to skip',
+            stacklevel=2)
+
         if width < height:
             new_size = (min_size, int(height * min_size / width))
         else:
@@ -148,7 +152,11 @@ def resize_side_size(image, min_size, resize_mode='smallest', resample=Resamplin
     elif resize_mode == 'largest':
         # Resize based on the largest side of the PIL image
         if min_size >= max(width, height):
-            warnings.warn(f'Beep boop! The size you specified: {min_size} is equal or larger than the source image: {image.size}, enlarging instead.', stacklevel=2)
+            warnings.warn(
+            f'Beep boop! The size you specified: {min_size} is equal or larger than '
+            f'the source image: {image.size}, enlarging instead, use skip_smaller to skip',
+            stacklevel=2)
+
         if width < height:
             new_size = (int(width * min_size / height), min_size)
         else:
