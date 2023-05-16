@@ -145,7 +145,7 @@ output_format = args.format if args.format else config.get('config', 'format', f
 multiples_crop = args.multiples_crop if args.multiples_crop is not False else config.getboolean('config', 'multiples_crop', fallback=fallback_false)
 
 # Get multiples_of pixels for cropping
-multiples_of = args.multiples_of if args.multiples_crop else config.getint('config', 'multiples_of', fallback=64)
+multiples_of = args.multiples_of if args.multiples_crop else config.getint('config', 'multiples_of', fallback=8)
 
 # Aspect ratio cropping, the most exciting feature! Well, not really... Maybe you need to crop something?!
 # If I could offer you only one tip for the future, Aspect ratio cropping would be, "it".
@@ -155,9 +155,9 @@ aspect_crop = args.aspect_crop if args.aspect_crop is not False else config.getb
 
 # Enjoy the power and beauty of your aspect ratios. Oh, never mind.
 # You will not understand the power and beauty of your aspect ratios until they've faded... Ahem.
-# Aspect ratios as a floating points
-ar_fallback = '0.56,0.75,0.8,1,1.33,1.5,1.6,1.78'
-aspect_ratios = args.aspect_ratios if args.aspect_ratios else config.get('config', 'aspect_ratios', fallback=ar_fallback)
+# Aspect ratios as a floating points or X:Y
+ar_fallback = '1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 16:9, 9:16, 16:10'
+aspect_ratios_str = args.aspect_ratios if args.aspect_ratios else config.get('config', 'aspect_ratios', fallback=ar_fallback)
 
 # Flag to resize images based on its small or largest side
 resize = args.resize if args.resize is not False else config.getboolean('config', 'resize', fallback=fallback_false)
@@ -188,16 +188,15 @@ debug  = args.debug if args.debug is not False else config.getboolean('config', 
 
 # End of config setup. Thank jebus.
 
-# Convert the string to a list of floats
-# Will it be better to use the X:Y function or keep floating point?
-aspect_ratios_split = [float(x) for x in aspect_ratios.split(',')]
-aspect_ratios = [x for x in aspect_ratios_split]
+# Convert the string or X:Y to a list of floats
+aspect_ratios = aspect_ratios_str.split(',')
+aspect_ratios = [float(r.split(':')[0]) / float(r.split(':')[1]) if ':' in r else float(r) for r in aspect_ratios]
 
 # Lets create the output directory if it doesn't exist
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# Quick jog through all files in the input directory recursively
+# Quick jog through all files in the input directory recursively, look at adding depth
 for root, dirs, files in os_walk_plus(input_dir):
 #for root, dirs, files in os.walk(input_dir):
     for file in files:
@@ -218,11 +217,29 @@ for root, dirs, files in os_walk_plus(input_dir):
             if debug is True:
                 debug_print(locals(), debug_mode=debug)
 
+            # Set join_crop if aspect_crop and multiples_crop are being called together
+            joint_crop = multiples_crop and aspect_crop
             # Use the resize_side_size function from multi_crop_func.py
             # This should be done before any other of my silly resizing functions
 
+            # Do a joint crop if joint_crop is True - Keep this in the same function
+            if joint_crop:
+                img = crop_to_set_aspect_ratio(img, aspect_ratios, multiples=multiples_of)
+                if debug is True:
+                    debug_print(locals(), debug_mode=debug)
+            else:
+                if multiples_crop and not joint_crop:
+                    img = crop_to_multiple(img, multiples_of)
+                    if debug is True:
+                        debug_print(locals(), debug_mode=debug)
+
+                if aspect_crop and not joint_crop:
+                    img = crop_to_set_aspect_ratio(img, aspect_ratios)
+                    if debug is True:
+                        debug_print(locals(), debug_mode=debug)
+
             if resize is True:
-            # As we didn't set a default for min_size we need to check for it
+            # Moving resize to the end of the chain, so if we request 768, we *should* get 768
                 img = resize_side_size(img, min_size=min_size,
                                         resize_mode=resize_mode,
                                         resample=set_resampling_method,
@@ -233,27 +250,27 @@ for root, dirs, files in os_walk_plus(input_dir):
             # Use the crop_to_multiple function from multi_crop_func.py
             # As we need to strip the image of these pixels first to maintain a useful image
             # This function should probably be done on its own
-            if multiples_crop is True:
-                if resize is True:
-                    img = crop_to_multiple(img, multiples_of)
-                    if debug is True:
-                        debug_print(locals(), debug_mode=debug)
-                else:
-                    img = crop_to_multiple(image, multiples_of)
-                    if debug is True:
-                        debug_print(locals(), debug_mode=debug)
+            #if multiples_crop is True:
+            #    if resize is True:
+            #        img = crop_to_multiple(img, multiples_of)
+            #        if debug is True:
+            #            debug_print(locals(), debug_mode=debug)
+            #    else:
+            #        img = crop_to_multiple(image, multiples_of)
+            #        if debug is True:
+            #            debug_print(locals(), debug_mode=debug)
 
             # Use the crop_to_aspect function from multi_crop_func.py
             # As we need to maintain x:y aspect ratio to keep multiples of arguments
-            if aspect_crop is True:
-                if multiples_crop is True or resize is True:
-                    img = crop_to_set_aspect_ratio(img, aspect_ratios, debug=debug)
-                    if debug is True:
-                        debug_print(locals(), debug_mode=debug)
-                else:
-                    img = crop_to_set_aspect_ratio(image, aspect_ratios, debug=debug)
-                    if debug is True:
-                        debug_print(locals(), debug_mode=debug)
+            #if aspect_crop is True:
+            #    if multiples_crop is True or resize is True:
+            #        img = crop_to_set_aspect_ratio(img, aspect_ratios, debug=debug)
+            #        if debug is True:
+            #            debug_print(locals(), debug_mode=debug)
+            #    else:
+            #        img = crop_to_set_aspect_ratio(image, aspect_ratios, debug=debug)
+            #        if debug is True:
+            #            debug_print(locals(), debug_mode=debug)
 
             # Use Pad function from multi_crop_func.py
             # Basic padding to move an image to a 1:1 aspect ratio

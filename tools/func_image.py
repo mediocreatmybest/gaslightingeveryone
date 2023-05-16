@@ -1,7 +1,5 @@
-import math
 import random
 import warnings
-from typing import List, Tuple
 
 from PIL import Image
 from PIL.Image import Resampling
@@ -21,60 +19,60 @@ def ar_xy_to_float(xy):
     return [x/y for x, y in ratios]
 
 
-def crop_to_set_aspect_ratio(image, aspect_ratios: List[float], debug=False) -> Tuple:
+def crop_to_set_aspect_ratio(image, aspect_ratios, multiples=None):
     """
     Crop an image to the closest allowed aspect ratio.
 
-    image: the input image to be cropped
-    aspect_ratios: a list of allowed aspect ratios as float values
-    Returns:
-        The cropped image
+    image:          the input image to be cropped
+    aspect_ratios:  a list of allowed aspect ratios as float values or X:Y
+    Returns:        The cropped image
     """
+    # Handle different aspect ratio formats
+    if not isinstance(aspect_ratios, list):
+        aspect_ratios = [aspect_ratios]
 
-    # Copy image instead of using original, not sure I need to do this
-    img = image.copy()
-    # Simple width by height from image size
-    width, height = img.size
-    # Devide width by height for ratio
-    original_ratio = width / height
+    aspect_ratios = [float(r.split(':')[0]) / float(r.split(':')[1]) if isinstance(r, str) else r for r in aspect_ratios]
 
-    closest_ratio = None
-    closest_distance = math.inf
-    for aspect_ratio in aspect_ratios:
-        distance = abs(aspect_ratio - original_ratio)
+    # Get image size and aspect ratio
+    original_width, original_height = image.size
+    original_aspect_ratio = original_width / original_height
 
-        if distance < closest_distance:
-            closest_ratio = aspect_ratio
-            closest_distance = distance
-            if closest_distance == 0:
-                break
+    # Calculate the absolute difference between the original image's aspect ratio and the target aspect ratios
+    differences = [abs(original_aspect_ratio - ar) for ar in aspect_ratios]
 
-    if closest_ratio is None:
-        raise ValueError(f"No valid aspect ratio was found among {aspect_ratios}")
+    # Find the closest aspect ratio
+    closest_aspect_ratio = aspect_ratios[differences.index(min(differences))]
 
-    # Would closest_ratio == original_ratio be better? Not sure
-    if math.isclose(closest_ratio, original_ratio):
-        return img
-
-    if closest_ratio > original_ratio:
-        new_height = width / closest_ratio
-        top = (height - new_height) / 2
-        bottom = height - top
-        img = img.crop((0, top, width, bottom))
+    # Calculate the new dimensions
+    if original_aspect_ratio > closest_aspect_ratio:
+        # If the original aspect ratio is wider than the closest aspect ratio, reduce the width
+        new_width = int(closest_aspect_ratio * original_height)
+        new_height = original_height
     else:
-        new_width = height * closest_ratio
-        left = (width - new_width) / 2
-        right = width - left
-        img = img.crop((left, 0, right, height))
+        # If the original aspect ratio is taller than the closest aspect ratio, reduce the height
+        new_height = int(original_width / closest_aspect_ratio)
+        new_width = original_width
 
-    if debug is True:
-        print('Width x Height: ', width, 'x', height)
-        print('Original aspect ratio: ', original_ratio)
-        print('Allowed aspect ratios: ', aspect_ratios)
-        print('Closest aspect ratio: ', closest_ratio)
-        print('Distance from closest ratio: ', closest_distance)
+    # Adjust for multiples
+    if multiples:
+        while new_width % multiples != 0 or new_height % multiples != 0:
+            new_width -= new_width % multiples
+            new_height -= new_height % multiples
 
-    return img
+            # Recalculate the aspect ratio and adjust the dimensions if necessary
+            current_aspect_ratio = new_width / new_height
+            if current_aspect_ratio > closest_aspect_ratio:
+                new_width = int(closest_aspect_ratio * new_height)
+            else:
+                new_height = int(new_width / closest_aspect_ratio)
+
+    # Crop the image
+    left = (original_width - new_width) / 2
+    top = (original_height - new_height) / 2
+    right = (original_width + new_width) / 2
+    bottom = (original_height + new_height) / 2
+
+    return image.crop((left, top, right, bottom))
 
 
 def pad_to_1_to_1(image):
@@ -96,7 +94,7 @@ def pad_to_1_to_1(image):
     return new_img
 
 
-def crop_to_multiple(image, multiple=64):
+def crop_to_multiple(image, multiple=8):
     """
     Crop an image to a multiple of a given number in pixels (64 by default).
 
@@ -170,7 +168,6 @@ def resize_side_size(image, min_size, resize_mode='smallest', resample=Resamplin
     return resized_image
 
 
-
 def random_color(common_colors=False):
     """
     Generates a random color in R, G, B. If common_colors is True, a random color from a list of common
@@ -200,6 +197,7 @@ def random_color(common_colors=False):
     else:
         # Unleash the rainbow! Some how it still kinda sucks, maybe we should look at gradients?
         return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
 
 def replace_trans_background(image, specified_color=None, common_colors=False):
     """
@@ -234,6 +232,7 @@ def replace_trans_background(image, specified_color=None, common_colors=False):
 
     return background
 
+
 def check_trans_background(image):
     """
     Checks if an input image (in RGBA mode) has a transparent background.
@@ -246,6 +245,7 @@ def check_trans_background(image):
     # If the alpha channel is black and white or not completely opaque, then we have a transparent background, I think.
     # I'm sure this totally works as intended.
     return alpha_channel.mode == "1" or alpha_channel.getextrema() != (255, 255)
+
 
 if __name__ == '__main__':
     print("Import Functions")
