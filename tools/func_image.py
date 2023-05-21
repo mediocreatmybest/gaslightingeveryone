@@ -5,6 +5,17 @@ from PIL import Image
 from PIL.Image import Resampling
 
 
+def debug_print(variables, debug_mode=None):
+    if debug_mode:
+        # Start of loop
+        print('############ Start Crop Loop ############ -->')
+        for variable_name, variable_value in variables.items():
+            if variable_name == 'closest_aspect_ratio':
+                print(f'closest_aspect_ratio: {variable_value}')
+        print('<-- ############ End Crop Loop ############\n')
+        # End of loop
+
+
 def ar_xy_to_float(xy):
     """Aspect ratio in X:Y to a float
 
@@ -19,7 +30,7 @@ def ar_xy_to_float(xy):
     return [x/y for x, y in ratios]
 
 
-def crop_to_set_aspect_ratio(image, aspect_ratios, multiples=None):
+def crop_to_set_aspect_ratio(image, aspect_ratios, multiples=None, debug=None):
     """
     Crop an image to the closest allowed aspect ratio.
 
@@ -71,6 +82,9 @@ def crop_to_set_aspect_ratio(image, aspect_ratios, multiples=None):
     top = (original_height - new_height) / 2
     right = (original_width + new_width) / 2
     bottom = (original_height + new_height) / 2
+
+    if debug is True:
+        debug_print(locals(), debug_mode=debug)
 
     return image.crop((left, top, right, bottom))
 

@@ -63,7 +63,6 @@ def debug_print(variables, debug_mode):
         # End of loop
         print('<-- ############ End Loop ############\n')
 
-
 # Add the arguments
 parser.add_argument('--input-dir', metavar='c:\images', type=str,
                     help='the input image directory path', required=False)
@@ -114,7 +113,6 @@ else:
     # Add fallback configparser with config otherwise config fails if args.config isn't set
     config = configparser.ConfigParser()
 
-
 # Set resampling method from dictionary
 set_resampling_method = resampling_methods[args.resample_mode]
 
@@ -156,7 +154,7 @@ aspect_crop = args.aspect_crop if args.aspect_crop is not False else config.getb
 # Enjoy the power and beauty of your aspect ratios. Oh, never mind.
 # You will not understand the power and beauty of your aspect ratios until they've faded... Ahem.
 # Aspect ratios as a floating points or X:Y
-ar_fallback = '1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 16:9, 9:16, 16:10'
+ar_fallback = '1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 16:9, 9:16'
 aspect_ratios_str = args.aspect_ratios if args.aspect_ratios else config.get('config', 'aspect_ratios', fallback=ar_fallback)
 
 # Flag to resize images based on its small or largest side
@@ -224,7 +222,7 @@ for root, dirs, files in os_walk_plus(input_dir):
 
             # Do a joint crop if joint_crop is True - Keep this in the same function
             if joint_crop:
-                img = crop_to_set_aspect_ratio(img, aspect_ratios, multiples=multiples_of)
+                img = crop_to_set_aspect_ratio(img, aspect_ratios, multiples=multiples_of, debug=debug)
                 if debug is True:
                     debug_print(locals(), debug_mode=debug)
             else:
