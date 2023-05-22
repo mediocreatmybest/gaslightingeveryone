@@ -15,6 +15,10 @@ CAPTION_MODELS = {
     'vit-gpt2-coco-en':'ydshieh/vit-gpt2-coco-en',
 }
 
+def load_caption_model():
+    #TO DO! Do we unload as well with pipeline? That is the question
+    pass
+
 def caption_image(image_path, model, cpu):
     if cpu is True:
         device = "cpu"
@@ -47,7 +51,7 @@ def write_caption_to_file(image_path, caption, mode, ext):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Caption images and write captions to text files')
+    parser = argparse.ArgumentParser(description='Caption images with Transformers Pipeline')
     parser.add_argument('directory', type=str,
                         help='Directory to search for images')
     parser.add_argument('--depth', type=int, metavar='1',
@@ -60,6 +64,9 @@ def main():
                         help='Switches to CPU')
     parser.add_argument('--model', type=str, choices=list(CAPTION_MODELS.keys()), default='blip-large', help='Model to use for captioning')
     args = parser.parse_args()
+
+    # Load pipeline / model
+    # Maybe switch to list and store captions and zip them with file in future
 
     for path, dirs, files in os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth):
         for file in files:
