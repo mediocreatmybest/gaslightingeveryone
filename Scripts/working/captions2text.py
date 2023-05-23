@@ -19,15 +19,20 @@ def load_caption_model():
     #TO DO! Do we unload as well with pipeline? That is the question
     pass
 
-def caption_image(image_path, model, cpu):
-    if cpu is True:
-        device = "cpu"
-    else:
-        device = None
-    captioner = pipeline("image-to-text", model=CAPTION_MODELS[model], max_new_tokens=50, device=device, use_fast=True)
+#def caption_image(image_path, model, cpu):
+#    if cpu is True:
+#        device = "cpu"
+#    else:
+#        device = None
+#    captioner = pipeline("image-to-text", model=CAPTION_MODELS[model], max_new_tokens=50, device=device, use_fast=True)
+#    caption = captioner(image_path)[0]['generated_text']
+#    print(image_path, caption)
+#    return caption
+def caption_image(captioner, image_path):
     caption = captioner(image_path)[0]['generated_text']
     print(image_path, caption)
     return caption
+
 
 def write_caption_to_file(image_path, caption, mode, ext):
     txt_path = f'{os.path.splitext(image_path)[0]}.{ext}'
@@ -66,12 +71,18 @@ def main():
     args = parser.parse_args()
 
     # Load pipeline / model
-    # Maybe switch to list and store captions and zip them with file in future
+    # Maybe switch to list and store captions and zip them with file in future, note - look up batch
+    if args.cpu_offload:
+        device = "cpu"
+    else:
+        device = None
 
-    for path, dirs, files in os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth):
+    captioner = pipeline("image-to-text", model=CAPTION_MODELS[args.model], max_new_tokens=50, device=device, use_fast=True)
+
+    for path, _, files in os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth):
         for file in files:
             image_path = os.path.join(path, file)
-            caption = caption_image(image_path, args.model, args.cpu_offload)
+            caption = caption_image(captioner, image_path)
             write_caption_to_file(image_path, caption, args.mode, args.ext)
 
 if __name__ == "__main__":
