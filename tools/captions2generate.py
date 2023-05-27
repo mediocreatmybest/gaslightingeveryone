@@ -12,6 +12,7 @@ CAPTION_MODELS = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
     'blip2-2.7b': 'Salesforce/blip2-opt-2.7b',
+    'blip2-opt-6.7b': 'Salesforce/blip2-opt-6.7b',
     'blip2-flan-t5-xl': 'Salesforce/blip2-flan-t5-xl',
     'vit-gpt2-coco-en':'ydshieh/vit-gpt2-coco-en',
 }
