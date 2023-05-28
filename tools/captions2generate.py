@@ -2,10 +2,16 @@ import argparse
 import os
 from os.path import splitext
 
+from tqdm import tqdm
 from transformers import pipeline
+
+from func_check_venv import activate_venv
+from func_os_walk_plus import os_walk_plus
+
 #from optimum.pipelines import pipeline
 
-from func_os_walk_plus import os_walk_plus
+# Activate venv if it exists, assuming venv at this point
+activate_venv()
 
 # An attempt to make simple captions to text in a recursive way using pipeline with Transformers
 
@@ -25,21 +31,27 @@ ZEROSHOT_MODELS = {
 
 
 # Simple non-batched caption
-def caption_image(captioner, image_path):
+def caption_image(captioner, image_path, quiet=False):
     caption = captioner(image_path)[0]['generated_text']
-    print('File: ', image_path)
-    print('Caption: ', str(caption).strip())
+    if quiet is True:
+        pass
+    else:
+        print('File: ', image_path)
+        print('Caption: ', str(caption).strip())
     return str(caption).strip()
 
 
 # Batch caption attempt, using lists, doesn't seem any faster...
-def caption_images_batch(captioner, image_paths):
+def caption_images_batch(captioner, image_paths, quiet=False):
     captions = captioner(image_paths)
     result = []
     for i, caption in enumerate(captions):
         stripped_caption = str(caption[0]['generated_text']).strip()
-        print('File: ', image_paths[i])
-        print('Caption: ', stripped_caption)
+        if quiet is True:
+            pass
+        else:
+            print('File: ', image_paths[i])
+            print('Caption: ', stripped_caption)
         result.append(stripped_caption)
     return result
 
@@ -129,6 +141,8 @@ def main():
                         help='The maximum number of tokens for the caption model')
     parser.add_argument('--batch-count', type=int, metavar='2',
                         help='If you want to try image batch count with pipeline captions')
+    parser.add_argument('--quiet', action='store_true',
+                        help='Supresses Caption output')
     args = parser.parse_args()
 
     if args.clip_model is None and args.model is None:
@@ -158,7 +172,7 @@ def main():
         zshot = pipeline(task="zero-shot-image-classification", model=ZEROSHOT_MODELS[args.clip_model], device=device, use_fast=True)
 
     # Use os walk plus to allow depth and file filtering
-    for path, _, files in os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth):
+    for path, _, files in tqdm(os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth)):
         if args.batch_count:
             # Batch processing logic
             batches = [files[i:i+args.batch_count] for i in range(0, len(files), args.batch_count)]
