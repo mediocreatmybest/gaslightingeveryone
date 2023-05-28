@@ -6,13 +6,10 @@ import torch
 from tqdm import tqdm
 from transformers import pipeline
 
-from func_check_venv import activate_venv
 from func_os_walk_plus import os_walk_plus
 
 #from optimum.pipelines import pipeline
 
-# Activate venv if it exists, assuming venv at this point
-activate_venv()
 
 # An attempt to make simple captions to text in a recursive way using pipeline with Transformers
 
@@ -152,12 +149,14 @@ def main():
 
     # Load pipeline / model
     # Maybe switch to list and store captions and zip them with file in future, note - look up batch
+
     if args.cpu_offload:
         device = "cpu"
     else:
         device = 0
+
     # How many CUDA devices are available
-    print('Total CUDA devices available: ', torch.cuda.device_count())
+    print('Total CUDA devices available:', torch.cuda.device_count())
 
     # Convert confidence to a float
     confidence = float(args.clip_confidence)
@@ -175,17 +174,17 @@ def main():
         zshot = pipeline(task="zero-shot-image-classification", model=ZEROSHOT_MODELS[args.clip_model], device=device, use_fast=True)
 
     # Use os walk plus to allow depth and file filtering
-    for path, _, files in tqdm(os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth)):
+    for path, _, files in tqdm(os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth), desc="Total progress..."):
         if args.batch_count:
             # Batch processing logic
             batches = [files[i:i+args.batch_count] for i in range(0, len(files), args.batch_count)]
-            for batch in batches:
+            for batch in tqdm(batches, desc="Processing image batches..."):
                 image_paths = [os.path.join(path, file) for file in batch]
                 base_files = [splitext(image_path)[0] for image_path in image_paths]
 
                 # Add caption
                 if args.model:
-                    captions = caption_images_batch(captioner, image_paths)
+                    captions = caption_images_batch(captioner, image_paths, quiet=args.quiet)
 
                 # Only do something if model was selected
                 if args.model:
@@ -199,7 +198,7 @@ def main():
         # Fall back to single image function
         else:
             # Single image function
-            for file in files:
+            for file in tqdm(files, desc="Processing images in non-batch mode"):
                 # Build the caption and append
                 build_caption = []
                 image_path = os.path.join(path, file)
@@ -207,7 +206,7 @@ def main():
 
                 # Add caption
                 if args.model:
-                    caption = caption_image(captioner, image_path)
+                    caption = caption_image(captioner, image_path, quiet=args.quiet)
                     build_caption.append(caption)
 
                 # Only do something if model was selected
