@@ -155,8 +155,9 @@ def main():
     if args.cpu_offload:
         device = "cpu"
     else:
-        device = "cuda:0"
-    print(torch.cuda.device_count())
+        device = 0
+    # How many CUDA devices are available
+    print('Total CUDA devices available: ', torch.cuda.device_count())
 
     # Convert confidence to a float
     confidence = float(args.clip_confidence)
