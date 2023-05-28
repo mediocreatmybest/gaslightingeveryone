@@ -2,9 +2,39 @@
 
 ## Caption creation tools
 
-These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, utilising existing metadata (from gallery-dl downloads) or editing text files in bulk.
-All the ain tools are located in the tools folder.
-Sp feel free to fix, pull, or otherwise make suggestions.
+These scripts/tools have been made to assist in the creation of captions for programs such as stable diffusion, utilising existing metadata (from gallery-dl downloads) or editing text files in bulk, or using BLIP/CLIP to help create them.
+All the main tools and scripts are located in the tools folder.
+
+Any issues please help by: fixing and pulling, otherwise please create an issue and make suggestions or point me in a better direction.
+
+### captions2generate.py
+
+This is aimed at being a fairly simple captioning script by using pipeline() to do the heavy lifting with Transformers to create a task using supported models for captions and image categories with the zero-shot task. This seems to have made it flexible enough to run BLIP2 6.7 billion parameters (Salesforce/blip2-opt-6.7b) on the CPU if you have about 32GB of RAM. It isn't the most efficent script, but it works. Please see requirements_captions2generate.txt for the requirements.
+
+#### Usage
+
+At a minimum you need to select a caption model or CLIP model to use:
+For example:
+`python captions2generate.py /path/to/directory --model blip-large`
+
+```bash
+`<directory>`: The directory to search for images.
+`--depth`: Sets how deep to travel into folders (optional).
+`--mode`: Sets the write mode to use when existing captions are found (optional, default: 'write').
+`--skip-existing`: Skip existing files if found (optional).
+`--ext`: Extension for the caption files (optional, default: 'txt' or 'caption').
+`--cpu-offload`: Switches to CPU (optional), <-- This may let you run BLIP2 if you have enough system RAM.
+`--model`: Model to use for image captioning (optional, choose from available models).
+`--clip-model`: Model to use for CLIP/Zero Shot Category (optional, choose from available models).
+`--clip-cat-text`: File containing CLIP/Zero Shot Category labels (optional).
+`--clip-confidence`: Categories under the confidence score won't be included in the final text output (optional, default: 0.70).
+`--max-tokens`: The maximum number of tokens for the caption model (optional, default: 25).
+`--batch-count`: If you want to try larger than batch size of 1, image with image batch count with pipeline captions (optional).
+`--quiet`: Suppresses caption output (optional).
+```
+
+The script will process the images in the specified directory and generate captions based on the selected models. The captions will be saved in separate text files.
+When using --clip-model you will need to provide a list of image categories with --clip-cat-text, see example folder, create your own, or grab some from other projects. Just make sure they aren't too large, for example flavours.txt from clip-interrogator is too large for this poor little script.
 
 ### json2txt.py
 
@@ -103,9 +133,9 @@ Command line options available with "captions2remove.py --help"
 
 This script now has a few *"attempted"* options:
 
-* Multiples Crop (--multiples-crop): Crops the edges of an image to the closest multiple of a specified number of pixels (e.g. 64 pixels for a 1024x768 image).
-* Aspect Ratio Crop (--aspect-crop): Crops the image to the closest specified aspect ratio (1,1.33,1.5,etc.), but wil not enlarge the image.
-* Resize on Small Side *(I'm sure this could have a better name)* (--resize-small-side): Shrinks or enlarges the image based on the smallest side of the image, with a warning if enlarging.
+- Multiples Crop (--multiples-crop): Crops the edges of an image to the closest multiple of a specified number of pixels (e.g. 64 pixels for a 1024x768 image).
+- Aspect Ratio Crop (--aspect-crop): Crops the image to the closest specified aspect ratio (1,1.33,1.5,etc.), but wil not enlarge the image.
+- Resize on Small Side *(I'm sure this could have a better name)* (--resize-small-side): Shrinks or enlarges the image based on the smallest side of the image, with a warning if enlarging.
 
 Command line options available with "images2resize.py --help"
 
