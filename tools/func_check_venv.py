@@ -20,3 +20,5 @@ def activate_venv():
 
         # Activate the system!
         os.system(activate_cmd)
+        # Print
+        print('Activated venv')

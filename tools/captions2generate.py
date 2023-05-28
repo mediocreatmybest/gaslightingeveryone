@@ -2,6 +2,7 @@ import argparse
 import os
 from os.path import splitext
 
+import torch
 from tqdm import tqdm
 from transformers import pipeline
 
@@ -154,7 +155,8 @@ def main():
     if args.cpu_offload:
         device = "cpu"
     else:
-        device = None
+        device = "cuda:0"
+    print(torch.cuda.device_count())
 
     # Convert confidence to a float
     confidence = float(args.clip_confidence)
