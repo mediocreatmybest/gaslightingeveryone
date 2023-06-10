@@ -12,7 +12,7 @@ from func_os_walk_plus import os_walk_plus
 #from optimum.pipelines import pipeline
 
 # An attempt to make simple captions to text in a recursive way using pipeline with Transformers
-
+# Find and add additional models that are useful.
 CAPTION_MODELS = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
@@ -21,7 +21,7 @@ CAPTION_MODELS = {
     'blip2-flan-t5-xl': 'Salesforce/blip2-flan-t5-xl',
     'vit-gpt2-coco-en':'ydshieh/vit-gpt2-coco-en',
 }
-
+# Same here, find and add additional zshot models
 ZEROSHOT_MODELS = {
     'clip-vit-large-patch14': 'openai/clip-vit-large-patch14',
     'CLIP-ViT-H-14-laion2B-s32B-b79K': 'laion/CLIP-ViT-H-14-laion2B-s32B-b79K',
@@ -39,7 +39,7 @@ def caption_image(captioner, image_path, quiet=False):
     return str(caption).strip()
 
 
-# Batch caption attempt, using lists, doesn't seem any faster...
+# Batch caption attempt, using lists, doesn't seem any faster...Ok, seems better with GPU.
 def caption_images_batch(captioner, image_paths, quiet=False):
     captions = captioner(image_paths)
     result = []
@@ -62,6 +62,7 @@ def read_zshot(file_path):
             lines.append(line.strip())
     return lines
 
+# add some docstrings
 def zshot_images_batch(zshot, image_paths, candidate_labels, confidence, quiet=False):
     confidence = float(confidence)  # Make sure this is a float
     classifications = zshot(image_paths, candidate_labels=candidate_labels)
@@ -75,17 +76,22 @@ def zshot_images_batch(zshot, image_paths, candidate_labels, confidence, quiet=F
         result.append(high_confidence_labels)
     return result
 
+def does_file_exist(file_path):
+    """Simple chceck for file
 
-# Enable write,append,prepend,skip options
-def save_file(file_path, data, encoding='utf-8', mode='write', skip=False, separators=True, debug=False):
+    Args: file_path
+
+    Returns: yay or nay
+    """
+    return os.path.exists(file_path)
+
+
+# Enable write,append,prepend,skip options (remove skip at some point)
+def save_file(file_path, data, encoding='utf-8', mode='write', separators=True, debug=False):
     # Check if debug mode is enabled
     if debug:
         print("Save location:", file_path)
         print("Mode:", mode)
-        return
-
-    # Check if skip mode is enabled and the file already exists
-    if skip and os.path.exists(file_path):
         return
 
     # Check write mode
@@ -147,7 +153,7 @@ def main():
                         help='Model to use for CLIP/Zero Shot Category')
     parser.add_argument('--clip-cat-text', type=str, metavar='/path/textfile.txt',
                         help='File to CLIP/Zero Shot Category file')
-    parser.add_argument('--clip-confidence', type=str, default=0.70, metavar='0.70', # set too high?
+    parser.add_argument('--clip-confidence', type=str, default=0.65, metavar='0.70', # set too high?
                         help='Categories under the confidence score wont be included in final text output')
     parser.add_argument('--max-tokens', type=int, default=25, metavar='25',
                         help='The maximum number of tokens for the caption model')
@@ -179,7 +185,11 @@ def main():
     # Load model if selected
     if args.model:
         print('Loading image-to-text task in pipeline...')
-        captioner = pipeline(task="image-to-text", model=CAPTION_MODELS[args.model], max_new_tokens=args.max_tokens, device=device, use_fast=True)
+        captioner = pipeline(task="image-to-text",
+                             model=CAPTION_MODELS[args.model],
+                             max_new_tokens=args.max_tokens,
+                             device=device, use_fast=True
+                             )
 
     # Load CLIP zero shot if selected
     if args.clip_model:
@@ -191,71 +201,72 @@ def main():
     # Use os walk plus to allow depth and file filtering
     for path, _, files in os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth):
         if args.batch_count:
-            # Batch processing logic
+            # Batch processing logic, well. I guess I'd call this logic
             batches = [files[i:i+args.batch_count] for i in range(0, len(files), args.batch_count)]
             for batch in tqdm(batches, desc=f"Processing in batches of {args.batch_count}"):
                 image_paths = [os.path.join(path, file) for file in batch]
                 base_files = [splitext(image_path)[0] for image_path in image_paths]
 
-                # Initialize captions and zshot_cats as empty lists
+                # Create captions and zshot_cats as empty lists
                 captions = []
                 zshot_cats = []
 
-                # Add caption
-                if args.model:
-                    captions = caption_images_batch(captioner, image_paths, quiet=args.quiet)
+                # Use the list to store the images to that will be processed
+                images_to_process = list(range(len(base_files)))  # by default, I'll process all images
 
-                # Add zero-shot classifications
-                if args.clip_model:
-                    zshot_cats = zshot_images_batch(zshot, image_paths, candidate_labels=zshot_cat, confidence=args.clip_confidence, quiet=args.quiet)
+                # Check for each image in the batch, if its text file exists
+                if args.skip_existing:  # only check if args.skip_existing is selected
+                    images_to_process = []
+                    for i in range(len(base_files)):
+                        # If text file doesnt exist for the image, add its index to images_to_process
+                        if not does_file_exist(f"{base_files[i]}.{args.ext}"):
+                            images_to_process.append(i)
 
-                # Create an empty list to hold the final captions
-                final_captions = []
+                # Continue if there are any images to process
+                if images_to_process:
+                    # Add the caption if selected
+                    if args.model:
+                        captions = caption_images_batch(captioner, [image_paths[i] for i in images_to_process], quiet=args.quiet)
 
-                # Combine captions and categories for each image
-                for i in range(len(image_paths)):
-                    # Start with an empty caption
-                    final_caption = []
+                    # Add zero-shot classifications if selected
+                    if args.clip_model:
+                        zshot_cats = zshot_images_batch(zshot, [image_paths[i] for i in images_to_process], candidate_labels=zshot_cat, confidence=args.clip_confidence, quiet=args.quiet)
 
-                    # Add the caption if it's available
-                    if i < len(captions):
-                        final_caption.append(captions[i])
+                    # Combine captions and categories for each image
+                    for i, idx in enumerate(images_to_process):
+                        # Start with empty caption
+                        final_caption = []
 
-                    # Add the zshot categories if they're available
-                    if i < len(zshot_cats):
-                        final_caption.extend(zshot_cats[i])
+                        # Add the caption if it's available and created
+                        if i < len(captions):
+                            final_caption.append(captions[i])
 
-                    # Join the final caption components together and add to the final_captions list
-                    final_captions.append(', '.join(final_caption))
+                        # Add the zshot categories if available
+                        if i < len(zshot_cats):
+                            final_caption.extend(zshot_cats[i])
 
-                # Now, you can save the final captions
-                for i in range(len(image_paths)):
-                    # Full path to text file to save
-                    full_path = f"{base_files[i]}.{args.ext}"
-                    # Save the final caption for each text file. No batching within text save
-                    save_file(full_path, data=final_captions[i], mode=args.mode, skip=args.skip_existing)
+                        # Use the full path to text file to save
+                        full_path = f"{base_files[idx]}.{args.ext}"
 
-        # Fall back to single image function - delete in future left for testing, this shouldn't run unless default batch is removed
+                        # Save the final caption for each text file. No batching within text save
+                        save_file(full_path, data=', '.join(final_caption), mode=args.mode)
+
         else:
-            # Single image function
+            # Single image function. Delete section soon. Not needed and kept for testing.
             for file in tqdm(files, desc="Processing images in non-batch mode"):
                 # Build the caption and append
                 build_caption = []
                 image_path = os.path.join(path, file)
                 base_file = splitext(image_path)[0]
 
+                # Check if text file for the image already exists
+                if args.skip_existing and does_file_exist(f"{base_file}.{args.ext}"):
+                    continue
+
                 # Add caption
                 if args.model:
                     caption = caption_image(captioner, image_path, quiet=args.quiet)
                     build_caption.append(caption)
-
-                # Only do something if model was selected
-                if args.model:
-                    # Full path to text file to save
-                    full_path = f"{base_file}.{args.ext}"
-                    # join build_caption and convert to comma string
-                    final_caption = ', '.join(build_caption)
-                    save_file(full_path, data=final_caption, mode=args.mode, skip=args.skip_existing)
 
                 # Add clip zero shot text
                 if args.clip_model:
@@ -267,6 +278,7 @@ def main():
                             print('Image Category: ', top['label'])
                             print('Score: ', top['score'])
                             build_caption.append(top['label'])
+
                 # Only do something if model or clip_model was selected
                 if args.model or args.clip_model:
                     # Full path to text file to save
