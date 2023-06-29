@@ -12,14 +12,17 @@ from func_os_walk_plus import os_walk_plus
 #from optimum.pipelines import pipeline
 
 # An attempt to make simple captions to text in a recursive way using pipeline with Transformers
-# Find and add additional models that are useful.
+# Find and add additional models that are useful. Some unoffical community created models added
 CAPTION_MODELS = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
     'blip2-2.7b': 'Salesforce/blip2-opt-2.7b',
+    'blip2-2.7b-coco': 'Salesforce/blip2-opt-2.7b-coco',
     #'blip2-2.7b-fp16': 'ybelkada/blip2-opt-2.7b-fp16-sharded', # Tokenizer doesn't automaticly load
+    'blip2-2.7b-fp16': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded', # Duplicated and uploaded tokenizer
     'blip2-6.7b': 'Salesforce/blip2-opt-6.7b',
     'blip2-6.7b-fp16': 'ybelkada/blip2-opt-6.7b-fp16-sharded',
+    'blip2-6.7b-coco-fp16': 'trojblue/blip2-opt-6.7b-coco-fp16',
     #'blip2-flan-t5-xl': 'Salesforce/blip2-flan-t5-xl', # More suited to question / answer
     'vit-gpt2-coco-en':'ydshieh/vit-gpt2-coco-en',
 }
