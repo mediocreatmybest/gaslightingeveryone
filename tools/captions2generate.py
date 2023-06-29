@@ -12,16 +12,21 @@ from func_os_walk_plus import os_walk_plus
 #from optimum.pipelines import pipeline
 
 # An attempt to make simple captions to text in a recursive way using pipeline with Transformers
-# Find and add additional models that are useful.
+# Find and add additional models that are useful. Some unoffical community created models added
 CAPTION_MODELS = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
     'blip2-2.7b': 'Salesforce/blip2-opt-2.7b',
-    'blip2-opt-6.7b': 'Salesforce/blip2-opt-6.7b',
-    'blip2-flan-t5-xl': 'Salesforce/blip2-flan-t5-xl',
+    'blip2-2.7b-coco': 'Salesforce/blip2-opt-2.7b-coco',
+    #'blip2-2.7b-fp16': 'ybelkada/blip2-opt-2.7b-fp16-sharded', # Tokenizer missing
+    'blip2-2.7b-fp16': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded', # Duplicated and uploaded tokenizer
+    'blip2-6.7b': 'Salesforce/blip2-opt-6.7b',
+    'blip2-6.7b-fp16': 'ybelkada/blip2-opt-6.7b-fp16-sharded',
+    'blip2-6.7b-coco-fp16': 'trojblue/blip2-opt-6.7b-coco-fp16',
+    #'blip2-flan-t5-xl': 'Salesforce/blip2-flan-t5-xl', # More suited to question / answer
     'vit-gpt2-coco-en':'ydshieh/vit-gpt2-coco-en',
 }
-# Same here, find and add additional zshot models
+# Need to find and add additional zshot models that are useful
 ZEROSHOT_MODELS = {
     'clip-vit-large-patch14': 'openai/clip-vit-large-patch14',
     'CLIP-ViT-H-14-laion2B-s32B-b79K': 'laion/CLIP-ViT-H-14-laion2B-s32B-b79K',
@@ -39,7 +44,7 @@ def caption_image(captioner, image_path, quiet=False):
     return str(caption).strip()
 
 
-# Batch caption attempt, using lists, doesn't seem any faster...Ok, seems better with GPU.
+# Batch caption attempt, only seems useful with GPU
 def caption_images_batch(captioner, image_paths, quiet=False):
     captions = captioner(image_paths)
     result = []
@@ -62,6 +67,7 @@ def read_zshot(file_path):
             lines.append(line.strip())
     return lines
 
+
 # add some docstrings
 def zshot_images_batch(zshot, image_paths, candidate_labels, confidence, quiet=False):
     confidence = float(confidence)  # Make sure this is a float
@@ -75,6 +81,7 @@ def zshot_images_batch(zshot, image_paths, candidate_labels, confidence, quiet=F
             print('Score: ', ', '.join([f"{label['score']}" for label in classification if label['score'] > confidence]))
         result.append(high_confidence_labels)
     return result
+
 
 def does_file_exist(file_path):
     """Simple chceck for file
@@ -134,7 +141,7 @@ def save_file(file_path, data, encoding='utf-8', mode='write', separators=True, 
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Caption images with Transformers Pipeline')
+    parser = argparse.ArgumentParser(description='Caption images with the Transformers Pipeline')
     parser.add_argument('directory', type=str,
                         help='Directory to search for images')
     parser.add_argument('--depth', type=int, metavar='1',
@@ -145,8 +152,10 @@ def main():
                         help='Skip existing files if found')
     parser.add_argument('--ext', type=str, default='txt', metavar='txt or caption',
                         help='Extension for the caption files')
+    parser.add_argument('--use-accelerate', action='store_true',
+                        help='Use accelerate function device_map on caption model, this can help balance across GPU/vRAM/CPU/RAM')
     parser.add_argument('--cpu-offload', action='store_true',
-                        help='Switches to CPU')
+                        help='Switches to CPU only, can be slow but allows you to use RAM for larger models')
     parser.add_argument('--model', type=str, choices=list(CAPTION_MODELS.keys()),
                         help='Model to use for captioning')
     parser.add_argument('--clip-model', type=str, choices=list(ZEROSHOT_MODELS.keys()),
@@ -155,10 +164,10 @@ def main():
                         help='File to CLIP/Zero Shot Category file')
     parser.add_argument('--clip-confidence', type=str, default=0.65, metavar='0.70', # set too high?
                         help='Categories under the confidence score wont be included in final text output')
-    parser.add_argument('--max-tokens', type=int, default=25, metavar='25',
+    parser.add_argument('--max-tokens', type=int, default=25, metavar='25', # why only max-token?
                         help='The maximum number of tokens for the caption model')
     parser.add_argument('--batch-count', default=1, type=int, metavar='2',
-                        help='If you want to try larger than batch size of 1, image with image batch count with pipeline captions')
+                        help='If you want to try larger than batch size of 1, image with image batch count with pipeline captions, useful for GPUs')
     parser.add_argument('--quiet', action='store_true',
                         help='Supresses caption output')
     args = parser.parse_args()
@@ -185,11 +194,25 @@ def main():
     # Load model if selected
     if args.model:
         print('Loading image-to-text task in pipeline...')
-        captioner = pipeline(task="image-to-text",
-                             model=CAPTION_MODELS[args.model],
-                             max_new_tokens=args.max_tokens,
-                             device=device, use_fast=True
-                             )
+        # Use Accelerate to auto balance, seems to fail if the smallest shard doesn't fit into the GPU ( I think )
+        # Accelerate doesn't seem to fall back to CPU/RAM only, we need to use cpu offload if we don't have enough GPU vRAM available.
+        if args.use_accelerate is True:
+            # Switch device 0 to auto with accelerate
+            if device == 0:
+                device = "auto"
+            # Now Set captioner function
+            captioner = pipeline(task="image-to-text",
+                        model=CAPTION_MODELS[args.model],
+                        max_new_tokens=args.max_tokens,
+                        device_map=device, use_fast=True
+                        )
+        # loading without Accelerate device mapping
+        else:
+            captioner = pipeline(task="image-to-text",
+                                model=CAPTION_MODELS[args.model],
+                                max_new_tokens=args.max_tokens,
+                                device=device, use_fast=True
+                                )
 
     # Load CLIP zero shot if selected
     if args.clip_model:
