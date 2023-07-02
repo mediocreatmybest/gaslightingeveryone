@@ -2,11 +2,11 @@ import argparse
 import os
 from os.path import splitext
 
-import torch
 from tqdm import tqdm
 from transformers import pipeline
 
 from func_os_walk_plus import os_walk_plus
+from func_pipeline_tasks import pipeline_task
 
 # Maybe this will work one day.
 #from optimum.pipelines import pipeline
@@ -195,12 +195,9 @@ def main():
 
     # Move args hf-override and model to caption_model
     if args.model:
-        caption_model = args.model
+        caption_model = CAPTION_MODELS[args.model]
     if args.hf_override:
         caption_model = args.hf_override
-
-    # How many CUDA devices are available
-    print('Total CUDA devices available:', torch.cuda.device_count())
 
     # Convert confidence to a float
     confidence = float(args.clip_confidence)
@@ -208,26 +205,17 @@ def main():
     # Pipeline example from hugging face
     # Load model if selected
     if args.model or args.hf_override:
-        print('Loading image-to-text task in pipeline...')
-        # Use Accelerate to auto balance, seems to fail if the smallest shard doesn't fit into the GPU ( I think )
-        # Accelerate doesn't seem to fall back to CPU/RAM only, we need to use cpu offload if we don't have enough GPU vRAM available.
-        if args.use_accelerate is True:
-            # Switch device 0 to auto with accelerate
-            if device == 0:
-                device = "auto"
-            # Now Set captioner function
-            captioner = pipeline(task="image-to-text",
-                        model=CAPTION_MODELS[args.model],
+
+        # Set the task to run
+        model_task = "image-to-text"
+
+        # Now Set captioner from pipeline task function
+        captioner = pipeline_task(task=model_task,
+                        model=caption_model,
+                        use_accelerate_auto=args.use_accelerate,
+                        device=device,
                         max_new_tokens=args.max_tokens,
-                        device_map=device, use_fast=True
-                        )
-        # loading without Accelerate device mapping
-        else:
-            captioner = pipeline(task="image-to-text",
-                                model=CAPTION_MODELS[args.model],
-                                max_new_tokens=args.max_tokens,
-                                device=device, use_fast=True
-                                )
+                        use_fast=True)
 
     # Load CLIP zero shot if selected
     if args.clip_model:
@@ -263,7 +251,7 @@ def main():
                 # Continue if there are any images to process
                 if images_to_process:
                     # Add the caption if selected
-                    if args.model:
+                    if args.model or args.hf_override:
                         captions = caption_images_batch(captioner, [image_paths[i] for i in images_to_process], quiet=args.quiet)
 
                     # Add zero-shot classifications if selected
