@@ -29,7 +29,7 @@ def main():
     for file_path in result:
     # remove unwanted characters from the file name for windows and linux
         if args.sanitize_filename is True:
-            new_filename = sanitise_char(os.path.basename(file_path), debug=args.debug)
+            new_filename = sanitise_char(os.path.basename(file_path), strict_mode=args.strict_filename, debug=args.debug)
         else:
             new_filename = os.path.basename(file_path)
 
@@ -55,6 +55,8 @@ if __name__ == "__main__":
                         help="Disable searching file path recursivly")
     parser.add_argument('--sanitize-filename', action='store_true',
                         help="Sanitise filenames")
+    parser.add_argument('--strict-filename', action='store_true',
+                        help="When enabled, only alphanumeric characters are allowed in filenames")
     parser.add_argument('--remove-double-ext', action='store_true',
                         help="Remove double file extensions")
     parser.add_argument('--remove-ext', nargs='*', metavar='.jpg, .jpeg, .png',

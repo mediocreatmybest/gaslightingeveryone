@@ -21,7 +21,7 @@ parser.add_argument('--output-file', type=str,
 parser.add_argument('--output-folder', type=str,
                     help='the folder to save the output file')
 parser.add_argument('--output-extension', type=str,
-                    help='the extension of the output file', choices=['txt', 'tags', 'caption'], default='tags')
+                    help='the extension of the output file', choices=['txt', 'tags', 'caption', 'exiftxt'], default='tags')
 parser.add_argument('--filter', type=str,
                     help='simple list of text to remove from output, accepts regex pattern, (comma-separated)')
 parser.add_argument('--filter-file', type=str,
@@ -275,7 +275,7 @@ def word_swap(output, replacements_file, whole_words_only=False, debug=True):
     returns: str: The word swapped string.
     """
     # Read the replacement pairs from the file
-    with open(replacements_file, 'r') as f:
+    with open(replacements_file, 'r', encoding='utf-8') as f:
         replacement_lines = f.readlines()
         replacements = {line.split('|-|')[0].strip(): line.split('|-|')[1].strip() for line in replacement_lines}
 

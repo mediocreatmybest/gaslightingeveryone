@@ -2,14 +2,27 @@ import os
 import re
 
 
-def sanitise_char(char_string, debug=False):
+def sanitise_char(char_string, debug=False, strict_mode=False):
     """ Removes unwanted characters and extensions from a string
         useful for moving files from Linux to Windows and back
     """
 
+    # Split the filename and extension
+    filename, extension = os.path.splitext(char_string)
+
     # Add additional characters if needed
     invalid_chars = r'\\/:*?"\'<>|'
-    new_char_string = ''.join(c for c in char_string if c not in invalid_chars)
+    new_char_string = ''.join(c for c in filename if c not in invalid_chars)
+
+    # If strict mode is enabled, replace non-alphanumeric characters with underscores
+    # and replace multiple spaces with a single underscore
+    if strict_mode:
+        new_char_string = re.sub(r'[^\w\s-]', '_', new_char_string)
+        new_char_string = re.sub(r'\s+', '_', new_char_string)
+        new_char_string = re.sub(r'_{2,}', '_', new_char_string)
+
+    # Append the extension back onto the filename
+    new_char_string += extension
 
     # Simple print debug
     if debug:
@@ -20,6 +33,7 @@ def sanitise_char(char_string, debug=False):
 
     # returns string with characters removed and redundant extensions removed, otherwise returns unmodified string
     return new_char_string
+
 
 
 def sanitise_double_ext(filename, ext_to_remove=None, debug=True):
