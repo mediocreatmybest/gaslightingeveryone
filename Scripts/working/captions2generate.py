@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import pipeline
 
 from func_os_walk_plus import os_walk_plus
-from func_pipeline_tasks import pipeline_task, load_caption_model
+from func_transformers import CaptionConfig, pipeline_task, load_caption_model, caption_generate
 
 # Maybe this will work one day.
 #from optimum.pipelines import pipeline
