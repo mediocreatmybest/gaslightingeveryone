@@ -116,7 +116,7 @@ def load_caption_model(config: CaptionConfig, device):
     return processor, model
 
 
-def caption_generate(config: CaptionConfig, images, device):
+def caption_generate(config: CaptionConfig, images, processor, model, device, prompt_question=None):
 
     # Collect config
     if config.repetition_penalty:
@@ -130,7 +130,6 @@ def caption_generate(config: CaptionConfig, images, device):
 
     # min_new_tokens will affect the output length even with prompt_question
     #prompt_question = "Question: how many cats are there? Answer:"
-    prompt_question = None
 
     # Check if we are using 4 or 8bit else default
     if config.xbit:
@@ -169,6 +168,6 @@ batch = [image, image1]
 
 # generate caption
 print("generating caption...")
-caption = caption_generate(config, images=batch, device=device)
+caption = caption_generate(config, images=batch, processor=processor, model=model, device=device)
 
 print(caption)
