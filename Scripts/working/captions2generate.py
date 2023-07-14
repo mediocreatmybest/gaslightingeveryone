@@ -12,15 +12,15 @@ from func_transformers import CaptionConfig, pipeline_task, load_caption_model, 
 # Maybe this will work one day.
 #from optimum.pipelines import pipeline
 
-# An attempt to make simple captions to text in a recursive way using pipeline with Transformers
+# An attempt to make simple captions to text in a recursive way using pipeline or processors with Transformers
 # Find/add/remove additional models. Added some community created models.
 CAPTION_MODELS = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
     'blip2-2.7b-coco': 'Salesforce/blip2-opt-2.7b-coco',
-    'blip2-2.7b-fp16': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded', # Duplicated and uploaded tokenizer
-    'blip2-6.7b-fp16': 'ybelkada/blip2-opt-6.7b-fp16-sharded',
-    'blip2-6.7b-coco-fp16': 'trojblue/blip2-opt-6.7b-coco-fp16',
+    'blip2-2.7b': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded', # Duplicated and uploaded tokenizer
+    'blip2-6.7b': 'ybelkada/blip2-opt-6.7b-fp16-sharded',
+    'blip2-6.7b-coco': 'trojblue/blip2-opt-6.7b-coco-fp16',
     'vit-gpt2': 'nlpconnect/vit-gpt2-image-captioning',
     'vit-gpt2-coco-en': 'ydshieh/vit-gpt2-coco-en',
     'git-base': 'microsoft/git-base',
@@ -38,7 +38,7 @@ ZEROSHOT_MODELS = {
 
 
 # Batch caption attempt, only seems useful with GPU
-def caption_images_batch(captioner, image_paths, quiet=False):
+def pipeline_caption_batch(captioner, image_paths, quiet=False):
     captions = captioner(image_paths)
     result = []
     for i, caption in enumerate(captions):
@@ -151,20 +151,24 @@ def main():
                         help='Switches to CPU only, can be slow but allows you to use RAM for larger models')
     parser.add_argument('--model', type=str, choices=list(CAPTION_MODELS.keys()),
                         help='Model to use for captioning')
-    parser.add_argument('--hf-override', type=str, metavar='Mediocreatmybest/blip2-opt-2.7b-fp16-sharded',
-                        help='(Crash?!) Override models with a HuggingFace image to text model user/repo format')
+    parser.add_argument('--hf-override', type=str, metavar='Mediocreatmybest/blip2-opt-2.7b-fp16-sharded or /file/path/',
+                        help='Manually select either a Hugging Face model or file path')
     parser.add_argument('--clip-model', type=str, choices=list(ZEROSHOT_MODELS.keys()),
                         help='Model to use for CLIP/Zero Shot Category')
-    parser.add_argument('--clip-cat-text', type=str, metavar='/path/textfile.txt',
+    parser.add_argument('--clip-cat', type=str, metavar='/path/textfile.txt',
                         help='File to CLIP/Zero Shot Category file')
     parser.add_argument('--clip-confidence', type=str, default=0.65, metavar='0.70', # set too high?
                         help='Categories with a score less than the set confidence level wont be included in final text output')
     parser.add_argument('--max-tokens', type=int, default=25, metavar='25', # max tokens for captions
                         help='The maximum number of tokens for the caption model')
     parser.add_argument('--min-tokens', type=int, default=8, metavar='8', # min tokens for captions,  only works with transformers not pipeline
-                        help='The minimum number of tokens for the caption model (only works with transformers not pipeline)')
+                        help='The minimum number of tokens for the caption model (Ignored with pipeline method)')
     parser.add_argument('--batch-count', default=1, type=int, metavar='2',
-                        help='Useful for GPUs')
+                        help='How many images to run in a batch, default is 1')
+    parser.add_argument('--use-pipeline', action='store_true',
+                        help='Use pipeline method for the caption model')
+    parser.add_argument('--xbits', type=str, choices=['4bit', '8bit'], default=None,
+                        help='Set precision to 4 or 8 bit for captioning (Disables pipeline method)')
     parser.add_argument('--quiet', action='store_true',
                         help='Supresses caption output')
     args = parser.parse_args()
@@ -191,26 +195,45 @@ def main():
     # Convert confidence to a float
     confidence = float(args.clip_confidence)
 
+    # Set configuration for pipeline / transformers
+    config = CaptionConfig(model_id=caption_model,
+                       pipeline=args.use_pipeline, quiet=args.quiet,
+                       xbit=args.xbits, use_accelerate_auto=args.use_accelerate,
+                       min_tokens=args.min_tokens, max_tokens=args.max_tokens)
+
+
+
+
+    # Load model section
     # Pipeline example from hugging face
-    # Load model if selected
     if args.model or args.hf_override:
+        if args.use_pipeline and args.xbits:
+            print('Pipeline method not available with xbits, disabling xbits...')
+            args.xbits = None
 
-        # Set the task to run
-        model_task = "image-to-text"
+        # check if using pipeline method
+        if args.use_pipeline and not args.xbits:
+            print('Loading captioning task with pipeline...')
+            # Set the task to run
+            model_task = "image-to-text"
 
-        # Now Set captioner from pipeline task function
-        captioner = pipeline_task(task=model_task,
-                        model=caption_model,
-                        use_accelerate_auto=args.use_accelerate,
-                        device=device,
-                        max_new_tokens=args.max_tokens,
-                        use_fast=True)
+            # Now Set captioner from pipeline task function
+            captioner = pipeline_task(task=model_task,
+                            model=caption_model,
+                            use_accelerate_auto=args.use_accelerate,
+                            device=device,
+                            max_new_tokens=args.max_tokens,
+                            use_fast=True)
+        else:
+            print('Loading captioning model...')
+            processor, model = load_caption_model(config, device)
+
 
     # Load CLIP zero shot if selected
     if args.clip_model:
         # Read the file and split it line by line
         print('Loading zero-shot-image-classification task in pipeline...')
-        zshot_cat = read_zshot(args.clip_cat_text)
+        zshot_cat = read_zshot(args.clip_cat)
         zshot = pipeline(task="zero-shot-image-classification", model=ZEROSHOT_MODELS[args.clip_model], device=device, use_fast=True)
 
     # Use os walk plus to allow depth and file filtering
@@ -240,8 +263,16 @@ def main():
             # Continue if there are any images to process
             if images_to_process:
                 # Add the caption if selected
-                if args.model or args.hf_override:
-                    captions = caption_images_batch(captioner, [image_paths[i] for i in images_to_process], quiet=args.quiet)
+                # check if using pipeline method
+                if args.use_pipeline and not args.xbits:
+                    if args.model or args.hf_override:
+                        captions = pipeline_caption_batch(captioner, [image_paths[i] for i in images_to_process],
+                                                          quiet=args.quiet)
+                else:
+                    if args.model or args.hf_override:
+                        captions = caption_generate(config, images=[image_paths[i] for i in images_to_process],
+                                                    processor=processor,
+                                                    model=model, device=device)
 
                 # Add zero-shot classifications if selected
                 if args.clip_model:

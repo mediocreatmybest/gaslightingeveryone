@@ -1,11 +1,16 @@
-import torch
+from dataclasses import dataclass
+
 import requests
+import torch
 from PIL import Image
 from transformers import AutoProcessor, Blip2ForConditionalGeneration, pipeline
 
 TASKS = ["image-to-text", "zero-shot-image-classification", "visual-question-answering"]  # Limit inital tasks
 
 # Create config class to pass to loading functions
+from dataclasses import dataclass
+
+@dataclass
 class CaptionConfig:
     """ Configuration for Transformers and Transformers Pipeline.
 
@@ -20,21 +25,18 @@ class CaptionConfig:
         repetition_penalty (float): The repetition penalty to use. (can be moved to kwargs)
         use_accelerate_auto (bool): Use accelerate "auto" to balance model across devices.
         **kwargs: Additional keyword arguments to pass along.
+        TODO: remove duplicate args
     """
-    def __init__(self, model_id: str = None, pipeline: bool = True,
-                 quiet: bool = False, task: str = None, min_tokens: int = 8,
-                 max_tokens: int = 30, xbit: str = None, repetition_penalty: float = None,
-                 use_accelerate_auto: bool = False, **kwargs):
-        self.model_id = model_id
-        self.pipeline = pipeline
-        self.task = task
-        self.min_tokens = min_tokens
-        self.max_tokens = max_tokens
-        self.xbit = xbit
-        self.repetition_penalty = repetition_penalty
-        self.use_accelerate_auto = use_accelerate_auto
-        self.quiet = quiet
-        self.kwargs = kwargs
+    model_id: str = None
+    pipeline: bool = True
+    quiet: bool = False
+    task: str = None
+    min_tokens: int = 8
+    max_tokens: int = 30
+    xbit: str = None
+    repetition_penalty: float = None
+    use_accelerate_auto: bool = False
+    kwargs: dict = None
 
 
 def pipeline_task(task, model, use_accelerate_auto=False, device=0, quiet=False, **kwargs):
@@ -84,8 +86,9 @@ def load_caption_model(config: CaptionConfig, device):
         device: Cuda device or CPU.
 
     Returns:
-        processor and model
+        processor and model from AutoProcessor and Blip2ForConditionalGeneration.
     """
+    # TODO Add more models than just Blip2
     # Dictionary of args to pass to processor and model
     processor_args = {}
     model_args = {}
@@ -128,14 +131,20 @@ def caption_generate(config: CaptionConfig, images, processor, model, device, pr
     if config.max_tokens:
         max_tokens = config.max_tokens
 
+    # convert PIL image and append to list
+    imagelist = []
+    for img in images:
+        img = Image.open(img)
+        imagelist.append(img)
+
     # min_new_tokens will affect the output length even with prompt_question
     #prompt_question = "Question: how many cats are there? Answer:"
 
     # Check if we are using 4 or 8bit else default
     if config.xbit:
-        inputs = processor(images=images, text=prompt_question, return_tensors="pt").to(device, torch.float16)
+        inputs = processor(images=imagelist, text=prompt_question, return_tensors="pt").to(device, torch.float16)
     else:
-        inputs = processor(images=images, text=prompt_question, return_tensors="pt").to(device)
+        inputs = processor(images=imagelist, text=prompt_question, return_tensors="pt").to(device)
 
     generated_ids = model.generate(**inputs, repetition_penalty=repetition_penalty,
                                    min_new_tokens=min_tokens,
@@ -144,30 +153,47 @@ def caption_generate(config: CaptionConfig, images, processor, model, device, pr
 
     return generated_text
 
-### testing
-device = "cuda" if torch.cuda.is_available() else "cpu"
 
-config = CaptionConfig(model_id="Mediocreatmybest/blip2-opt-2.7b_8bit",
-                       pipeline=False, quiet=False,
-                       xbit="4bit", use_accelerate_auto=True,
-                       min_tokens=8, max_tokens=30,)
+# Batch caption attempt need to make more generic captions option
+def pipeline_caption_batch(captioner, image_paths, quiet=False):
+    captions = captioner(image_paths)
+    result = []
+    for i, caption in enumerate(captions):
+        stripped_caption = str(caption[0]['generated_text']).strip()
+        if quiet is True:
+            pass
+        else:
+            print('File: ', image_paths[i])
+            print('Caption: ', stripped_caption)
+        result.append(stripped_caption)
+    return result
+
+### testing
+#device = "cuda" if torch.cuda.is_available() else "cpu"
+
+#config = CaptionConfig(model_id="Mediocreatmybest/blip2-opt-2.7b_8bit",
+#                       pipeline=False, quiet=False,
+#                       xbit="4bit", use_accelerate_auto=True,
+#                       min_tokens=8, max_tokens=30,)
 
 
 # load model
-print("loading model...")
-processor, model = load_caption_model(config, device)
+#print("loading model...")
+#processor, model = load_caption_model(config, device)
 
-print("next step...")
+#print("next step...")
 
-url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-url1 = "http://images.cocodataset.org/val2017/000000039769.jpg"
-image = Image.open(requests.get(url, stream=True).raw)
-image1 = Image.open(requests.get(url, stream=True).raw)
-batch = [image, image1]
+#url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+#url1 = "http://images.cocodataset.org/val2017/000000039769.jpg"
+#image0 = Image.open(requests.get(url, stream=True).raw)
+#image1 = Image.open(requests.get(url, stream=True).raw)
+#image0 = "C:\\xyz\\xyz.png"
+#image1 = "C:\\xyz\\xyz.png"
+#batch = [image0, image1]
 
 
 # generate caption
-print("generating caption...")
-caption = caption_generate(config, images=batch, processor=processor, model=model, device=device)
+#print("generating caption...")
+#caption = caption_generate(config, images=batch, processor=processor, model=model, device=device)
 
-print(caption)
+#print(caption)
