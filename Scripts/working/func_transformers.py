@@ -3,12 +3,15 @@ from dataclasses import dataclass
 import requests
 import torch
 from PIL import Image
-from transformers import AutoProcessor, Blip2ForConditionalGeneration, pipeline
+from transformers import (AutoModelForCausalLM, AutoProcessor,
+                          Blip2ForConditionalGeneration,
+                          BlipForConditionalGeneration, pipeline)
 
 TASKS = ["image-to-text", "zero-shot-image-classification", "visual-question-answering"]  # Limit inital tasks
 
 # Create config class to pass to loading functions
 from dataclasses import dataclass
+
 
 @dataclass
 class CaptionConfig:
@@ -27,6 +30,7 @@ class CaptionConfig:
         **kwargs: Additional keyword arguments to pass along.
         TODO: remove duplicate args
     """
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
     model_id: str = None
     pipeline: bool = True
     quiet: bool = False
@@ -38,8 +42,7 @@ class CaptionConfig:
     use_accelerate_auto: bool = False
     kwargs: dict = None
 
-
-def pipeline_task(task, model, use_accelerate_auto=False, device=0, quiet=False, **kwargs):
+def pipeline_task(task, model, use_accelerate_auto=False, device=CaptionConfig.device, quiet=False, **kwargs):
     """
     Load a simple task sequence with model using the Transformers pipeline.
 
@@ -78,7 +81,7 @@ def pipeline_task(task, model, use_accelerate_auto=False, device=0, quiet=False,
     return pipeline_task
 
 
-def load_caption_model(config: CaptionConfig, device):
+def load_caption_model(config: CaptionConfig, device=CaptionConfig.device):
     """ Load the caption model and processor.
 
     Args:
@@ -93,6 +96,7 @@ def load_caption_model(config: CaptionConfig, device):
     processor_args = {}
     model_args = {}
 
+    # Configure settings
     if config.xbit == "8bit":
         processor_args["load_in_8bit"] = True
         model_args["load_in_8bit"] = True
@@ -108,18 +112,61 @@ def load_caption_model(config: CaptionConfig, device):
         processor_args["device_map"] = device_map
         model_args["device_map"] = device_map
 
-    processor = AutoProcessor.from_pretrained(config.model_id, **processor_args)
-    model = Blip2ForConditionalGeneration.from_pretrained(config.model_id, **model_args)
+    # Model check to see which model to load
+    model_check = config.model_id.split("/")
+
+    # Load BLIP 2 model and processor
+    if model_check[1].startswith("blip2-"):
+        processor = AutoProcessor.from_pretrained(config.model_id, **processor_args)
+        if config.use_accelerate_auto:
+            model = Blip2ForConditionalGeneration.from_pretrained(config.model_id, **model_args)
+        else:
+            model = Blip2ForConditionalGeneration.from_pretrained(config.model_id, **model_args)
+            # If xbits is not set, move to device
+            if not config.xbit:
+                model = model.to(device)
+
+        if not config.quiet:
+            print("Loading BLIP2 model")
+
+    # Load BLIP model and processor
+    elif model_check[1].startswith("blip-"):
+        processor = AutoProcessor.from_pretrained(config.model_id, **processor_args)
+        model = BlipForConditionalGeneration.from_pretrained(config.model_id, **model_args)
+        # If xbits is not set, move to device
+        if not config.xbit:
+            model = model.to(device)
+        if not config.quiet:
+            print("Loading BLIP model")
+
+    elif model_check[1].startswith("git-"):
+        processor = AutoProcessor.from_pretrained(config.model_id, **processor_args)
+        model = AutoModelForCausalLM.from_pretrained(config.model_id, **model_args)
+        # If xbits is not set, move to device
+        if not config.xbit:
+            model = model.to(device)
+        if not config.quiet:
+            print("Loading Git model")
+
+    else:
+        processor = AutoProcessor.from_pretrained(config.model_id, **processor_args)
+        model = AutoModelForCausalLM.from_pretrained(config.model_id, **model_args)
+        # If xbits is not set, move to device
+        if not config.xbit:
+            model = model.to(device)
+        if not config.quiet:
+            print("Loading with AutoModel...")
+
 
     if not config.quiet:
         print(f'Loading {config.model_id}...')
-        print(f'Using device: {device_map if config.use_accelerate_auto else {device}}')
+        print(f'Using device: {device_map if config.use_accelerate_auto else device}')
         print('Total CUDA devices available:', torch.cuda.device_count())
 
     return processor, model
 
 
-def caption_generate(config: CaptionConfig, images, processor, model, device, prompt_question=None):
+def caption_generate(config: CaptionConfig, images, processor, model, device=CaptionConfig.device, prompt_question=None):
 
     # Collect config
     if config.repetition_penalty:
@@ -145,6 +192,7 @@ def caption_generate(config: CaptionConfig, images, processor, model, device, pr
         inputs = processor(images=imagelist, text=prompt_question, return_tensors="pt").to(device, torch.float16)
     else:
         inputs = processor(images=imagelist, text=prompt_question, return_tensors="pt").to(device)
+
 
     generated_ids = model.generate(**inputs, repetition_penalty=repetition_penalty,
                                    min_new_tokens=min_tokens,
