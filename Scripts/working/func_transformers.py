@@ -14,9 +14,9 @@ from transformers import (AutoModelForCausalLM, AutoProcessor,
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-TASKS = ["image-to-text", "zero-shot-image-classification", "visual-question-answering"]  # Limit inital tasks
-
-
+TASKS = ["image-to-text",
+         "zero-shot-image-classification",
+         "visual-question-answering"]  # Limit inital tasks
 
 @dataclass
 class CaptionConfig:
@@ -50,41 +50,47 @@ class CaptionConfig:
     def __post_init__(self):
     # Setting here the default device to allow us to override it with the config
         if self.device is None:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def pipeline_task(task, model, use_accelerate_auto=False, device=CaptionConfig.device, quiet=False, **kwargs):
+def pipeline_task(config: CaptionConfig, **kwargs):
     """
     Load a simple task sequence with model using the Transformers pipeline.
 
-    task: the pipeline task to use (e.g., 'image-to-text')
-    model: HuggingFace model to load (e.g. Mediocreatmybest/blip2-opt-2.7b-fp16-sharded)
-    use_accelerate: whether to use the accelerate library for device_map (e.g. True/False)
-    device: int or str, the device to use for processing.
-                   If use_accelerate is True, this will switch to device_map="auto"
+    config: An instance of the CaptionConfig.
+    quiet: if False, logging information will be printed.
     kwargs: any other pipeline parameter
     return: the pipe
-    TODO: use config class to remove some of the kwargs
     """
-    if task not in TASKS:
-        raise ValueError(f"Invalid task: {task}")
+    if config.task not in TASKS:
+        raise ValueError(f"Invalid task: {config.task}")
 
-    if use_accelerate_auto:
+    # Initialize pipeline arguments dictionary
+    pipeline_args = {}
+
+    if config.use_accelerate_auto:
         # Switch device to auto unless cpu is forced
-        device = "auto" if use_accelerate_auto and device != "cpu" else device
-
-        # Now Set captioner function
-        #model_kwargs={f"load_in_8bit": True, "torch_dtype": torch.float16} # leaving until I can work this out
-        pipeline_task = pipeline(task=task, model=model, device_map=device, **kwargs)
-
-    # loading without Accelerate device mapping
+        dev_map = "auto" if config.use_accelerate_auto and config.device != "cpu" else config.device
+        pipeline_args["device_map"] = dev_map
     else:
-        pipeline_task = pipeline(task=task, model=model, device=device, **kwargs)
+        pipeline_args["device"] = config.device
+        # Fix for CUDA:0 from cuda for pipeline
+        if pipeline_args.get("device", "") == "cuda":
+            pipeline_args["device"] = "cuda:0"
 
-    if quiet is False:
-        logging.info('Loading %s and %s in pipeline...', task, model)
+    # Add the kwargs to the **x_args dictionary
+    pipeline_args.update(kwargs)
+
+    # Create the pipeline with the arguments
+    run_task = pipeline(task=config.task,
+                        max_new_tokens=config.max_tokens,
+                        **pipeline_args)
+
+    if config.quiet is False:
+        logging.info('Loading %s and %s in pipeline...', config.task, config.model_id)
         logging.info('Total CUDA devices available: %d', torch.cuda.device_count())
 
-    return pipeline_task
+    return run_task
+
 
 
 def load_caption_model(config: CaptionConfig):
