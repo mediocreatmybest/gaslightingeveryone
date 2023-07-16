@@ -1,5 +1,8 @@
+""" argparse module for cli arguments, loggging for INFO messages"""
 import argparse
+import logging
 import os
+import sys
 from os.path import splitext
 
 import torch
@@ -7,18 +10,23 @@ from tqdm import tqdm
 from transformers import pipeline
 
 from func_os_walk_plus import os_walk_plus
-from func_transformers import CaptionConfig, pipeline_task, load_caption_model, caption_generate
+from func_transformers import (CaptionConfig, caption_generate,
+                               load_caption_model, pipeline_task)
+
+# Set our loggins level to INFO
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Maybe this will work one day.
 #from optimum.pipelines import pipeline
 
-# An attempt to make simple captions to text in a recursive way using pipeline or processors with Transformers
+# An attempt to make simple captions using pipeline or Transformers
 # Find/add/remove additional models. Added some community created models.
 CAPTION_MODELS = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
     'blip2-2.7b-coco': 'Salesforce/blip2-opt-2.7b-coco',
-    'blip2-2.7b': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded', # Duplicated and uploaded tokenizer
+    'blip2-2.7b': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded',
     'blip2-6.7b': 'ybelkada/blip2-opt-6.7b-fp16-sharded',
     'blip2-6.7b-coco': 'trojblue/blip2-opt-6.7b-coco-fp16',
     'vit-gpt2': 'nlpconnect/vit-gpt2-image-captioning',
@@ -175,10 +183,8 @@ def main():
 
     if args.clip_model is None and args.model is None and args.hf_override is None:
         print('Please select a model. exiting...')
-        exit()
-
-    # Load pipeline / model
-    # Maybe switch to list and store captions and zip them with file in future, note: Better way to do batch? no doubt...
+        logging.info('No model was selected, exiting...')
+        sys.exit()
 
     # Set device to cuda if available, else cpu or user sets cpu offload
     if args.cpu_offload:
@@ -199,12 +205,9 @@ def main():
     config = CaptionConfig(model_id=caption_model,
                        pipeline=args.use_pipeline, quiet=args.quiet,
                        xbit=args.xbits, use_accelerate_auto=args.use_accelerate,
-                       min_tokens=args.min_tokens, max_tokens=args.max_tokens)
+                       min_tokens=args.min_tokens, max_tokens=args.max_tokens, device=device,)
 
-
-
-
-    # Load model section
+    # Load models
     # Pipeline example from hugging face
     if args.model or args.hf_override:
         if args.use_pipeline and args.xbits:
@@ -226,7 +229,7 @@ def main():
                             use_fast=True)
         else:
             print('Loading captioning model...')
-            processor, model = load_caption_model(config, device)
+            processor, model = load_caption_model(config)
 
 
     # Load CLIP zero shot if selected
@@ -234,10 +237,13 @@ def main():
         # Read the file and split it line by line
         print('Loading zero-shot-image-classification task in pipeline...')
         zshot_cat = read_zshot(args.clip_cat)
-        zshot = pipeline(task="zero-shot-image-classification", model=ZEROSHOT_MODELS[args.clip_model], device=device, use_fast=True)
+        zshot = pipeline(task="zero-shot-image-classification",
+                         model=ZEROSHOT_MODELS[args.clip_model], device=device, use_fast=True)
 
     # Use os walk plus to allow depth and file filtering
-    for path, _, files in os_walk_plus(args.directory, file_filter=('.jpg', '.jpeg', '.png', '.webp'), max_depth=args.depth):
+    for path, _, files in os_walk_plus(args.directory,
+                                       file_filter=('.jpg', '.jpeg', '.png', '.webp'),
+                                       max_depth=args.depth):
 
         # Batch processing logic, well. I guess I'd call this logic
         batches = [files[i:i+args.batch_count] for i in range(0, len(files), args.batch_count)]
@@ -266,17 +272,22 @@ def main():
                 # check if using pipeline method
                 if args.use_pipeline and not args.xbits:
                     if args.model or args.hf_override:
-                        captions = pipeline_caption_batch(captioner, [image_paths[i] for i in images_to_process],
+                        captions = pipeline_caption_batch(captioner,
+                                                          [image_paths[i] for i in images_to_process],
                                                           quiet=args.quiet)
                 else:
                     if args.model or args.hf_override:
-                        captions = caption_generate(config, images=[image_paths[i] for i in images_to_process],
+                        captions = caption_generate(config,
+                                                    images=[image_paths[i] for i in images_to_process],
                                                     processor=processor,
-                                                    model=model, device=device)
+                                                    model=model)
 
                 # Add zero-shot classifications if selected
                 if args.clip_model:
-                    zshot_cats = zshot_images_batch(zshot, [image_paths[i] for i in images_to_process], candidate_labels=zshot_cat, confidence=confidence, quiet=args.quiet)
+                    zshot_cats = zshot_images_batch(zshot,
+                                                    [image_paths[i] for i in images_to_process],
+                                                    candidate_labels=zshot_cat,
+                                                    confidence=confidence, quiet=args.quiet)
 
                 # Combine captions and categories for each image
                 for i, idx in enumerate(images_to_process):
