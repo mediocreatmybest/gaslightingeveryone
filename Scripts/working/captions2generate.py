@@ -11,7 +11,7 @@ from transformers import pipeline
 
 from func_os_walk_plus import os_walk_plus
 from func_transformers import (CaptionConfig, caption_generate,
-                               load_caption_model, pipeline_task)
+                               load_caption_model, pipeline_caption_batch, pipeline_task)
 
 # Set our loggins level to INFO
 logging.basicConfig(level=logging.INFO,
@@ -29,14 +29,11 @@ CAPTION_MODELS = {
     'blip2-2.7b': 'Mediocreatmybest/blip2-opt-2.7b-fp16-sharded',
     'blip2-6.7b': 'ybelkada/blip2-opt-6.7b-fp16-sharded',
     'blip2-6.7b-coco': 'trojblue/blip2-opt-6.7b-coco-fp16',
-    'vit-gpt2': 'nlpconnect/vit-gpt2-image-captioning',
-    'vit-gpt2-coco-en': 'ydshieh/vit-gpt2-coco-en',
     'git-base': 'microsoft/git-base',
     'git-large': 'microsoft/git-large',
     'git-base-coco': 'microsoft/git-base-coco',
     'git-large-coco': 'microsoft/git-large-coco',
-    'git-large-r-coco': 'microsoft/git-large-r-coco',
-    'caption-gen': 'captioner/caption-gen',
+    'git-large-r-coco': 'microsoft/git-large-r-coco'
 }
 # Need to find and add additional zshot models that are useful
 ZEROSHOT_MODELS = {
@@ -45,21 +42,9 @@ ZEROSHOT_MODELS = {
 }
 
 
-# Batch caption attempt, only seems useful with GPU
-def pipeline_caption_batch(captioner, image_paths, quiet=False):
-    captions = captioner(image_paths)
-    result = []
-    for i, caption in enumerate(captions):
-        stripped_caption = str(caption[0]['generated_text']).strip()
-        if not quiet:
-            print(f'\nFile: {image_paths[i]}')
-            print('Caption: ', stripped_caption)
-        result.append(stripped_caption)
-    return result
-
-
 # Zero shot list
 def read_zshot(file_path):
+    """ Read a file into a list """
     lines = []
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
@@ -69,6 +54,7 @@ def read_zshot(file_path):
 
 # add some docstrings
 def zshot_images_batch(zshot, image_paths, candidate_labels, confidence, quiet=False):
+    """ Zero shot image classification for a batch of images """
     confidence = float(confidence)  # Make sure this is a float
     classifications = zshot(image_paths, candidate_labels=candidate_labels)
     result = []
@@ -94,6 +80,7 @@ def does_file_exist(file_path):
 
 # Enable write,append,prepend,skip options (remove skip at some point)
 def save_file(file_path, data, encoding='utf-8', mode='write', separators=True, debug=False):
+    """ saves a file """
     # Check if debug mode is enabled
     if debug:
         print("Save location:", file_path)
@@ -271,8 +258,7 @@ def main():
                 if args.use_pipeline:
                     if args.model or args.hf_override:
                         captions = pipeline_caption_batch(captioner,
-                                                          [image_paths[i] for i in images_to_process],
-                                                          quiet=args.quiet)
+                                                          [image_paths[i] for i in images_to_process])
                 else:
                     if args.model or args.hf_override:
                         captions = caption_generate(config,
