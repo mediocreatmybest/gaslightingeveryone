@@ -26,15 +26,3 @@ Some random scripts located in [Misc. Scripts](https://github.com/mediocreatmybe
 
 Located in [git folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Scripts/git)
 Some handy options to bulk git pull folders in Linux and Windows. Just copy one into base directory of git repository.
-
-## Docker (Unmaintained)
-
-Sitting in the [containers folder](https://github.com/mediocreatmybest/gaslightingeveryone/tree/main/Containers)
-
-Docker files that have been created for testing, eth crypto wallets, machine learning but these are old and out of date.
-At some stage I do need to go back and update these, or delete.
-
-## Google Colab (No doubt broken, needs to be updated)
-
-Slow Stable Diffusion is just a modified Colab file located in the Colab folder, it is a modified colab from TheLastBens Fast_Stable_Diffusion_AUTOMATIC1111.
-Testing only but seem to work well enough.
