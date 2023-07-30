@@ -1,5 +1,5 @@
-""" argparse module for cli arguments, loggging for INFO messages"""
 import argparse
+import configparser
 import logging
 import os
 import sys
@@ -11,7 +11,8 @@ from transformers import pipeline
 
 from func_os_walk_plus import os_walk_plus
 from func_transformers import (CaptionConfig, caption_generate,
-                               load_caption_model, pipeline_caption_batch, pipeline_task)
+                               load_caption_model, pipeline_caption_batch,
+                               pipeline_task)
 
 # Set our loggins level to INFO
 logging.basicConfig(level=logging.INFO,
@@ -128,7 +129,11 @@ def save_file(file_path, data, encoding='utf-8', mode='write', separators=True, 
 
 def main():
     """ Main function """
+
+    # Set argparse defaults
     parser = argparse.ArgumentParser(description='Caption images with the Transformers Pipeline')
+
+    # Directory, files, depth, saving method and config
     parser.add_argument('directory', type=str,
                         help='Directory to search for images')
     parser.add_argument('--depth', type=int, metavar='1',
@@ -142,10 +147,9 @@ def main():
                         help='Skip existing files if found')
     parser.add_argument('--ext', type=str, default='txt', metavar='txt or caption',
                         help='Extension for the caption files')
-    parser.add_argument('--use-accelerate', action='store_true',
-                        help='Use accelerate, this can help balance across GPU/vRAM/CPU/RAM (Not all models support this e.g. BLIP1)')
-    parser.add_argument('--cpu-offload', action='store_true',
-                        help='Switches to CPU only, can be slow but allows you to use RAM for larger models')
+    parser.add_argument("--config", type=str, metavar="/path/to/config.ini", help="Use a configuration file")
+
+    # Models, confidence, tokens, and other settings
     parser.add_argument('--model', type=str, choices=list(CAPTION_MODELS.keys()),
                         help='Model to use for captioning')
     parser.add_argument('--hf-override', type=str,
@@ -155,7 +159,7 @@ def main():
                         help='Model to use for CLIP/Zero Shot Category')
     parser.add_argument('--clip-cat', type=str, metavar='/path/textfile.txt',
                         help='File to CLIP/Zero Shot Category file')
-    parser.add_argument('--clip-confidence', type=str, default=0.65, metavar='0.70', # set too high?
+    parser.add_argument('--clip-confidence', type=str, default=0.65, metavar='0.65', # set too high?
                         help='Categories with a score less than the set confidence level wont be included in final text output')
     parser.add_argument('--max-tokens', type=int, default=25, metavar='25', # max tokens for captions
                         help='The maximum number of tokens for the caption model')
@@ -163,14 +167,50 @@ def main():
                         help='The minimum number of tokens for the caption model (Ignored with pipeline method)')
     parser.add_argument('--batch-count', default=1, type=int, metavar='2',
                         help='How many images to run in a batch, default is 1')
+    parser.add_argument('--question', type=str,
+                        metavar='Can you describe this image based on its art style and subject matter as concise as possible?',
+                        help='Ask the model a question about the image. (Does not work with all models or that well really...)')
+
+    # Model functions and methods
     parser.add_argument('--use-pipeline', action='store_true',
                         help='Use pipeline method for the caption model')
+    parser.add_argument('--use-accelerate', action='store_true',
+                        help='Use accelerate, this can help balance across GPU/vRAM/CPU/RAM (Not all models support this e.g. BLIP1)')
+    parser.add_argument('--cpu-offload', action='store_true',
+                        help='Switches to CPU only, can be slow but allows you to use RAM for larger models')
     parser.add_argument('--xbits', type=str, choices=['4bit', '8bit'], default=None,
                         help='Set 4 or 8 bit loading for captioning to help reduce vram usage (not supported in pipeline or cpu-offload)')
+
+    # Other settings
     parser.add_argument('--quiet', action='store_true',
                         help='Supresses caption output')
     args = parser.parse_args()
 
+
+    # Read the configuration file
+    config = configparser.ConfigParser()
+
+    # Check if a config file was provided before trying to read it
+    if args.config is not None:
+        config.read(args.config)
+    # Use captioning section within the config file
+    if config.has_section('captioning'):
+        config_defaults = dict(config.items('captioning'))
+    else:
+        config_defaults = {}
+    # Go through the config file and convert all values to the correct type
+    args_defaults = {}
+    for key, value in config_defaults.items():
+        if value.isdigit():
+            args_defaults[key] = int(value)
+        else:
+            args_defaults[key] = value
+
+    # Merge the configuration file with the command line arguments
+    # Hard to read, maybe move into separate variables?
+    args = argparse.Namespace(**{**args_defaults, **vars(args)})
+
+    # Exit if no model was selected
     if args.clip_model is None and args.model is None and args.hf_override is None:
         logging.info('No model was selected, exiting...')
         sys.exit()
@@ -264,7 +304,7 @@ def main():
                         captions = caption_generate(config,
                                                     images=[image_paths[i] for i in images_to_process],
                                                     processor=processor,
-                                                    model=model)
+                                                    model=model, prompt_question=args.question)
 
                 # Add zero-shot classifications if selected
                 if args.clip_model:

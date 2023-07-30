@@ -10,6 +10,16 @@ from PIL import Image
 from transformers import (AutoModelForCausalLM, AutoProcessor,
                           Blip2ForConditionalGeneration,
                           BlipForConditionalGeneration, pipeline)
+
+# As instruct blip is only available in the latest transformers version, we need to handle the import error
+try:
+    from transformers import InstructBlipForConditionalGeneration, InstructBlipProcessor
+    instructblip_imported = True
+
+except ImportError:
+    instructblip_imported = False
+
+
 # Set our loggins level to INFO
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -82,6 +92,7 @@ def pipeline_task(config: CaptionConfig, **kwargs):
 
     # Create the pipeline with the arguments
     run_task = pipeline(task=config.task,
+                       #min_new_tokens=config.min_tokens,
                         max_new_tokens=config.max_tokens,
                         **pipeline_args)
 
@@ -138,6 +149,13 @@ def load_caption_model(config: CaptionConfig):
         model = BlipForConditionalGeneration.from_pretrained(config.model_id, **model_args)
         if not config.quiet:
             logging.info("Loading BLIP model")
+
+    # Load InstructBLIP model and processor
+    elif model_check[1].startswith("instructblip"):
+        processor = InstructBlipProcessor.from_pretrained(config.model_id, **processor_args)
+        model = InstructBlipForConditionalGeneration.from_pretrained(config.model_id, **model_args)
+        if not config.quiet:
+            logging.info("Loading InstructBLIP model")
 
     elif model_check[1].startswith("git-"):
         processor = AutoProcessor.from_pretrained(config.model_id, **processor_args)
