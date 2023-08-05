@@ -50,17 +50,18 @@ class CaptionConfig:
     repetition_penalty: Optional[float] = None
     kwargs: Optional[dict] = None
     device: str = None
-    pipeline: bool = True
+    pipeline: bool = None
     quiet: bool = False
     task: str = "image-to-text"
-    min_tokens: int = 8
-    max_tokens: int = 30
+    min_tokens: int = None
+    max_tokens: int = None
     use_accelerate_auto: bool = False
 
     def __post_init__(self):
     # Setting here the default device to allow us to override it with the config
         if self.device is None:
-            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            #self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            pass
 
 def pipeline_task(config: CaptionConfig, **kwargs):
     """
