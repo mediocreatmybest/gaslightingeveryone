@@ -3,6 +3,16 @@ import streamlit as st
 import subprocess
 from pathlib import Path
 
+
+# Global dictionary for accepted script types
+# Available script_types
+script_types = {
+    'Python': ['.py'],
+    'Example': ['.example'],
+    'Extra Example': ['.123', '.456']
+}
+
+
 def extract_arguments(script_content):
     """
     Extracts the arguments from a script that uses argparse.
@@ -76,19 +86,28 @@ def extract_arguments(script_content):
     return args_list
 
 
-def list_scripts(directory, exclude_patterns=None):
-    """
-    Lists all the Python scripts in a directory, excluding patterns if specified.
+def list_scripts(directory, exclude_patterns=None, extensions=None):
+   """
+   Lists all the scripts of the specified types in a directory, excluding patterns if specified.
 
-    :param directory: Path object for the directory.
-    :param exclude_patterns: List of string patterns to exclude.
-    :return: List of Path objects for Python scripts.
-    """
-    if exclude_patterns:
-         exclude_regex = re.compile('|'.join(exclude_patterns))
-    else:
-         exclude_regex = None
-    return [f for f in directory.iterdir() if f.is_file() and f.name.endswith('.py') and (not exclude_regex or not exclude_regex.search(f.name))]
+   :param directory: Path object for the directory.
+   :param exclude_patterns: List of string patterns to exclude.
+   :param extensions: List of file extensions to include.
+   :return: List of Path objects for the specified scripts.
+   """
+   if exclude_patterns:
+       exclude_regex = re.compile('|'.join(exclude_patterns))
+   else:
+       exclude_regex = None
+
+   # If extensions is None, set a default extension (e.g., '.xyz')
+   if extensions is None:
+       extensions = ['.xyz']
+
+   # Convert the list to a set for efficient lookup
+   extensions = set(extensions)
+
+   return [f for f in directory.iterdir() if f.is_file() and f.suffix.lower() in extensions and (not exclude_regex or not exclude_regex.search(f.name))]
 
 def create_input_fields(arguments):
     """
@@ -100,15 +119,21 @@ def create_input_fields(arguments):
     inputs = {}
     for arg in arguments:
         if arg['is_store_true'] or arg['is_store_false'] or arg['type'] == 'bool':
-            inputs[arg['name']] = st.checkbox(arg['name'], value=bool(arg['default']))
+            inputs[arg['name']] = st.checkbox(arg['name'],
+                                              value=bool(arg['default']),
+                                              help=arg['help'] or '')
         elif arg['choices']:
             choices = [""] + [choice.strip("' ") for choice in arg['choices'].split(',')]
             default_choice = arg['default'].strip("' ") if arg['default'] else None
-            inputs[arg['name']] = st.selectbox(arg['name'], choices, index=choices.index(default_choice) if default_choice else 0)
+            inputs[arg['name']] = st.selectbox(arg['name'],
+                                               choices,
+                                               index=choices.index(default_choice) if default_choice else 0, help=arg['help'] or '')
 
         else:
             default_value = arg['default'].strip("' ") if arg['default'] else ""
-            inputs[arg['name']] = st.text_input(arg['name'], value=default_value)
+            inputs[arg['name']] = st.text_input(arg['name'],
+                                                value=default_value,
+                                                help=arg['help'] or '')
 
     return inputs
 
@@ -119,7 +144,7 @@ def generate_streamlit_interface(script_path):
 
     :param script_path: Path object pointing to the script.
     """
-    with open(script_path) as file:
+    with open(script_path, encoding='utf-8') as file:
         script_content = file.read()
     arguments = extract_arguments(script_content)
     st.text(arguments)  # Debug line to print the arguments
@@ -175,11 +200,23 @@ def main():
     """
     Main app to launch the Streamlit app.
     """
-    st.title("Run Python Scripts")
+    # Top Title
+    st.title("ScriptRunner")
+
+    # Main script path is not recursive
     scripts_directory = Path("tools")
+    # Exclude patterns of files, func, etc.
     exclude_patterns = ["func*", "test_func*"]
-    available_scripts = list_scripts(scripts_directory, exclude_patterns)
+
+    # Create a Streamlit sidebar with menu items
+    script_type = st.sidebar.selectbox('Select script type', list(script_types.keys()), index=0)
+
+    # Get the list of scripts from dictionary with get method
+    available_scripts = list_scripts(scripts_directory, exclude_patterns, script_types.get(script_type))
+    st.sidebar.text(f"Selected script type: {script_type}")
+    st.sidebar.text(f"Available scripts: {[script.name for script in available_scripts]}")
     selected_script_name = st.selectbox("Select script to run:", [script.name for script in available_scripts])
+
     if selected_script_name:
         selected_script_path = scripts_directory / selected_script_name
         generate_streamlit_interface(selected_script_path)

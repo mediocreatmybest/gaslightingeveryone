@@ -1,5 +1,6 @@
 tools/test*
 Scripts/working/test*
+test*
 *.pyc
 *.otf
 .vscode/
