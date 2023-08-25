@@ -147,21 +147,32 @@ def generate_streamlit_interface(script_path):
     with open(script_path, encoding='utf-8') as file:
         script_content = file.read()
     arguments = extract_arguments(script_content)
-    st.text(arguments)  # Debug line to print the arguments
+
+    # Add info_box variable to collect any info for later
+    info_box = ""
+    # Set info_box to the string if "" otherwise add to it
+    if info_box == "":
+        info_box = arguments
+    else:
+        info_box += arguments
+    # End info box
+
     inputs = create_input_fields(arguments)
     positional_args_order = [arg['name'] for arg in arguments if arg['arg_type'] == 'positional']
     if st.button("Run"):
         stdout, stderr = run_script(script_path, inputs, arguments, positional_args_order)
-        st.text("Output:")
+        st.text("Output:\n")
         st.code(stdout)
         if stderr:
             st.error(stderr)
     if st.button("Help"):
         cmd_args = ["python", str(script_path), "--help"]
         result = subprocess.run(cmd_args, capture_output=True, text=True)
-        st.text("Help:")
+        st.text("Help:\n")
         st.code(result.stdout)
 
+    #concat any info and pass to the return
+    return info_box
 
 def run_script(script_path, inputs, arguments, positional_args_order):
     """
@@ -207,6 +218,8 @@ def main():
     scripts_directory = Path("tools")
     # Exclude patterns of files, func, etc.
     exclude_patterns = ["func*", "test_func*"]
+    # Create empty list for info_box
+    info_box = []
 
     # Create a Streamlit sidebar with menu items
     script_type = st.sidebar.selectbox('Select script type', list(script_types.keys()), index=0)
@@ -214,12 +227,27 @@ def main():
     # Get the list of scripts from dictionary with get method
     available_scripts = list_scripts(scripts_directory, exclude_patterns, script_types.get(script_type))
     st.sidebar.text(f"Selected script type: {script_type}")
-    st.sidebar.text(f"Available scripts: {[script.name for script in available_scripts]}")
+    #st.sidebar.text(f"Available scripts: {[script.name for script in available_scripts]}")
+
     selected_script_name = st.selectbox("Select script to run:", [script.name for script in available_scripts])
 
     if selected_script_name:
         selected_script_path = scripts_directory / selected_script_name
-        generate_streamlit_interface(selected_script_path)
+        args_info = generate_streamlit_interface(selected_script_path)
+
+        # append any info together with new lines for info_box
+        info_box.append('\nListed arguments are:\n')
+        info_box.append(args_info)
+
+        # append the scripts info to the info_box list
+        info_box.append('\nAvailable scripts are:\n')
+        info_box.append([script.name for script in available_scripts])
+
+    # Set expander on the sidebar
+    with st.sidebar:
+        with st.expander("Info"):
+            st.text('\n')
+            st.write(info_box)
 
 if __name__ == "__main__":
     main()
