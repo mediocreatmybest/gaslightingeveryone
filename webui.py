@@ -6,14 +6,27 @@ from pathlib import Path
 
 # Global dictionary for accepted script types
 # Available script_types
+# Global dictionary for accepted script types and their interpreters
 script_types = {
-    'Python': ['.py'],
-    'Example': ['.example'],
-    'Extra Example': ['.123', '.456']
+    'Python': {
+        'extensions': ['.py'],
+        'interpreter': 'python'
+    },
+    'Perl': {
+        'extensions': ['.pl'],
+        'interpreter': 'perl'
+    },
+    'Batch': {
+        'extensions': ['.bat'],
+        'interpreter': None  # Batch files are executable on their own in Windows
+    },
+    'PowerShell': {
+        'extensions': ['.ps1'],
+        'interpreter': 'powershell'
+    }
 }
 
-
-def extract_arguments(script_content):
+def extract_arguments(script_content, script_type=None):
     """
     Extracts the arguments from a script that uses argparse.
     Args:
@@ -32,84 +45,87 @@ def extract_arguments(script_content):
                  - is_store_true: True if the argument has the 'store_true' action, False otherwise.
                  - is_store_false: True if the argument has the 'store_false' action, False otherwise.
     """
-    argparse_section = re.findall(r'parser\.add_argument\((.+?)\)', script_content, re.DOTALL)
-    args_list = []
-    for argument in argparse_section:
-         arg_name_match = re.search(r'(\'(.*?)\'|\"(.*?)\")', argument)
-         arg_type_match = re.search(r'type=(.*?),', argument)
-         arg_default_match = re.search(r'default=(.*?)(,|$)', argument)
-         arg_action_match = re.search(r'action=(\'|")(.*?)(\'|")(|$)', argument)
-         arg_choices_match = re.search(r'choices=\[(.*?)\]', argument)
-         arg_help_match = re.search(r'help=(\'(.*?)\'|\"(.*?)\")', argument)
-         arg_metavar_match = re.search(r'metavar=(\'(.*?)\'|\"(.*?)\")', argument)
+    # Start with Python
+    if script_type == "Python":
 
-         if arg_name_match is None:
-              continue
+        argparse_section = re.findall(r'parser\.add_argument\((.+?)\)', script_content, re.DOTALL)
+        args_list = []
+        for argument in argparse_section:
+            arg_name_match = re.search(r'(\'(.*?)\'|\"(.*?)\")', argument)
+            arg_type_match = re.search(r'type=(.*?),', argument)
+            arg_default_match = re.search(r'default=(.*?)(,|$)', argument)
+            arg_action_match = re.search(r'action=(\'|")(.*?)(\'|")(|$)', argument)
+            arg_choices_match = re.search(r'choices=\[(.*?)\]', argument)
+            arg_help_match = re.search(r'help=(\'(.*?)\'|\"(.*?)\")', argument)
+            arg_metavar_match = re.search(r'metavar=(\'(.*?)\'|\"(.*?)\")', argument)
 
-         name = arg_name_match.group(2)
-         arg_type = None
-         if name.startswith('-'):
-             if name.startswith('--'):
-                 arg_type = 'optional'
-             else:
-                 arg_type = 'flag'
-         else:
-             arg_type = 'positional'
+            if arg_name_match is None:
+                continue
 
-         arg_default = arg_default_match.group(1) if arg_default_match and arg_default_match.group(1) not in ('None', None) else None
-         arg_action = arg_action_match.group(2) if arg_action_match else None
-         arg_choices = arg_choices_match.group(1) if arg_choices_match else None
-         arg_help = arg_help_match.group(2) if arg_help_match else None
-         arg_metavar = arg_metavar_match.group(2) if arg_metavar_match else None
+            name = arg_name_match.group(2)
+            arg_type = None
+            if name.startswith('-'):
+                if name.startswith('--'):
+                    arg_type = 'optional'
+                else:
+                    arg_type = 'flag'
+            else:
+                arg_type = 'positional'
 
-         is_store_true = False
-         is_store_false = False
-         if arg_action == 'store_true':
-             is_store_true = True
-         elif arg_action == 'store_false':
-             is_store_false = True
+            arg_default = arg_default_match.group(1) if arg_default_match and arg_default_match.group(1) not in ('None', None) else None
+            arg_action = arg_action_match.group(2) if arg_action_match else None
+            arg_choices = arg_choices_match.group(1) if arg_choices_match else None
+            arg_help = arg_help_match.group(2) if arg_help_match else None
+            arg_metavar = arg_metavar_match.group(2) if arg_metavar_match else None
 
-         arg_details = {
-              'name': name,
-              'type': arg_type_match.group(1) if arg_type_match else None,
-              'default': arg_default,  # Keeps the argument even if default is None or 'None'
-              'action': arg_action,
-              'choices': arg_choices,
-              'help': arg_help,
-              'metavar': arg_metavar,
-              'arg_type': arg_type,
-              'is_store_true': is_store_true,
-              'is_store_false': is_store_false
-         }
+            is_store_true = False
+            is_store_false = False
+            if arg_action == 'store_true':
+                is_store_true = True
+            elif arg_action == 'store_false':
+                is_store_false = True
 
-         args_list.append(arg_details)
-    return args_list
+            arg_details = {
+                'name': name,
+                'type': arg_type_match.group(1) if arg_type_match else None,
+                'default': arg_default,  # Keeps the argument even if default is None or 'None'
+                'action': arg_action,
+                'choices': arg_choices,
+                'help': arg_help,
+                'metavar': arg_metavar,
+                'arg_type': arg_type,
+                'is_store_true': is_store_true,
+                'is_store_false': is_store_false
+            }
+            args_list.append(arg_details)
+
+        return args_list
+
+    # For script types without a defined extraction method, return a generic input
+    return [{'name': 'Input', 'type': None, 'default': '', 'help': 'Provide input for the script', 'arg_type': 'optional'}]
 
 
 def list_scripts(directory, exclude_patterns=None, extensions=None):
-   """
-   Lists all the scripts of the specified types in a directory, excluding patterns if specified.
+    """
+    Lists all the scripts of the specified types in a directory, excluding patterns if specified.
 
-   :param directory: Path object for the directory.
-   :param exclude_patterns: List of string patterns to exclude.
-   :param extensions: List of file extensions to include.
-   :return: List of Path objects for the specified scripts.
-   """
-   if exclude_patterns:
-       exclude_regex = re.compile('|'.join(exclude_patterns))
-   else:
-       exclude_regex = None
+    :param directory: Path object for the directory.
+    :param exclude_patterns: List of string patterns to exclude.
+    :param extensions: List of file extensions to include.
+    :return: List of Path objects for the specified scripts.
+    """
+    if exclude_patterns:
+        exclude_regex = re.compile('|'.join(exclude_patterns))
+    else:
+        exclude_regex = None
 
-   # If extensions is None, set a default extension (e.g., '.xyz')
-   if extensions is None:
-       extensions = ['.xyz']
+    # Convert the list to a set for efficient lookup
+    extensions = set(extensions)
 
-   # Convert the list to a set for efficient lookup
-   extensions = set(extensions)
+    return [f for f in directory.iterdir() if f.is_file() and f.suffix.lower() in extensions and (not exclude_regex or not exclude_regex.search(f.name))]
 
-   return [f for f in directory.iterdir() if f.is_file() and f.suffix.lower() in extensions and (not exclude_regex or not exclude_regex.search(f.name))]
 
-def create_input_fields(arguments):
+def create_input_fields(arguments, script_type=None):
     """
     Creates Streamlit input fields based on the arguments.
 
@@ -117,28 +133,34 @@ def create_input_fields(arguments):
     :return: Dictionary of input values.
     """
     inputs = {}
-    for arg in arguments:
-        if arg['is_store_true'] or arg['is_store_false'] or arg['type'] == 'bool':
-            inputs[arg['name']] = st.checkbox(arg['name'],
-                                              value=bool(arg['default']),
-                                              help=arg['help'] or '')
-        elif arg['choices']:
-            choices = [""] + [choice.strip("' ") for choice in arg['choices'].split(',')]
-            default_choice = arg['default'].strip("' ") if arg['default'] else None
-            inputs[arg['name']] = st.selectbox(arg['name'],
-                                               choices,
-                                               index=choices.index(default_choice) if default_choice else 0, help=arg['help'] or '')
 
-        else:
-            default_value = arg['default'].strip("' ") if arg['default'] else ""
-            inputs[arg['name']] = st.text_input(arg['name'],
-                                                value=default_value,
+    # Start with Python input fields
+    if script_type == "Python":
+
+        for arg in arguments:
+            if arg['is_store_true'] or arg['is_store_false'] or arg['type'] == 'bool':
+                inputs[arg['name']] = st.checkbox(arg['name'],
+                                                value=bool(arg['default']),
                                                 help=arg['help'] or '')
+            elif arg['choices']:
+                choices = [""] + [choice.strip("' ") for choice in arg['choices'].split(',')]
+                default_choice = arg['default'].strip("' ") if arg['default'] else None
+                inputs[arg['name']] = st.selectbox(arg['name'],
+                                                choices,
+                                                index=choices.index(default_choice) if default_choice else 0, help=arg['help'] or '')
+
+            else:
+                default_value = arg['default'].strip("' ") if arg['default'] else ""
+                inputs[arg['name']] = st.text_input(arg['name'],
+                                                    value=default_value,
+                                                    help=arg['help'] or '')
+
+        return inputs
 
     return inputs
 
 
-def generate_streamlit_interface(script_path):
+def generate_streamlit_interface(script_path, script_type):
     """
     Generates the entire Streamlit interface for the script.
 
@@ -146,7 +168,8 @@ def generate_streamlit_interface(script_path):
     """
     with open(script_path, encoding='utf-8') as file:
         script_content = file.read()
-    arguments = extract_arguments(script_content)
+    # Get the arguments from the script / pass on script_type
+    arguments = extract_arguments(script_content, script_type)
 
     # Add info_box variable to collect any info for later
     info_box = ""
@@ -157,7 +180,7 @@ def generate_streamlit_interface(script_path):
         info_box += arguments
     # End info box
 
-    inputs = create_input_fields(arguments)
+    inputs = create_input_fields(arguments, script_type)
     positional_args_order = [arg['name'] for arg in arguments if arg['arg_type'] == 'positional']
     if st.button("Run"):
         stdout, stderr = run_script(script_path, inputs, arguments, positional_args_order)
@@ -174,7 +197,7 @@ def generate_streamlit_interface(script_path):
     #concat any info and pass to the return
     return info_box
 
-def run_script(script_path, inputs, arguments, positional_args_order):
+def run_script(script_path, inputs, arguments, script_type, positional_args_order):
     """
     Runs the script using the provided inputs.
 
@@ -184,7 +207,9 @@ def run_script(script_path, inputs, arguments, positional_args_order):
     :param positional_args_order: List of positional arguments in order.
     :return: stdout and stderr of the script execution.
     """
-    cmd_args = ["python", str(script_path)]  # Add "python3" to execute the script using Python
+    interpreter = script_types[script_type]['interpreter']
+    cmd_args = [interpreter, str(script_path)] if interpreter else [str(script_path)]
+    #cmd_args = ["python", str(script_path)]  # Add "python3" to execute the script using Python
     for key in positional_args_order:  # Add positional arguments first
         value = inputs[key]
         if value:
@@ -221,11 +246,11 @@ def main():
     # Create empty list for info_box
     info_box = []
 
-    # Create a Streamlit sidebar with menu items
+    # Create a Streamlit sidebar with menu items / set script_type from dictionary
     script_type = st.sidebar.selectbox('Select script type', list(script_types.keys()), index=0)
 
     # Get the list of scripts from dictionary with get method
-    available_scripts = list_scripts(scripts_directory, exclude_patterns, script_types.get(script_type))
+    available_scripts = list_scripts(scripts_directory, exclude_patterns, script_types[script_type]['extensions'])
     st.sidebar.text(f"Selected script type: {script_type}")
     #st.sidebar.text(f"Available scripts: {[script.name for script in available_scripts]}")
 
@@ -233,7 +258,8 @@ def main():
 
     if selected_script_name:
         selected_script_path = scripts_directory / selected_script_name
-        args_info = generate_streamlit_interface(selected_script_path)
+        # Pass args to the generate_streamlit_interface function including script_type
+        args_info = generate_streamlit_interface(selected_script_path, script_type)
 
         # append any info together with new lines for info_box
         info_box.append('\nListed arguments are:\n')
