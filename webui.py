@@ -12,18 +12,18 @@ script_types = {
         'extensions': ['.py'],
         'interpreter': 'python'
     },
-    'Perl': {
-        'extensions': ['.pl'],
-        'interpreter': 'perl'
-    },
+#    'Perl': {
+#        'extensions': ['.pl'],
+#        'interpreter': 'perl'
+#    },
     'Batch': {
-        'extensions': ['.bat'],
-        'interpreter': None  # Batch files are executable on their own in Windows
+        'extensions': ['.bat', '.cmd'],
+        'interpreter': 'cmd /c'
     },
-    'PowerShell': {
-        'extensions': ['.ps1'],
-        'interpreter': 'powershell'
-    }
+#    'PowerShell': {
+#        'extensions': ['.ps1'],
+#        'interpreter': 'powershell'
+#    }
 }
 
 def extract_arguments(script_content, script_type=None):
@@ -196,10 +196,11 @@ def generate_streamlit_interface(script_path, script_type):
     elif script_type == 'Batch' or script_type == 'PowerShell':
         help_cmd = '/?'
 
+    # Create input fields for all script types
+    inputs = create_input_fields(arguments, script_type)
+
     # Start of script_type scripts execution
     if script_type == "Python":
-
-        inputs = create_input_fields(arguments, script_type)
         positional_args_order = [arg['name'] for arg in arguments if arg['arg_type'] == 'positional']
 
         # Run button
@@ -230,11 +231,12 @@ def generate_streamlit_interface(script_path, script_type):
             if stderr:
                 st.error(stderr)
 
-    if st.button("Fallback Help"):
-        cmd_args = [script_types[script_type]['interpreter'], str(script_path), help_cmd]
-        result = subprocess.run(cmd_args, capture_output=True, text=True)
-        st.text("Help:\n")
-        st.code(result.stdout)
+# Removed till I can work this out
+#    if st.button("Fallback Help"):
+#        cmd_args = [script_types[script_type]['interpreter'], str(script_path), help_cmd]
+#        result = subprocess.run(cmd_args, capture_output=True, text=True)
+#        st.text("Help:\n")
+#        st.code(result.stdout)
 
     return info_box
 
@@ -250,6 +252,9 @@ def run_script(script_path, inputs, arguments, script_type, positional_args_orde
     """
     # Set main interpreter to use
     interpreter = script_types[script_type]['interpreter']
+    # Create empty list for cmd_args and cmd_line_args
+    cmd_args = []
+    cmd_line_args = []
 
     # Python script execution
     if script_type == "Python":
@@ -276,10 +281,13 @@ def run_script(script_path, inputs, arguments, script_type, positional_args_orde
         # build later
         pass
 
-    # Batch script execution
+    # Batch script execution / Input field I don't think is working yet
     elif script_type == "Batch":
-        # build later
-        pass
+        # Batch scripts now executed using cmd /c so we need to split the interpreter and script path
+        if 'Input' in inputs:
+            cmd_line_args = inputs['Input'].split(' ')
+        # Run with cmd_line_args at the end
+        cmd_args = script_types[script_type]['interpreter'].split() + [str(script_path)] + cmd_line_args
 
     # PowerShell script execution
     elif script_type == "PowerShell":
@@ -287,6 +295,7 @@ def run_script(script_path, inputs, arguments, script_type, positional_args_orde
         pass
 
     # Final fallback for generic input
+    # not sure this is working as intended yet as most other scripts don't have args
     else:
         # Fallback input field of "Input", update this to a better name later
         if 'Input' in inputs:
