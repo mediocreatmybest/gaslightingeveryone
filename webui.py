@@ -3,9 +3,6 @@ import streamlit as st
 import subprocess
 from pathlib import Path
 
-
-# Global dictionary for accepted script types
-# Available script_types
 # Global dictionary for accepted script types and their interpreters
 script_types = {
     'Python': {
