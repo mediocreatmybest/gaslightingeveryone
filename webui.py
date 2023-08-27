@@ -154,9 +154,17 @@ def create_input_fields(arguments, script_type=None):
                 inputs[arg['name']] = st.text_input(arg['name'],
                                                     value=default_value,
                                                     help=arg['help'] or '')
-
+        # return Python inputs
         return inputs
 
+    # Create other input fields here eventually
+
+    # For script types without any input method, return a simple text input
+    else:
+        inputs['Input'] = st.text_input('Input',
+                                        value='',
+                                        help='Command-line arguments. No arguments were found in the script.')
+    # Return generic input
     return inputs
 
 
@@ -172,32 +180,65 @@ def generate_streamlit_interface(script_path, script_type):
     arguments = extract_arguments(script_content, script_type)
 
     # Add info_box variable to collect any info for later
-    info_box = ""
-    # Set info_box to the string if "" otherwise add to it
-    if info_box == "":
-        info_box = arguments
-    else:
-        info_box += arguments
+    info_box = []
+    # Create inputs dictionary
+    inputs = {}
+
+    # Set info_box to the string, expand logic here later
+    info_box = arguments
     # End info box
 
-    inputs = create_input_fields(arguments, script_type)
-    positional_args_order = [arg['name'] for arg in arguments if arg['arg_type'] == 'positional']
-    if st.button("Run"):
-        stdout, stderr = run_script(script_path, inputs, arguments, positional_args_order)
-        st.text("Output:\n")
-        st.code(stdout)
-        if stderr:
-            st.error(stderr)
-    if st.button("Help"):
-        cmd_args = ["python", str(script_path), "--help"]
+    # Set Help arguments based on script_type
+    if script_type == "Python":
+        help_cmd = '--help'
+    elif script_type == 'Perl':
+        help_cmd = '-h'
+    elif script_type == 'Batch' or script_type == 'PowerShell':
+        help_cmd = '/?'
+
+    # Start of script_type scripts execution
+    if script_type == "Python":
+
+        inputs = create_input_fields(arguments, script_type)
+        positional_args_order = [arg['name'] for arg in arguments if arg['arg_type'] == 'positional']
+
+        # Run button
+        if st.button("Run"):
+            stdout, stderr = run_script(script_path, inputs, arguments, script_type, positional_args_order)
+
+            st.text("Output:\n")
+            st.code(stdout)
+            if stderr:
+                st.error(stderr)
+        # Help button
+        if st.button("Help"):
+            cmd_args = [script_types[script_type]['interpreter'], str(script_path), help_cmd]
+            result = subprocess.run(cmd_args, capture_output=True, text=True)
+            st.text("Help:\n")
+            st.code(result.stdout)
+
+        #concat any info and pass to the return
+        return info_box
+
+    # Fallback input field
+    if 'Input' in inputs:
+        if st.button("Run Fallback"):
+            cmd_line_args = {'Input': inputs['Input']}
+            stdout, stderr = run_script(script_path, cmd_line_args, None, script_type)
+            st.text("Output:\n")
+            st.code(stdout)
+            if stderr:
+                st.error(stderr)
+
+    if st.button("Fallback Help"):
+        cmd_args = [script_types[script_type]['interpreter'], str(script_path), help_cmd]
         result = subprocess.run(cmd_args, capture_output=True, text=True)
         st.text("Help:\n")
         st.code(result.stdout)
 
-    #concat any info and pass to the return
     return info_box
 
-def run_script(script_path, inputs, arguments, script_type, positional_args_order):
+def run_script(script_path, inputs, arguments, script_type, positional_args_order=None):
     """
     Runs the script using the provided inputs.
 
@@ -207,28 +248,57 @@ def run_script(script_path, inputs, arguments, script_type, positional_args_orde
     :param positional_args_order: List of positional arguments in order.
     :return: stdout and stderr of the script execution.
     """
+    # Set main interpreter to use
     interpreter = script_types[script_type]['interpreter']
-    cmd_args = [interpreter, str(script_path)] if interpreter else [str(script_path)]
-    #cmd_args = ["python", str(script_path)]  # Add "python3" to execute the script using Python
-    for key in positional_args_order:  # Add positional arguments first
-        value = inputs[key]
-        if value:
-            cmd_args.append(str(value))
-    for arg in arguments:  # Iterate through arguments, not inputs
-        key = arg['name']
-        value = inputs[key]
-        if key not in positional_args_order and (value or value is False):  # Skip positional arguments and None/empty strings
-            if arg['is_store_true'] and value is True:
-                cmd_args.append(key)
-            elif arg['is_store_false'] and value is False:
-                cmd_args.append(key)
-            elif not (arg['is_store_true'] or arg['is_store_false']):
-                cmd_args.append(key)
+
+    # Python script execution
+    if script_type == "Python":
+        cmd_args = [interpreter, str(script_path)] if interpreter else [str(script_path)]
+        #cmd_args = ["python", str(script_path)]  # Add "python3" to execute the script using Python
+        for key in positional_args_order:  # Add positional arguments first
+            value = inputs[key]
+            if value:
                 cmd_args.append(str(value))
+        for arg in arguments:  # Iterate through arguments, not inputs
+            key = arg['name']
+            value = inputs[key]
+            if key not in positional_args_order and (value or value is False):  # Skip positional arguments and None/empty strings
+                if arg['is_store_true'] and value is True:
+                    cmd_args.append(key)
+                elif arg['is_store_false'] and value is False:
+                    cmd_args.append(key)
+                elif not (arg['is_store_true'] or arg['is_store_false']):
+                    cmd_args.append(key)
+                    cmd_args.append(str(value))
+
+    # Perl script execution
+    elif script_type == "Perl":
+        # build later
+        pass
+
+    # Batch script execution
+    elif script_type == "Batch":
+        # build later
+        pass
+
+    # PowerShell script execution
+    elif script_type == "PowerShell":
+        # build later
+        pass
+
+    # Final fallback for generic input
+    else:
+        # Fallback input field of "Input", update this to a better name later
+        if 'Input' in inputs:
+            cmd_line_args = inputs['Input'].split(' ')
+            cmd_args = [script_types[script_type]['interpreter'], str(script_path)] + cmd_line_args
+
 
     st.text("Executing command:")
     st.code(" ".join(cmd_args))  # Display the command being executed
     result = subprocess.run(cmd_args, capture_output=True, text=True)
+
+    # Return stdout and stderr of the script execution
     return result.stdout, result.stderr
 
 
@@ -262,11 +332,11 @@ def main():
         args_info = generate_streamlit_interface(selected_script_path, script_type)
 
         # append any info together with new lines for info_box
-        info_box.append('\nListed arguments are:\n')
+        info_box.append('Listed arguments are:')
         info_box.append(args_info)
 
         # append the scripts info to the info_box list
-        info_box.append('\nAvailable scripts are:\n')
+        info_box.append('Available scripts are:')
         info_box.append([script.name for script in available_scripts])
 
     # Set expander on the sidebar
