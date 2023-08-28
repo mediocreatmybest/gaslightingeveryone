@@ -156,13 +156,21 @@ def create_input_fields(arguments, script_type=None):
         # return Python inputs
         return inputs
 
-    # Create other input fields here eventually
 
     # For script types without any input method, return a simple text input
     else:
         inputs['Input'] = st.text_input('Input',
                                         value='',
                                         help='Command-line arguments. No arguments were found in the script.')
+
+
+    # Add Additional Run As for PowerShell / Batch as an input
+    if script_type == "PowerShell" or script_type == "Batch":
+        inputs['RunAs'] = st.checkbox('RunAs Administrator',
+                                      value=False,
+                                      help='Run the script as an Administrator.')
+
+
     # Return generic input
     return inputs
 
@@ -210,6 +218,7 @@ def generate_streamlit_interface(script_path, script_type):
             st.code(stdout)
             if stderr:
                 st.error(stderr)
+
         # Help button
         if st.button("Help"):
             cmd_args = [script_types[script_type]['interpreter'], str(script_path), help_cmd]
@@ -220,22 +229,36 @@ def generate_streamlit_interface(script_path, script_type):
         #concat any info and pass to the return
         return info_box
 
+
+    # Generate RunAs for PowerShell
+    if script_type == "PowerShell":
+
+        # Get RunAs checkbox info
+
+        # Temporary TODO add RunAs etc.
+        if 'Input' in inputs:
+            if st.button("PS Run"):
+                # Add this to the dictionary
+                cmd_line_args = {'Input': inputs['Input']}
+                stdout, stderr = run_script(script_path, cmd_line_args, None, script_type)
+                st.text("Output:\n")
+                st.code(stdout)
+                if stderr:
+                    st.error(stderr)
+        # return PowerShell
+        return info_box
+
+
     # Fallback input field
     if 'Input' in inputs:
         if st.button("Run Fallback"):
+            # Add this to the dictionary
             cmd_line_args = {'Input': inputs['Input']}
             stdout, stderr = run_script(script_path, cmd_line_args, None, script_type)
             st.text("Output:\n")
             st.code(stdout)
             if stderr:
                 st.error(stderr)
-
-# Removed till I can work this out
-#    if st.button("Fallback Help"):
-#        cmd_args = [script_types[script_type]['interpreter'], str(script_path), help_cmd]
-#        result = subprocess.run(cmd_args, capture_output=True, text=True)
-#        st.text("Help:\n")
-#        st.code(result.stdout)
 
     return info_box
 
