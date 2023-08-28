@@ -1,7 +1,9 @@
+import os
 import re
-import streamlit as st
 import subprocess
 from pathlib import Path
+
+import streamlit as st
 
 # Global dictionary for accepted script types and their interpreters
 script_types = {
@@ -17,10 +19,10 @@ script_types = {
         'extensions': ['.bat', '.cmd'],
         'interpreter': 'cmd /c'
     },
-#    'PowerShell': {
-#        'extensions': ['.ps1'],
-#        'interpreter': 'powershell'
-#    }
+    'PowerShell': {
+        'extensions': ['.ps1'],
+        'interpreter': 'powershell'
+    }
 }
 
 def extract_arguments(script_content, script_type=None):
@@ -288,8 +290,15 @@ def run_script(script_path, inputs, arguments, script_type, positional_args_orde
 
     # PowerShell script execution
     elif script_type == "PowerShell":
-        # build later
-        pass
+        # Execute with additional commands / Using Input as we haven't looked at args yet.
+        # This is a dict
+        if 'Input' in inputs:
+            cmd_line_args = inputs['Input'].split(' ')
+        # set execution with powershell to list and append
+        powershell_args = ['-ExecutionPolicy', 'Bypass', '-File']
+        cmd_args.append(powershell_args)
+        # Build final command
+        cmd_args = script_types[script_type]['interpreter'].split() + [str(script_path)] + cmd_line_args
 
     # Final fallback for generic input
     # not sure this is working as intended yet as most other scripts don't have args
