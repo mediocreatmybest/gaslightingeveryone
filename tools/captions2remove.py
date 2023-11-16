@@ -5,7 +5,9 @@ import argparse
 from pathlib import Path
 from tqdm import tqdm
 
+
 # Save function
+
 
 def save_file(file_path, data, mode='w', encoding='utf-8', debug=False):
     """ Function to save a file, defaults to write mode """

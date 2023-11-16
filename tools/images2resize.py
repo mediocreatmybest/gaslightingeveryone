@@ -91,15 +91,15 @@ parser.add_argument('--resample-mode', type=str,  default='antialias',
 parser.add_argument('--min-size', metavar='768', type=int,
                     help='desired size of the smallest side', required=False)
 parser.add_argument('--skip-smaller', action='store_true',
-                    help='Skips resizing images that are smaller than the minimum size (This avoids enlarging images)')
+                    help='Skips resizing images that are smaller than the minimum size, this avoids enlarging images')
 parser.add_argument('--pad-image', action='store_true', default=False,
                     help='Pads the image to a 1:1 ratio')
-parser.add_argument("--color", type=str,
-                    help="Manually specify a colour for transparent background replacement (format: R,G,B)")
-parser.add_argument("--common-colors", action="store_true",
-                    help="Use a limited number of simple background colours for transparent ground replacement")
+parser.add_argument('--color', type=str,
+                    help='Manually specify a colour for transparent background replacement in format: R,G,B')
+parser.add_argument('--common-colors", action="store_true',
+                    help='Use a limited number of simple background colours for transparent ground replacement')
 parser.add_argument('--config', '-c', metavar='config.ini', type=str,
-                    help='')
+                    help='Use a config file to set options')
 parser.add_argument('--debug', action='store_true', default=False,
                     help='Print debug messages of output images', required=False)
 
