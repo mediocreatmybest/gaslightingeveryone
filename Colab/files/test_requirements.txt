@@ -10,7 +10,7 @@ discord-webhook==1.0.0
 diffusers==0.10.2
 einops==0.4.1
 fairscale==0.4.9
-fastapi==0.87.0
+fastapi==0.109.1
 font-roboto
 fonts
 ftfy==6.1.1
