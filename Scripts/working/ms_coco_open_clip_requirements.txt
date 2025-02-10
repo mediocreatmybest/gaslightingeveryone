@@ -33,7 +33,7 @@ sentencepiece==0.1.97
 sympy==1.11.1
 timm==0.6.13
 tokenizers==0.13.2
-torch==2.0.0
+torch==2.2.0
 torchvision==0.15.1
 tqdm==4.66.3
 transformers==4.38.0
