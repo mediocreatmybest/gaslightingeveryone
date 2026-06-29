@@ -7,7 +7,7 @@ bitsandbytes==0.35.0
 clean-fid==0.1.35
 clip
 discord-webhook==1.0.0
-diffusers==0.10.2
+diffusers==0.38.0
 einops==0.4.1
 fairscale==0.4.9
 fastapi==0.109.1
