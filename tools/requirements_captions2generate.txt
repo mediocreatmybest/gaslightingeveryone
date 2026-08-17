@@ -1,5 +1,5 @@
 transformers>=5.14.1
-bitsandbytes>=0.50.0
+bitsandbytes>=0.50.1
 accelerate
 torch
 pillow
