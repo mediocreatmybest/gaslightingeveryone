@@ -1,4 +1,4 @@
-transformers>=5.19.0
+transformers>=5.20.2
 bitsandbytes>=0.50.2
 accelerate
 torch
